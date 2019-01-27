@@ -42,13 +42,13 @@ class CSVTools:
         :return: DayData
         """
         with open(filename, "r") as file:
-            d = datetime.datetime.strptime(os.path.basename(filename).split(".")[0], "day%jin%y")
+            d = datetime.strptime(os.path.basename(filename).split(".")[0], "day%jin%y")
             fields = list(map(str.strip, file.readline().split(separator)))
             data = []
             for line in file:
                 spl = line.split(separator)
-                dt = datetime.datetime.strptime(spl[0], "%H:%M")
-                dataline = [datetime.datetime.combine(d.date(), dt.time())]
+                dt = datetime.strptime(spl[0], "%H:%M")
+                dataline = [datetime.combine(d.date(), dt.time())]
                 for value in spl[1:]:
                     try:
                         dataline.append(float(value))
