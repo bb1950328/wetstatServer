@@ -31,7 +31,8 @@ class DayData:
 
 
 class CSVTools:
-    def load_csv_to_daydata(self, filename: str, separator=";") -> DayData:
+    @staticmethod
+    def load_csv_to_daydata(filename: str, separator=";") -> DayData:
         """
         dayXXXinXX.csv
         Time;Sensor1;Sensor2;Sensor3
@@ -57,7 +58,8 @@ class CSVTools:
         res = DayData(d, np.array(data), fields)
         return res
 
-    def save_daydata_to_csv(self, data: DayData, folder: str, separator=";"):
+    @staticmethod
+    def save_daydata_to_csv(data: DayData, folder: str, separator=";"):
         filename = os.path.join(folder, data.date.strftime("day%jin%y.csv"))
         with open(filename, "w") as file:
             file.write(separator.join(data.fields))
