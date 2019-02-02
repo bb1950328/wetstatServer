@@ -31,7 +31,7 @@ def load_csv_for_range(folder: str, start: datetime.date, end: datetime.date) ->
                 )
             )
         )
-        start.replace(day=start.day + 1)  # increase date
+        start = start + datetime.timedelta(days=1)  # increase date
     return container
 
 

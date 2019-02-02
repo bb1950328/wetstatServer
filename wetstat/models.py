@@ -35,7 +35,9 @@ def generate_plot(container: csvtools.DataContainer,
                   yaxis1label="Temperature",
                   yaxis2label="Light Intensity",
                   dateformat="%d.%m.%y %H:%M",
-                  rotation=90, title=None):
+                  rotation=90,
+                  title=None,
+                  linewidth=0.75):
     if title is None:
         title = "Weather from "
         title += container.data[0].date.strftime("%d.%m.%y")
@@ -46,10 +48,11 @@ def generate_plot(container: csvtools.DataContainer,
     if useaxis is None:
         useaxis = [1, 0, 2]
     d = container.data[0].array
-    for i in range(1, len(container.data)):
+    days = len(container.data)
+    for i in range(1, days):
         d = np.concatenate((d, container.data[i].array))
     datalength = len(d)
-    print(datalength, "values to plot (", len(container.data), "days)")
+    print(datalength, "values to plot (", days, "days)")
     xtick_pos = np.linspace(0, datalength, num=num_xticks)
     xtick_str = []
     for p in xtick_pos:
@@ -73,8 +76,8 @@ def generate_plot(container: csvtools.DataContainer,
             axis = ax1
             if useaxis[i - 1] == 2:
                 axis = ax2
-            axis.plot(range(datalength), d[:, i], label=name, color=linecolors[i - 1])
+            axis.plot(range(datalength), d[:, i], label=name, color=linecolors[i - 1], linewidth=linewidth)
     fig.tight_layout()
     fig.legend(loc="upper center", ncol=20, fancybox=True, shadow=True, bbox_to_anchor=(0.5, 0.945))
-    # plt.savefig(r"C:\Users\dev\Desktop\testfig.svg")
+    plt.savefig(r"C:\Users\dev\Desktop\testfig.svg")
     fig.show()
