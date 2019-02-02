@@ -37,7 +37,9 @@ def generate_plot(container: csvtools.DataContainer,
                   dateformat="%d.%m.%y %H:%M",
                   rotation=90,
                   title=None,
-                  linewidth=0.75):
+                  linewidth=0.75,
+                  figsize=(16, 9),
+                  dpi=100):
     if title is None:
         title = "Weather from "
         title += container.data[0].date.strftime("%d.%m.%y")
@@ -60,7 +62,7 @@ def generate_plot(container: csvtools.DataContainer,
         if idx >= datalength:
             idx -= 1
         xtick_str.append(d[idx][0].strftime(dateformat))
-    fig, ax1 = plt.subplots()
+    fig, ax1 = plt.subplots(figsize=figsize, dpi=dpi)
     plt.sca(ax1)
     plt.xticks(xtick_pos, xtick_str, rotation=rotation)
     ax1.xaxis.grid(True, linestyle="-")
@@ -69,6 +71,9 @@ def generate_plot(container: csvtools.DataContainer,
     ax2 = ax1.twinx()
     ax2.set_ylabel(yaxis2label)
     plt.title(title, pad=30)
+
+    # experimental
+    # ax2.set_yscale('log')
     for i, name in enumerate(container.data[0].fields):
         if i == 0:
             continue  # skip time column
