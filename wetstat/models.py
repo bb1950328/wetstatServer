@@ -52,6 +52,8 @@ def generate_plot(container: csvtools.DataContainer,
     fig, ax1 = plt.subplots()
     plt.sca(ax1)
     plt.xticks(xtick_pos, xtick_str, rotation=rotation)
+    ax1.xaxis.grid(True, linestyle="-")
+    ax1.yaxis.grid(True, linestyle="-")
     ax2 = ax1.twinx()
     for i, name in enumerate(container.data[0].fields):
         if i == 0:
@@ -62,4 +64,5 @@ def generate_plot(container: csvtools.DataContainer,
                 axis = ax2
             axis.plot(range(datalength), d[:, i], label=name, color=linecolors[i - 1])
     fig.legend()
+    plt.savefig(r"C:\Users\dev\Desktop\testfig.svg")
     fig.show()
