@@ -17,19 +17,30 @@ class DataContainer:
     data: list
 
 
-def load_csv_for_range(self, start: datetime.date, end: datetime.date) -> DataContainer:
+def load_csv_for_range(folder: str, start: datetime.date, end: datetime.date) -> DataContainer:
+    if start > end:
+        raise ValueError("end must be after start!!!")
+
     container = DataContainer(list())
     while start <= end:
         container.data.append(
-            self.load_csv_to_daydata(
-                self.get_filename_for_date(start)
+            load_csv_to_daydata(
+                os.path.join(
+                    folder,
+                    get_filename_for_date(start)
+                )
             )
         )
         start.replace(day=start.day + 1)  # increase date
     return container
 
 
-def load_csv_to_daydata(self, filename: str, separator=";") -> DayData:
+def save_range_to_csv(folder: str, container: DataContainer):
+    for daydata in container.data:
+        save_daydata_to_csv(daydata, folder)
+
+
+def load_csv_to_daydata(filename: str, separator=";") -> DayData:
     """
     dayXXXinXX.csv
     Time;Sensor1;Sensor2;Sensor3
@@ -56,7 +67,7 @@ def load_csv_to_daydata(self, filename: str, separator=";") -> DayData:
     return res
 
 
-def save_daydata_to_csv(self, data: DayData, folder: str, separator=";"):
+def save_daydata_to_csv(data: DayData, folder: str, separator=";"):
     filename = os.path.join(folder, data.date.strftime("day%jin%y.csv"))
     with open(filename, "w") as file:
         file.write(separator.join(data.fields))
@@ -67,5 +78,5 @@ def save_daydata_to_csv(self, data: DayData, folder: str, separator=";"):
                 file.write(";" + str(value))
 
 
-def get_filename_for_date(self, date: datetime.date) -> str:
+def get_filename_for_date(date: datetime.date) -> str:
     return date.strftime("day%jin%y.csv")
