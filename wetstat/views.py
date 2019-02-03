@@ -1,18 +1,44 @@
 import datetime
+import random
 
 from django.shortcuts import render
 
 
 # Create your views here.
 
-def getDate() -> datetime.date:
+def get_date() -> datetime.date:
     # for development
-    return datetime.date(2018, 6, 3)
+    return datetime.date.today() - datetime.timedelta(days=365)
     # noinspection PyUnreachableCode
     return datetime.date.today()
 
+
 def index(request):
-    return render(request, "wetstat/index.html")
+    imgpaths = ["arrow_up_transparent.png",
+                "arrow_neutral_transparent.png",
+                "arrow_down_transparent.png"]
+    random.shuffle(imgpaths)
+    ra = {"num1": random.randint(-200, 380) / 10,
+          "num2": random.randint(-200, 380) / 10,
+          "imgname": imgpaths[0],
+          }
+    sarr = [
+        {
+            "name": "Temperatur 1",
+            "value": random.randint(-200, 380) / 10,
+            "before_month": random.randint(-200, 380) / 10,
+            "before_year": random.randint(-200, 380) / 10,
+        },
+        {
+            "name": "Temperatur 2",
+            "value": random.randint(-200, 380) / 10,
+            "before_month": random.randint(-200, 380) / 10,
+            "before_year": random.randint(-200, 380) / 10,
+        }
+    ]
+    sensors = {"array": sarr}
+    context = {"random": ra, "sensors": sensors}
+    return render(request, "wetstat/index.html", context)
 
 
 def week(request):

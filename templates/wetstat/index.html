@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Index</title>
 </head>
 <body>
@@ -17,7 +18,16 @@
         <i class="fa fa-bars"></i>
     </a>
 </div>
-<h1><b>Test</b> ASDFGHJKL</h1>
+<h1>Home</h1>
+{% for sensor in sensors.array %}
+    <div class="sensor">
+        <p class="sensorname">{{ sensor.name }}</p>
+        <img src="{% static 'img/' %}{{ random.imgname }}" alt="trend icon" width="40" height="40">
+        <b class="sensorvalue">{{ sensor.value }} °C</b>
+        <p class="before">Vor 1 Monat: {{ sensor.before_month }}</p>
+        <p class="before">Vor 1 Jahr: {{ sensor.before_year }}</p>
+    </div>
+{% endfor %}
 <script>
     function topnavResponsive() {
         let x = document.getElementById("myTopnav");

@@ -31,3 +31,22 @@
 .topnav .icon {
     display: none;
 }
+
+div.sensor {
+    background-color: #3875d7;
+    display: inline-block;
+    padding-bottom: 10px
+}
+
+p.sensorname {
+    text-align: center;
+}
+
+b.sensorvalue {
+    font-size: 40px;
+    padding-right: 5px;
+}
+
+p.before {
+    margin: 5px;
+}
