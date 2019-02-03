@@ -1,14 +1,8 @@
-import datetime
-import os
-from dataclasses import dataclass
-import datetime
-
-from matplotlib import rcParams
+import matplotlib.pyplot as plt
+import mpld3
+import numpy as np
 
 from wetstat import csvtools
-
-import numpy as np
-import matplotlib.pyplot as plt
 
 
 class WetstatModel:
@@ -37,9 +31,13 @@ def generate_plot(container: csvtools.DataContainer,
                   dateformat="%d.%m.%y %H:%M",
                   rotation=90,
                   title=None,
+                  make_minmaxavg=None,  # list of bool
                   linewidth=0.75,
                   figsize=(16, 9),
-                  dpi=100):
+                  dpi=100,
+                  makeTooltips=True):
+    if make_minmaxavg is None:
+        make_minmaxavg = []
     if title is None:
         title = "Weather from "
         title += container.data[0].date.strftime("%d.%m.%y")
@@ -71,6 +69,38 @@ def generate_plot(container: csvtools.DataContainer,
     ax2 = ax1.twinx()
     ax2.set_ylabel(yaxis2label)
     plt.title(title, pad=30)
+    plt.xlim([0, datalength])
+    for i in range(len(useaxis)):
+        yes = False
+        if i < len(make_minmaxavg):
+            yes = make_minmaxavg[i]
+        if yes and useaxis[i]:
+            max_arr = []
+            min_arr = []
+            avg_arr = []
+            for day in container.data:
+                min_arr.append(np.amin(day.array[:, i + 1]))
+                max_arr.append(np.amax(day.array[:, i + 1]))
+                avg_arr.append(np.mean(day.array[:, i + 1]))
+            max_arr = np.array(max_arr)
+            min_arr = np.array(min_arr)
+            avg_arr = np.array(avg_arr)
+            axis = ax1
+            if useaxis[i] == 2:
+                axis = ax2
+            name = container.data[0].fields[i + 1]
+            x = np.linspace(0, datalength, num=days)
+            axis.plot(x, max_arr, color=linecolors[i], linewidth=linewidth * 0.7)
+            axis.plot(x, min_arr, color=linecolors[i], linewidth=linewidth * 0.7)
+            axis.plot(x, avg_arr, color=linecolors[i], linewidth=linewidth * 1.2, label=name + " Day AVG")
+            axis.fill_between(x, max_arr, min_arr, color=linecolors[i], alpha=0.2)
+            useaxis[i] = 0  # avoid plotting that data twice
+            if i == 0 and makeTooltips:
+                pass
+                # TODO
+                # labels = ['point {0}'.format(i + 1) for i in range(datalength)]
+                # tooltip = mpld3.plugins.PointLabelTooltip(avg_arr, labels)
+                # mpld3.plugins.connect(fig, tooltip)
 
     # experimental
     # ax2.set_yscale('log')
