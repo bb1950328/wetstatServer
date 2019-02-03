@@ -22,8 +22,8 @@
 {% for sensor in sensors.array %}
     <div class="sensor">
         <p class="sensorname">{{ sensor.name }}</p>
-        <img src="{% static 'img/' %}{{ random.imgname }}" alt="trend icon" width="40" height="40">
-        <b class="sensorvalue">{{ sensor.value }} °C</b>
+        <img src="{% static 'img/' %}{{ sensor.img }}" alt="trend icon" width="40" height="40" class="trendimg">
+        <nobr><b class="sensorvalue">{{ sensor.value }}</b></nobr>
         <p class="before">Vor 1 Monat: {{ sensor.before_month }}</p>
         <p class="before">Vor 1 Jahr: {{ sensor.before_year }}</p>
     </div>
@@ -37,6 +37,32 @@
             x.className = "topnav";
         }
     }
+
+    function resizedWindow() {
+        let allDivs = document.getElementsByClassName("sensor");
+        let allTitles = document.getElementsByClassName("sensorname");
+        let allImgs = document.getElementsByClassName("trendimg");
+        let allValues = document.getElementsByClassName("sensorvalue");
+        let allBefores = document.getElementsByClassName("before");
+        let width = window.innerWidth / 4;
+        if (width < 240) {
+            width = 240
+        }
+        for (let i = 0; i < allDivs.length; i++) {
+            allDivs[i].style.width = width + "px";
+            allDivs[i].style.height = width * 3 / 5 + "px";
+            allTitles[i].style.fontSize = (width / 12) + "px";
+            allImgs[i].style.width = (width / 6) + "px";
+            allImgs[i].style.height = (width / 6) + "px";
+            allValues[i].style.fontSize = (width / 6) + "px";
+        }
+        for (let i = 0; i < allBefores.length; i++) { // need own for because they are more
+            allBefores[i].style.fontSize = (width / 15) + "px";
+        }
+    }
+
+    window.addEventListener('resize', resizedWindow);
+    resizedWindow()
 </script>
 </body>
 </html>

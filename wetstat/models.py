@@ -1,3 +1,6 @@
+import datetime
+import os
+
 import matplotlib.pyplot as plt
 import mpld3
 import numpy as np
@@ -116,3 +119,16 @@ def generate_plot(container: csvtools.DataContainer,
     fig.legend(loc="upper center", ncol=20, fancybox=True, shadow=True, bbox_to_anchor=(0.5, 0.945))
     plt.savefig(r"C:\Users\dev\Desktop\testfig.svg")
     fig.show()
+
+
+def get_nearest_record(dt: datetime.datetime) -> dict:  # (field: value)
+    day = csvtools.load_csv_to_daydata(os.path.join(r"C:\Users\dev\PycharmProjects\wetstatServer\data",
+                                                    csvtools.get_filename_for_date(dt)))
+    i = 0
+    while (len(day.array) > i) and (day.array[i][0] < dt):
+        i += 1
+    arr = day.array[i]
+    ret = {}
+    for i, name in enumerate(day.fields):
+        ret[name] = arr[i]
+    return ret
