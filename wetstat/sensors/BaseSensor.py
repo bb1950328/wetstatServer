@@ -6,6 +6,7 @@ class BaseSensor:
         try:
             return {"long_name": self.get_long_name(),
                     "short_name": self.get_short_name(),
-                    "color": self.get_display_color()}
+                    "color": self.get_display_color(),
+                    "unit": self.get_unit()}
         except NameError:
             raise NotImplementedError("child class hasn't defined one of the info methods correctly!")
