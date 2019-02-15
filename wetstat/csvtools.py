@@ -35,6 +35,16 @@ def load_csv_for_range(folder: str, start: datetime.date, end: datetime.date) ->
     return container
 
 
+def get_data_folder():
+    try:
+        path = os.path.join(os.path.realpath(__file__), "datafolder")
+        if not os.path.isfile(path):
+            pass
+        # TODO
+    except:
+        pass
+
+
 def save_range_to_csv(folder: str, container: DataContainer):
     for daydata in container.data:
         save_daydata_to_csv(daydata, folder)
