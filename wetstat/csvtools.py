@@ -90,3 +90,17 @@ def save_daydata_to_csv(data: DayData, folder: str, separator=";"):
 
 def get_filename_for_date(date: datetime.date) -> str:
     return date.strftime("day%jin%y.csv")
+
+
+def save_values(folder: str, heads: list, data: list, timelabel: datetime.datetime):
+    path = os.path.join(folder, get_filename_for_date(timelabel))
+    with open(path, "r+") as f:
+        firstline = f.readline()
+        fileheads = firstline.split(";")
+        col_indexes = []
+        for h in heads:
+            try:
+                idx = fileheads.index(h)
+                col_indexes.append(idx)
+            except ValueError:  # h not in fileheads
+                col_indexes.append(-1)

@@ -8,12 +8,9 @@ logging.basicConfig(level=LEVEL, filemode="a")
 log = logging.getLogger()
 
 fname = os.path.join(
-    os.path.realpath(
-        os.path.dirname(__file__)
-    ),
+    os.path.realpath(os.path.dirname(__file__)),
     "wetstat.log")
 
-print(fname)
 fileHandler = logging.FileHandler(fname)
 fileHandler.setFormatter(logFormatter)
 fileHandler.setLevel(LEVEL)
