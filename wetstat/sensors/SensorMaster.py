@@ -77,13 +77,14 @@ class SensorMaster:
         :return: None
         """
 
-        def roundTime(dt: datetime.datetime = None, round_to: int = 60, mode=0):
+        def round_time(dt: datetime.datetime = None, round_to: int = 60, mode=0):
             """Round a datetime object to any time lapse in seconds
             :param dt: datetime.datetime object, default now.
             :param round_to: Closest number of seconds to round to, default 1 minute.
             :param mode: -1 = to past, 0 = to nearest, 1 = to future
             """
-            if dt is None: dt = datetime.datetime.now()
+            if dt is None:
+                dt = datetime.datetime.now()
             seconds = (dt.replace(tzinfo=None) - dt.min).seconds
             rounding = (seconds + round_to / 2) // round_to * round_to
             delta = datetime.timedelta(0, rounding - seconds, -dt.microsecond)
@@ -96,13 +97,13 @@ class SensorMaster:
             res = dt + delta
             return res
 
-        nextstop = roundTime(round_to=freq)
+        next_stop = round_time(round_to=freq, mode=1)
         while True:
             # noinspection PyBroadException
             try:
-                SensorMaster.measure_now(nextstop, nextstop)
-                logger.log.info("Measured and saved under label '" + nextstop.isoformat() + "'")
-                nextstop += datetime.timedelta(seconds=freq)
+                SensorMaster.measure_now(next_stop, next_stop)
+                logger.log.info("Measured and saved under label '" + next_stop.isoformat() + "'")
+                next_stop += datetime.timedelta(seconds=freq)
 
             except Exception as e:
                 logger.log.exception("Exception occurred in SensorMaster.measure")
