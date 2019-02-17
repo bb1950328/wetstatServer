@@ -15,7 +15,9 @@ class TempSensor(BaseSensor):
         return f"Temp{self.number}"
 
     def get_display_color(self):
-        n = str(hex(self.number + 210))
+        blue = (self.number * 50 + 150) % 255
+        n = str(hex(blue))
+        n = n[2:]
         if len(n) == 1:
             n = "0" + n
         return f"#3875{n}"

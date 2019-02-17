@@ -36,7 +36,6 @@ def number_maxlength(inp: float, maxlen: int) -> str:
             to_del -= 1
         a = a[:-to_del]
         si = a + "e" + str(new_exp)
-        print("new exponent= " + str(new_exp), new_exp)
     return si
 
 
@@ -69,7 +68,8 @@ def index(request):
                 "img": img,
                 "before_month": lastmonth.get(name, "?"),
                 "before_year": lastyear.get(name, "?"),
-                "unit": sensor.get_unit()
+                "unit": sensor.get_unit(),
+                "color": sensor.get_display_color(),
             }
         )
     sensors = {"array": sarr}
