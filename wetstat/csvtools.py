@@ -69,7 +69,10 @@ def load_csv_to_daydata(filename: str, separator=";") -> DayData:
             dataline = [datetime.datetime.combine(d.date(), dt.time())]
             for value in spl[1:]:
                 try:
-                    dataline.append(float(value))
+                    if value == "":
+                        dataline.append(None)
+                    else:
+                        dataline.append(float(value))
                 except ValueError as e:
                     dataline.append(0.0)
             data.append(dataline)
@@ -93,14 +96,56 @@ def get_filename_for_date(date: datetime.date) -> str:
 
 
 def save_values(folder: str, heads: list, data: list, timelabel: datetime.datetime):
+    """
+    :param folder: folder of the csv's
+    :param heads: list of the heads
+    :param data: list of the values, same length as heads
+    :param timelabel: timestamp of the values
+    :return:
+    """
     path = os.path.join(folder, get_filename_for_date(timelabel))
+    if heads[0].lower() != "time":
+        heads.insert(0, "Time")
+    if not os.path.isfile(path):
+        f = open(path, "w")
+        f.write(";".join(heads))
+        f.close()
     with open(path, "r+") as f:
-        firstline = f.readline()
+        firstline = f.readline().strip()
         fileheads = firstline.split(";")
-        col_indexes = []
+        col_indexes = []  # for every element in heads, which column is it in the file (start at 0)
         for h in heads:
             try:
                 idx = fileheads.index(h)
                 col_indexes.append(idx)
             except ValueError:  # h not in fileheads
                 col_indexes.append(-1)
+        real_cols = heads
+        if -1 in col_indexes:  # new columns
+            f.seek(0)
+            oldlines = f.readlines()
+            col = len(fileheads)
+            new_heads = 0
+            for i, head in enumerate(heads):
+                if col_indexes[i] == -1:  # no column for this head
+                    fileheads.append(head)
+                    col_indexes[i] = col
+                    col += 1
+                    new_heads += 1
+            oldlines[0] = ";".join(fileheads) + "\n"
+            toadd = ";" * new_heads
+            for i in range(1, len(oldlines)):
+                oldlines[i] = oldlines[i].strip() + toadd + "\n"
+            oldlines[-1] = oldlines[-1].strip()  # remove newline from last line
+            f.seek(0)
+            f.writelines(oldlines)
+            real_cols = oldlines[0].split(";")
+        f.seek(0, 2)  # move cursor to the end
+
+        output = [""] * len(fileheads)
+        output[0] = timelabel.strftime("%H:%M")
+        for i, val in enumerate(data):
+            output[col_indexes[i + 1]] = val
+        f.write("\n")
+        output = [str(n) for n in output]
+        f.write(";".join(output))

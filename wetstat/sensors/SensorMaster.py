@@ -1,13 +1,25 @@
 import datetime
+import numpy as np
 import time
 
 import schedule
 
+from wetstat import logger, csvtools
+
+"""
 from wetstat.sensors.TempSensor import TempSensor
 
 SENSORS = [
     TempSensor(1),
     TempSensor(2),
+]"""
+
+# just for debugging
+from wetstat.sensors.FakeSensor import FakeSensor
+
+SENSORS = [
+    FakeSensor(1),
+    FakeSensor(2),
 ]
 
 
@@ -38,16 +50,59 @@ class SensorMaster:
     def measure_now(stoptime: datetime.datetime,
                     savedate: datetime.datetime = None):
         """
-        :param length: in seconds
-        :param savedate: in which date the values are saved
+        :param stoptime: timestamp on which the measurement should be finished
+        :param savedate: under which date the values are saved
         :return: None
         """
         heads = SensorMaster.get_sensor_short_names()
-
-        nexttime = datetime.datetime.now() + dist
 
         data = []
         schedule.every(5).seconds.do(SensorMaster._measure_row,
                                      data=data,
                                      stoptime=stoptime - datetime.timedelta(seconds=5)
                                      )
+        while len(schedule.jobs):
+            schedule.run_pending()
+            time.sleep(1)
+        means = list(np.mean(data, axis=0))
+        means = [round(n) for n in means]
+        csvtools.save_values(csvtools.get_data_folder(), heads, means, savedate)
+        logger.log.debug("measured values" + str(means))
+
+    @staticmethod
+    def measure(freq: int = 600):
+        """
+        measures values forever
+        :param freq: measuring frequency in seconds
+        :return: None
+        """
+
+        def roundTime(dt: datetime.datetime = None, round_to: int = 60, mode=0):
+            """Round a datetime object to any time lapse in seconds
+            :param dt: datetime.datetime object, default now.
+            :param round_to: Closest number of seconds to round to, default 1 minute.
+            :param mode: -1 = to past, 0 = to nearest, 1 = to future
+            """
+            if dt is None: dt = datetime.datetime.now()
+            seconds = (dt.replace(tzinfo=None) - dt.min).seconds
+            rounding = (seconds + round_to / 2) // round_to * round_to
+            delta = datetime.timedelta(0, rounding - seconds, -dt.microsecond)
+            if mode < 0:
+                if delta > datetime.timedelta(seconds=0):
+                    delta -= datetime.timedelta(seconds=round_to)
+            if mode > 0:
+                if delta < datetime.timedelta(seconds=0):
+                    delta += datetime.timedelta(seconds=round_to)
+            res = dt + delta
+            return res
+
+        nextstop = roundTime(round_to=freq)
+        while True:
+            # noinspection PyBroadException
+            try:
+                SensorMaster.measure_now(nextstop, nextstop)
+                logger.log.info("Measured and saved under label '" + nextstop.isoformat() + "'")
+                nextstop += datetime.timedelta(seconds=freq)
+
+            except Exception as e:
+                logger.log.exception("Excetion occured in SensorMaster.measure")
