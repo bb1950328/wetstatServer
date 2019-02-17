@@ -4,6 +4,8 @@ import os
 import numpy as np
 from dataclasses import dataclass
 
+from wetstat import config
+
 
 @dataclass
 class DayData:
@@ -36,13 +38,7 @@ def load_csv_for_range(folder: str, start: datetime.date, end: datetime.date) ->
 
 
 def get_data_folder():
-    folder = os.path.realpath(os.path.dirname(__file__))
-    path = os.path.join(folder, "datafolder")
-    if not os.path.isfile(path):
-        raise FileNotFoundError(f"file 'datafolder' in '{folder}' doesn't exist!")
-    with open(path) as file:
-        content = file.read().strip()
-    return content
+    return config.get_datafolder()
 
 
 def save_range_to_csv(folder: str, container: DataContainer):

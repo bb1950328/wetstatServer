@@ -1,11 +1,17 @@
 import datetime
+import os
 import random
 
 from django.shortcuts import render
 
 # Create your views here.
-from wetstat import csvtools, models, logger
+from wetstat import csvtools, models, logger, config
 from wetstat.sensors.SensorMaster import SensorMaster
+
+
+def get_static_folder():
+    # TODO: make path portable
+    return r"C:\Users\dev\PycharmProjects\wetstatServer\wetstat\static"
 
 
 def get_date() -> datetime.datetime:
@@ -79,17 +85,35 @@ def index(request):
 
 def week(request):
     log_request(request)
-    return render(request, "wetstat/week.html")
+    today = get_date()
+    before7days = today - datetime.timedelta(days=7)
+    data = csvtools.load_csv_for_range(csvtools.get_data_folder(), before7days, today)
+    path = os.path.join(config.get_staticfolder(), "plot", "week.svg")
+    models.generate_plot(data, 32, filename=path)
+    context = {"plotfile": "plot/week.svg"}
+    return render(request, "wetstat/week.html", context)
 
 
 def month(request):
     log_request(request)
-    return render(request, "wetstat/month.html")
+    today = get_date()
+    before30days = today - datetime.timedelta(days=30)
+    data = csvtools.load_csv_for_range(csvtools.get_data_folder(), before30days, today)
+    path = os.path.join(config.get_staticfolder(), "plot", "month.svg")
+    models.generate_plot(data, 32, filename=path, useaxis=[1, 0, 0], make_minmaxavg=[True, False, False])
+    context = {"plotfile": "plot/month.svg"}
+    return render(request, "wetstat/month.html", context)
 
 
 def year(request):
     log_request(request)
-    return render(request, "wetstat/year.html")
+    today = get_date()
+    before365days = today - datetime.timedelta(days=365)
+    data = csvtools.load_csv_for_range(csvtools.get_data_folder(), before365days, today)
+    path = os.path.join(config.get_staticfolder(), "plot", "year.svg")
+    models.generate_plot(data, 120, filename=path, useaxis=[1, 0, 0], make_minmaxavg=[True, False, False])
+    context = {"plotfile": "plot/year.svg"}
+    return render(request, "wetstat/year.html", context)
 
 
 def log_request(request):

@@ -1,8 +1,9 @@
 import time
 
+from wetstat import logger
+
 try:
     import spidev
-
     ON_PI = True
 except ModuleNotFoundError:  # not on raspberry pi
     ON_PI = False
@@ -15,6 +16,7 @@ class AnalogDigitalConverter:
 
     def read_channel(self, channel, timeout=1):
         if not ON_PI:
+            logger.log.warning("Someone tried to read values from ADC but not on Raspberry Pi")
             return 0
         if not (0 <= channel <= 7):
             raise ValueError("channel is not between 0 and 7")

@@ -38,7 +38,8 @@ def generate_plot(container: csvtools.DataContainer,
                   linewidth=0.75,
                   figsize=(16, 9),
                   dpi=100,
-                  makeTooltips=True):
+                  makeTooltips=True,
+                  filename=None):
     if make_minmaxavg is None:
         make_minmaxavg = []
     if title is None:
@@ -117,7 +118,8 @@ def generate_plot(container: csvtools.DataContainer,
             axis.plot(range(datalength), d[:, i], label=name, color=linecolors[i - 1], linewidth=linewidth)
     fig.tight_layout()
     fig.legend(loc="upper center", ncol=20, fancybox=True, shadow=True, bbox_to_anchor=(0.5, 0.945))
-    plt.savefig(r"C:\Users\dev\Desktop\testfig.svg")
+    if filename is not None:
+        plt.savefig(filename)
     fig.show()
 
 
