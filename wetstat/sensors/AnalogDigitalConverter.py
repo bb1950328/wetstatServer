@@ -1,4 +1,11 @@
-import spidev, time
+import time
+
+try:
+    import spidev
+
+    ON_PI = True
+except ModuleNotFoundError:  # not on raspberry pi
+    ON_PI = False
 
 
 class AnalogDigitalConverter:
@@ -7,6 +14,8 @@ class AnalogDigitalConverter:
         self.spi.open(0, 1)
 
     def read_channel(self, channel, timeout=1):
+        if not ON_PI:
+            return 0
         if not (0 <= channel <= 7):
             raise ValueError("channel is not between 0 and 7")
         start_time = time.perf_counter()

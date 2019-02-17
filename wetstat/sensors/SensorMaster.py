@@ -5,6 +5,8 @@ import time
 import schedule
 
 from wetstat import logger, csvtools
+from wetstat.sensors.LightSensor import LightSensor
+from wetstat.sensors.TempSensor import TempSensor
 
 """
 from wetstat.sensors.TempSensor import TempSensor
@@ -16,6 +18,14 @@ SENSORS = [
 
 # just for debugging
 from wetstat.sensors.FakeSensor import FakeSensor
+
+ALL_SENSORS = [
+    FakeSensor(1),
+    FakeSensor(2),
+    TempSensor(1),
+    TempSensor(2),
+    LightSensor(),
+]
 
 SENSORS = [
     FakeSensor(1),
@@ -29,7 +39,7 @@ class SensorMaster:
 
     @staticmethod
     def get_sensor_for_info(name: str, value):
-        for sensor in SENSORS:
+        for sensor in ALL_SENSORS:
             info = sensor.get_info()
             if name in info.keys():
                 if info[name] == value:
