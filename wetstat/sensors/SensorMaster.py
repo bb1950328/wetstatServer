@@ -105,4 +105,4 @@ class SensorMaster:
                 nextstop += datetime.timedelta(seconds=freq)
 
             except Exception as e:
-                logger.log.exception("Excetion occured in SensorMaster.measure")
+                logger.log.exception("Exception occurred in SensorMaster.measure")
