@@ -2,10 +2,14 @@ import datetime
 import os
 import random
 
-from django.shortcuts import render
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, redirect
 
 # Create your views here.
+from django.urls import reverse
+
 from wetstat import csvtools, models, logger, config
+from wetstat.forms import CustomPlotForm
 from wetstat.sensors.SensorMaster import SensorMaster
 
 
@@ -122,4 +126,23 @@ def log_request(request):
 
 def custom(request):
     log_request(request)
-    return render(request, "wetstat/custom.html")
+    # If this is a POST request then process the Form data
+    if request.method == 'POST':
+        form = CustomPlotForm(request.POST)
+        if form.is_valid():
+            # process the data in form.cleaned_data as required (here we just write it to the model due_back field)
+
+            # redirect to a new URL:
+            logger.log.warning("TODO: generate plot from " + form.clean_start_date().isoformat() +
+                               " to " + form.clean_end_date().isoformat())
+            return redirect("customplot")
+
+    # If this is a GET (or any other method) create the default form.
+    else:
+        default_start_date = datetime.datetime.now() - datetime.timedelta(days=1)
+        form = CustomPlotForm(initial={'start_date': default_start_date})
+
+    context = {
+        'form': form,
+    }
+    return render(request, "wetstat/custom.html", context)
