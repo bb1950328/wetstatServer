@@ -7,4 +7,5 @@ urlpatterns = [
     path("week", views.week),
     path("month", views.month),
     path("year", views.year),
+    path("custom", views.custom),
 ]

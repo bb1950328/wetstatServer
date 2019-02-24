@@ -10,25 +10,21 @@
 <link rel="stylesheet" href="{% static "style.css" %}">
 <div class="topnav" id="myTopnav">
     <a href="/../">Home</a>
-    <a class="active" href="">Woche</a>
+    <a href="/week">Woche</a>
     <a href="/month">Monat</a>
     <a href="/year">Jahr</a>
-    <a href="/custom">Bereich</a>
+    <a class="active" href="">Bereich</a>
     <a href="javascript:void(0);" class="icon" onclick="topnavResponsive()">
         <i class="fa fa-bars"></i>
     </a>
 </div>
-<h1>Letzte 7 Tage</h1>
-<img src="{% static plotfile %}" alt="plot">
-<script>
-    function topnavResponsive() {
-        let x = document.getElementById("myTopnav");
-        if (x.className === "topnav") {
-            x.className += " responsive";
-        } else {
-            x.className = "topnav";
-        }
-    }
-</script>
+<h1>Benutzerdefinierter Bereich</h1>
+<form action="" method="post">
+    {% csrf_token %}
+    <table>
+        {{ form.as_table }}
+    </table>
+    <input type="submit" value="Graph zeichnen">
+</form>
 </body>
 </html>

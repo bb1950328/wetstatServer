@@ -118,3 +118,8 @@ def year(request):
 
 def log_request(request):
     logger.log.info("HTTP Request from " + request.get_host() + " to " + request.get_raw_uri())
+
+
+def custom(request):
+    log_request(request)
+    return render(request, "wetstat/custom.html")
