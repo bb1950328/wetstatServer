@@ -130,12 +130,32 @@ def custom(request):
     if request.method == 'POST':
         form = CustomPlotForm(request.POST)
         if form.is_valid():
-            # process the data in form.cleaned_data as required (here we just write it to the model due_back field)
-
             # redirect to a new URL:
-            logger.log.warning("TODO: generate plot from " + form.clean_start_date().isoformat() +
-                               " to " + form.clean_end_date().isoformat())
-            return redirect("customplot")
+            start = form.clean_start_date();
+            end = form.clean_end_date()
+            start_iso = start.isoformat();
+            end_iso = end.isoformat()
+            start_fn = start_iso;
+            end_fn = end_iso
+            start_fn = start_fn.replace(":", "_");
+            end_fn = end_fn.replace(":", "_")
+            start_view = start.strftime("%d.%m.%Y %H:%M");
+            end_view = end.strftime("%d.%m.%Y %H:%M")
+
+            data = csvtools.load_csv_for_range(csvtools.get_data_folder(), start, end)
+            filename = "from" + start_fn + "to" + end_fn + ".svg"
+            logger.log.warning("generating custom plot from " + start_iso + " to " + end_iso + " -> " + filename)
+            try:
+                path = os.path.join(config.get_staticfolder(), "plot", filename)
+                models.generate_plot(data, 120, filename=path, useaxis=[1, 0, 0], make_minmaxavg=[True, False, False])
+            except Exception:
+                logger.log.exception("Exception occurred while generating Graph")
+
+            context = {"plotfile": "plot/" + filename,
+                       "start": start_view,
+                       "end": end_view
+                       }
+            return render(request, "wetstat/customplot.html", context=context)
 
     # If this is a GET (or any other method) create the default form.
     else:
@@ -146,3 +166,7 @@ def custom(request):
         'form': form,
     }
     return render(request, "wetstat/custom.html", context)
+
+
+def customplot(request):
+    return render(request, "wetstat/customplot.html")

@@ -8,4 +8,5 @@ urlpatterns = [
     path("month", views.month),
     path("year", views.year),
     path("custom", views.custom),
+    path("customplot", views.customplot),
 ]
