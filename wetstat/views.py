@@ -131,15 +131,15 @@ def custom(request):
         form = CustomPlotForm(request.POST)
         if form.is_valid():
             # redirect to a new URL:
-            start = form.clean_start_date();
+            start = form.clean_start_date()
             end = form.clean_end_date()
-            start_iso = start.isoformat();
+            start_iso = start.isoformat()
             end_iso = end.isoformat()
-            start_fn = start_iso;
+            start_fn = start_iso
             end_fn = end_iso
-            start_fn = start_fn.replace(":", "_");
+            start_fn = start_fn.replace(":", "_")
             end_fn = end_fn.replace(":", "_")
-            start_view = start.strftime("%d.%m.%Y %H:%M");
+            start_view = start.strftime("%d.%m.%Y %H:%M")
             end_view = end.strftime("%d.%m.%Y %H:%M")
 
             data = csvtools.load_csv_for_range(csvtools.get_data_folder(), start, end)
@@ -147,7 +147,8 @@ def custom(request):
             logger.log.warning("generating custom plot from " + start_iso + " to " + end_iso + " -> " + filename)
             try:
                 path = os.path.join(config.get_staticfolder(), "plot", filename)
-                models.generate_plot(data, 120, filename=path, useaxis=[1, 0, 0], make_minmaxavg=[True, False, False])
+                models.generate_plot(data, 120, filename=path, useaxis=[1, 0, 0],
+                                     make_minmaxavg=[form.clean_use_minmaxavg(), False, False])
             except Exception:
                 logger.log.exception("Exception occurred while generating Graph")
 

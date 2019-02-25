@@ -19,8 +19,9 @@
     </a>
 </div>
 <h1>Von {{ start }} bis {{ end }}</h1>
-<img src="{% static plotfile %}" alt="plot">
+<img src="{% static plotfile %}" alt="plot" width="100%" id="graph">
 <a href="custom.html">Neuen Graph generieren</a>
+<button onclick="make_zoomable()" id="zoomable_button">Graph zoombar machen</button>
 <script>
     function topnavResponsive() {
         let x = document.getElementById("myTopnav");
@@ -28,6 +29,18 @@
             x.className += " responsive";
         } else {
             x.className = "topnav";
+        }
+    }
+
+    function make_zoomable() {
+        let x = document.getElementById("graph");
+        let y = document.getElementById("zoomable_button");
+        if (y.innerText === "Graph zoombar machen") {
+            x.style.width = "auto";
+            y.innerText = "Graphbreite anpassen";
+        } else {
+            x.style.width = "100%";
+            y.innerText = "Graph zoombar machen";
         }
     }
 </script>
