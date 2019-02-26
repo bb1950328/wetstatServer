@@ -20,7 +20,9 @@
 </div>
 <h1>Von {{ start }} bis {{ end }}</h1>
 <img src="{% static plotfile %}" alt="plot" width="100%" id="graph">
-<a href="custom.html">Neuen Graph generieren</a>
+<a href="custom.html">
+    <button>Neuen Graph generieren</button>
+</a>
 <button onclick="make_zoomable()" id="zoomable_button">Graph zoombar machen</button>
 <script>
     function topnavResponsive() {
