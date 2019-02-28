@@ -141,16 +141,21 @@ def custom(request):
             end_fn = end_fn.replace(":", "_")
             start_view = start.strftime("%d.%m.%Y %H:%M")
             end_view = end.strftime("%d.%m.%Y %H:%M")
-
-            data = csvtools.load_csv_for_range(csvtools.get_data_folder(), start, end)
+            data = None
+            try:
+                data = csvtools.load_csv_for_range(csvtools.get_data_folder(), start, end)
+            except Exception:
+                logger.log.exception("Could not load data for custom plot!")
+                return showError(request, "Daten konnten nicht geladen werden!", "custom.html")
             filename = "from" + start_fn + "to" + end_fn + ".svg"
-            logger.log.warning("generating custom plot from " + start_iso + " to " + end_iso + " -> " + filename)
+            logger.log.info("generating custom plot from " + start_iso + " to " + end_iso + " -> " + filename)
             try:
                 path = os.path.join(config.get_staticfolder(), "plot", filename)
                 models.generate_plot(data, 120, filename=path, useaxis=[1, 0, 0],
                                      make_minmaxavg=[form.clean_use_minmaxavg(), False, False])
             except Exception:
                 logger.log.exception("Exception occurred while generating Graph")
+                return showError(request, "Graph konnte nicht erstellt werden!", "custom.html")
 
             context = {"plotfile": "plot/" + filename,
                        "start": start_view,
@@ -171,3 +176,9 @@ def custom(request):
 
 def customplot(request):
     return render(request, "wetstat/customplot.html")
+
+
+def showError(request, message: str, backlink: str):
+    context = {"msg": message,
+               "backlink": backlink}
+    return render(request, "wetstat/customplot_error.html", context=context)
