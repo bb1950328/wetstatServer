@@ -124,13 +124,16 @@ def generate_plot(container: csvtools.DataContainer,
 
 
 def get_nearest_record(dt: datetime.datetime) -> dict:  # (field: value)
-    day = csvtools.load_csv_to_daydata(os.path.join(config.get_datafolder(),
-                                                    csvtools.get_filename_for_date(dt)))
-    i = 0
-    while (len(day.array) > i) and (day.array[i][0] < dt):
-        i += 1
-    arr = day.array[i]
-    ret = {}
-    for i, name in enumerate(day.fields):
-        ret[name] = arr[i]
-    return ret
+    try:
+        day = csvtools.load_csv_to_daydata(os.path.join(config.get_datafolder(),
+                                                        csvtools.get_filename_for_date(dt)))
+        i = 0
+        while (len(day.array) > i) and (day.array[i][0] < dt):
+            i += 1
+        arr = day.array[i]
+        ret = {}
+        for i, name in enumerate(day.fields):
+            ret[name] = arr[i]
+        return ret
+    except FileNotFoundError as e:
+        raise ValueError("No data available for date " + dt.isoformat())
