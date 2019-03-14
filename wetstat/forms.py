@@ -2,7 +2,7 @@ import datetime
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.forms import DateTimeField, BooleanField, ChoiceField
+from django.forms import DateTimeField, BooleanField, ChoiceField, Field
 
 from wetstat.sensors import SensorMaster
 
@@ -34,10 +34,13 @@ class CustomPlotForm(forms.Form):
         # use_minmaxavg = BooleanField(label="Min-Max-Mittel pro Tag verwenden", initial=False, required=False)
         self.fields["start_date"] = start_date
         self.fields["end_date"] = end_date
+        self.fields["test"] = ChoiceField(label="Test", required=False, widget=forms.Select(choices=sensor_choices))
+
         for i, sensor in enumerate(SensorMaster.ALL_SENSORS):
             name = sensor.get_long_name()
-            field = ChoiceField(choices=choices, label=name, required=False)
+            field = Field(label=name, required=False)
             self.fields["sensor_" + str(i)] = field
+        self.declared_fields = self.fields
 
     def clean_start_date(self):
         d = self.cleaned_data["start_date"]
@@ -52,7 +55,6 @@ class CustomPlotForm(forms.Form):
         d = d.replace(tzinfo=None)
         if d > datetime.datetime.now():
             raise ValidationError("Ende liegt in der Zukunft!")
-
         return d
 
     def clean_use_minmaxavg(self):

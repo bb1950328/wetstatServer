@@ -13,11 +13,6 @@ from wetstat.forms import CustomPlotForm
 from wetstat.sensors.SensorMaster import SensorMaster
 
 
-def get_static_folder():
-    # TODO: make path portable
-    return r"C:\Users\dev\PycharmProjects\wetstatServer\wetstat\static"
-
-
 def get_date() -> datetime.datetime:
     # for development
     return datetime.datetime.now() - datetime.timedelta(days=365)
@@ -51,11 +46,14 @@ def number_maxlength(inp: float, maxlen: int) -> str:
 
 def index(request):
     log_request(request)
-    now = models.get_nearest_record(get_date())
-    yesterday = models.get_nearest_record(get_date() - datetime.timedelta(days=1))
-    lastmonth = models.get_nearest_record(get_date() - datetime.timedelta(days=30))
-    lastyear = models.get_nearest_record(get_date() - datetime.timedelta(days=365))
-
+    try:
+        now = models.get_nearest_record(get_date())
+        yesterday = models.get_nearest_record(get_date() - datetime.timedelta(days=1))
+        lastmonth = models.get_nearest_record(get_date() - datetime.timedelta(days=30))
+        lastyear = models.get_nearest_record(get_date() - datetime.timedelta(days=365))
+    except ValueError or FileNotFoundError as e:
+        logger.log.exception("Data for Home Page not found!")
+        return showError(request, "Daten nicht vorhanden!" + e, "")
     sarr = []
     for i, name in enumerate(now.keys()):
         if name == "Time":
@@ -181,4 +179,4 @@ def customplot(request):
 def showError(request, message: str, backlink: str):
     context = {"msg": message,
                "backlink": backlink}
-    return render(request, "wetstat/customplot_error.html", context=context)
+    return render(request, "wetstat/error.html", context=context)

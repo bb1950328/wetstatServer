@@ -26,5 +26,21 @@
     </table>
     <input type="submit" value="Graph zeichnen">
 </form>
+<div class="popup" onclick="showhelp()">Click me!
+    <span class="popuptext" id="helpPopup" style="word-wrap:break-word;">
+      Achsennummer und Achse angeben.<br>
+      z.B. 2a = zweitoberstes Diagramm linke Y-Achse<br>
+      z.B. 1b = oberstes Diagramm rechte Y-Achse<br>
+      # hinzufügen, um den Sensor mit Tagesminimum, -mittel und -maximum anzeigen<br>
+      @ hinzufügen, um Säulen anstatt einer Linie zu verwenden<br>
+      Wird nichts oder etwas falsches angegeben, ist dieser Sensor nicht im Graph enthalten<br>
+  </span>
+</div>
+<script>
+    function showhelp() {
+        let popup = document.getElementById("helpPopup");
+        popup.classList.toggle("show");
+    }
+</script>
 </body>
 </html>
