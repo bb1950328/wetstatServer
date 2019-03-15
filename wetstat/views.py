@@ -46,14 +46,41 @@ def number_maxlength(inp: float, maxlen: int) -> str:
 
 def index(request):
     log_request(request)
+
+    class MockDict:
+        """
+        returns specified value when get() is called
+        """
+
+        def __init__(self, value=0):
+            self.value = value
+
+        def get(self, *args):
+            return self.value
+    now = MockDict()
+    yesterday = MockDict()
+    lastmonth = MockDict()
+    lastyear = MockDict()
+    errors = []
     try:
         now = models.get_nearest_record(get_date())
+    except ValueError or FileNotFoundError as e:
+        logger.log.error("Data for HomePage not found! ")
+        return showError(request, "Es wurden keine Daten zum aktuellen Zeitpunkt gefunden.", "week.html")
+    try:
         yesterday = models.get_nearest_record(get_date() - datetime.timedelta(days=1))
+    except ValueError or FileNotFoundError as e:
+        errors.append(str(e))
+    try:
         lastmonth = models.get_nearest_record(get_date() - datetime.timedelta(days=30))
+    except ValueError or FileNotFoundError as e:
+        errors.append(str(e))
+    try:
         lastyear = models.get_nearest_record(get_date() - datetime.timedelta(days=365))
     except ValueError or FileNotFoundError as e:
-        logger.log.exception("Data for Home Page not found!")
-        return showError(request, "Daten nicht vorhanden!" + e, "")
+        errors.append(str(e))
+    if errors:
+        logger.log.error("Data for Home Page not found!" + str(errors))
     sarr = []
     for i, name in enumerate(now.keys()):
         if name == "Time":
