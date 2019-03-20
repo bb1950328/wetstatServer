@@ -183,6 +183,8 @@ class CustomPlot:
 
     def __init__(self):
         self.sensoroptions = []
+        self.start = None
+        self.end = None
 
     def add_sensoroption(self, option: CustomPlotSensorOptions):
         ha = hash(option)
@@ -193,3 +195,25 @@ class CustomPlot:
 
     def get_sensoroptions(self):
         return self.sensoroptions
+
+    def set_start(self, start: datetime.datetime):
+        now = datetime.datetime.now()
+        if start > now:
+            raise ValueError("Start must be before now!")
+        if self.end is not None and self.end < start:
+            raise ValueError("Start must be before end!")
+        self.start = start
+
+    def get_start(self):
+        return self.start
+
+    def set_end(self, end: datetime.datetime):
+        now = datetime.datetime.now()
+        if end > now:
+            raise ValueError("End must be before now!")
+        if self.start is not None and self.start > end:
+            raise ValueError("End must be after start!")
+        self.end = end
+
+    def get_end(self):
+        return self.end
