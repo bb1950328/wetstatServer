@@ -147,6 +147,7 @@ class CustomPlot:
             self.set_sensor(sensor)
             self.minmaxavg_interval = None
             self.line_color = None
+            self.axis = None
 
         def set_minmaxavg_interval(self, interval):
             """
@@ -177,14 +178,33 @@ class CustomPlot:
         def get_sensor(self):
             return self.sensor
 
+        def get_axis(self):
+            return self.axis
+
+        def set_axis(self, axis: str):
+            """
+            :param axis: 1a=1st plot, left y axis
+                         3b=3rd plot, right y axis
+            :return: None
+            """
+            axis = axis.lower()
+            if len(axis) != 2:
+                raise ValueError("len(axis) should be 2!")
+            if not axis[0].isdigit():
+                raise ValueError("axis[0] should be digit!")
+            if axis[1] != "a" and axis[1] != "b":
+                raise ValueError("axis[1] should be 'a' or 'b'!")
+
         def __hash__(self):
             st = self.sensor.get_short_name + self.line_color + self.minmaxavg_interval
             return hash(st)
 
     def __init__(self):
+        self.data = None
         self.sensoroptions = []
         self.start = None
         self.end = None
+        self.title = None
 
     def add_sensoroption(self, option: CustomPlotSensorOptions):
         ha = hash(option)
@@ -217,3 +237,54 @@ class CustomPlot:
 
     def get_end(self):
         return self.end
+
+    def check_data_exists(self):
+        """
+        :return: filename of the first missing file, None if everything is ok
+        """
+        if self.start is None or self.end is None:
+            raise ValueError("Start and end have to be set when calling this method!")
+        oneday = datetime.timedelta(days=1)
+        i = self.start
+        files = []
+        while i < self.end:
+            files.append(csvtools.get_filename_for_date(i))
+            i = i + oneday
+        datafolder = csvtools.get_data_folder()
+        for file in files:
+            path = os.path.join(datafolder, file)
+            if not os.path.isfile(path):
+                return file
+        return None
+
+    def load_data(self):
+        missing = self.check_data_exists()
+        if missing:
+            raise FileNotFoundError("Data does not exist! (at least " + missing + ") missing")
+        if self.data is not None:
+            # data already here
+            return
+        self.data = csvtools.load_csv_for_range(csvtools.get_data_folder(), self.start, self.end)
+
+    def set_title(self, title: str):
+        self.title = title
+
+    def get_title(self):
+        if self.title is not None:
+            return self.title
+        elif self.start is not None and self.end is not None:
+            self.title = "Weather from "
+            self.title += self.start.strftime("%d.%m.%y")
+            self.title += " to "
+            self.title += self.end.strftime("%d.%m.%y")
+        return self.title
+
+    def set_all_linecolors(self):
+        standards = ["red", "green", "blue", "orange", "black", "yellow", "black"]
+        for sensor in self.get_sensoroptions():
+            color = sensor.get_line_color()
+            if not color:
+                sensor.set_line_color(standards.pop())
+            elif color in standards:
+                standards.remove(color)
+    
