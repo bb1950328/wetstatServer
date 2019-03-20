@@ -6,6 +6,7 @@ import mpld3
 import numpy as np
 
 from wetstat import csvtools, config
+from wetstat.sensors.BaseSensor import BaseSensor
 
 
 class WetstatModel:
@@ -137,3 +138,58 @@ def get_nearest_record(dt: datetime.datetime) -> dict:  # (field: value)
         return ret
     except FileNotFoundError as e:
         raise ValueError("No data available for date " + dt.isoformat())
+
+
+class CustomPlot:
+    class CustomPlotSensorOptions:
+        def __init__(self, sensor: BaseSensor):
+            self.sensor = None
+            self.set_sensor(sensor)
+            self.minmaxavg_interval = None
+            self.line_color = None
+
+        def set_minmaxavg_interval(self, interval):
+            """
+            Sets the interval for MinMaxAvg
+            :param interval: None=disable, "day"=day, "hour"=hour
+            :return: None
+            """
+            allowed = [None, "day", "hour"]
+            if interval in allowed:
+                self.minmaxavg_interval = interval
+            else:
+                raise ValueError("Wrong parameter, has to be " + "or".join(allowed))
+
+        def get_minmaxavg_interval(self):
+            return self.minmaxavg_interval
+
+        def set_line_color(self, color):
+            self.line_color = color
+
+        def get_line_color(self):
+            return self.line_color
+
+        def set_sensor(self, sensor):
+            if not issubclass(type(sensor), BaseSensor):
+                raise ValueError("sensor has to be a subclass of BaseSensor!")
+            self.sensor = sensor
+
+        def get_sensor(self):
+            return self.sensor
+
+        def __hash__(self):
+            st = self.sensor.get_short_name + self.line_color + self.minmaxavg_interval
+            return hash(st)
+
+    def __init__(self):
+        self.sensoroptions = []
+
+    def add_sensoroption(self, option: CustomPlotSensorOptions):
+        ha = hash(option)
+        for op in self.sensoroptions:
+            if hash(op) == option:
+                return  # already in list
+        self.sensoroptions.append(option)
+
+    def get_sensoroptions(self):
+        return self.sensoroptions
