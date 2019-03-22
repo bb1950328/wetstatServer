@@ -200,11 +200,18 @@ class CustomPlot:
             return hash(st)
 
     def __init__(self):
+        self.xtick_str = None
+        self.xtick_pos = None
+        self.figsize = (16, 9)
+        self.dpi = 120
+        self.axes = []  # axes[0] is ["label left", "label right"]
         self.data = None
+        self.datalines = None  # dict, key: shortname of sensor, value: (x: np.array, y: np.array)
         self.sensoroptions = []
         self.start = None
         self.end = None
         self.title = None
+        self.axislabels = None  # dict, key: for example "1b", value: label
 
     def add_sensoroption(self, option: CustomPlotSensorOptions):
         ha = hash(option)
@@ -257,14 +264,16 @@ class CustomPlot:
                 return file
         return None
 
-    def load_data(self):
-        missing = self.check_data_exists()
+    def load_data(self, ignore_missing=True):
+        missing = ((not ignore_missing) and self.check_data_exists())
         if missing:
             raise FileNotFoundError("Data does not exist! (at least " + missing + ") missing")
         if self.data is not None:
             # data already here
             return
-        self.data = csvtools.load_csv_for_range(csvtools.get_data_folder(), self.start, self.end)
+        self.data = csvtools.load_csv_for_range(csvtools.get_data_folder(),
+                                                self.start, self.end,
+                                                ignore_missing=ignore_missing)
 
     def set_title(self, title: str):
         self.title = title
@@ -287,4 +296,62 @@ class CustomPlot:
                 sensor.set_line_color(standards.pop())
             elif color in standards:
                 standards.remove(color)
-    
+
+    def split_date_to_lines(self):
+        if self.datalines is not None:
+            return  # Already splitted
+        for sensoroption in self.sensoroptions:
+            shortname = sensoroption.get_sensor().get_short_name()
+            x = np.array([])
+            y = np.array([])
+            for day in self.data.data:
+                if shortname in day.fields:
+                    np.append(x, day.array[:, 0])
+                    np.append(y, day.array[:, day.fields.index(shortname)])
+            self.datalines[shortname] = (x, y)
+
+    def prepare_axis_labels(self):
+        if self.axislabels is not None:
+            return
+        self.axislabels = {}
+        for sensoroption in self.sensoroptions:
+            label = sensoroption.get_sensor().get_long_name() + \
+                    " [" + sensoroption.get_sensor().get_unit() + "]"
+            axis = sensoroption.get_axis()
+            if axis in self.axislabels.keys():
+                if self.axislabels[axis] != label:
+                    self.axislabels[axis] += (", " + label)
+            else:
+                self.axislabels[axis] = label
+        for axCode in self.axislabels:
+            label = self.axislabels[axCode]
+            i = int(axCode[0])
+            a_or_b = axCode[1]
+
+            while len(self.axes) <= i:
+                self.axes.append(None)
+
+            if self.axes[i] is not None:
+                sa, sb = self.axes[i]
+            else:
+                sa, sb = None, None
+
+            if a_or_b == "a":
+                sa = label
+            else:
+                sb = label
+            self.axes[i] = [sa, sb]
+        axes = filter(lambda x: x is not None, self.axes)
+
+    def generate_xticks(self):
+        if self.data is None:
+            raise ValueError("Load data first!!")
+        self.xtick_pos = []
+        self.xtick_str = []
+        for day in self.
+
+    def create_plots(self):
+        fig, subs = plt.subplots(nrows=len(self.axes), sharex="all", figsize=self.figsize, dpi=self.dpi)
+        plt.xticks(self.xtick_pos, self.xtick_str, rotation=90)
+        for i, subplt in enumerate(subs):
+            labels = self.axes[i]

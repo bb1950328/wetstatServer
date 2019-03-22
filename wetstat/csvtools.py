@@ -19,20 +19,20 @@ class DataContainer:
     data: list
 
 
-def load_csv_for_range(folder: str, start: datetime.date, end: datetime.date) -> DataContainer:
+def load_csv_for_range(folder: str, start: datetime.date, end: datetime.date, ignore_missing=False) -> DataContainer:
     if start > end:
         raise ValueError("end must be after start!!!")
 
     container = DataContainer(list())
     while start <= end:
-        container.data.append(
-            load_csv_to_daydata(
-                os.path.join(
-                    folder,
-                    get_filename_for_date(start)
-                )
-            )
-        )
+        filename = os.path.join(folder, get_filename_for_date(start))
+        if not os.path.isfile(filename):
+            if ignore_missing:
+                continue
+            else:
+                raise FileNotFoundError("File not found: " + filename +
+                                        "You can set argument ignore_missing to True to ignore this.")
+        container.data.append(load_csv_to_daydata(filename))
         start = start + datetime.timedelta(days=1)  # increase date
     return container
 
