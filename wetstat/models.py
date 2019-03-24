@@ -200,6 +200,9 @@ class CustomPlot:
             return hash(st)
 
     def __init__(self):
+        self.legends = None
+        self.linewidth = 0.75
+        self.dateformat = "%d.%m.%y %H:%M"
         self.xtick_str = None
         self.xtick_pos = None
         self.figsize = (16, 9)
@@ -212,6 +215,7 @@ class CustomPlot:
         self.end = None
         self.title = None
         self.axislabels = None  # dict, key: for example "1b", value: label
+        self.lines_of_axes = None  # list [[[1, 3], [2, 4]], [[5, 6], [7, 8]]]
 
     def add_sensoroption(self, option: CustomPlotSensorOptions):
         ha = hash(option)
@@ -310,6 +314,49 @@ class CustomPlot:
                     np.append(y, day.array[:, day.fields.index(shortname)])
             self.datalines[shortname] = (x, y)
 
+    def make_all_lines_minmaxavg(self):
+        for i, option in enumerate(self.sensoroptions):
+            if option.get_minmaxavg_interval() is not None:
+                self.make_line_minmaxavg(i)
+
+    def make_line_minmaxavg(self, line_num):
+        """
+        :param line_num: index of self.sensoroptions
+        :return: True when somethong changed, otherwise False
+        """
+        options = self.get_sensoroptions()[line_num]
+        interval = options.get_minmaxavg_interval()
+        x, y = self.datalines[line_num]
+        miny = np.array([])
+        maxy = np.array([])
+        avgy = np.array([])
+        if interval == "day":
+            istart = 0
+            iend = 1
+            while iend < len(x):
+                while iend < len(x) and (x[istart].date() == x[iend].date()):
+                    iend += 1
+                miny = np.append(miny, np.amin(y[istart:iend]))
+                maxy = np.append(maxy, np.amax(y[istart:iend]))
+                avgy = np.append(avgy, np.mean(y[istart:iend]))
+                istart = iend
+                iend = istart + 1
+        elif interval == "hour":
+            istart = 0
+            iend = 1
+            while iend < len(x):
+                while iend < len(x) and (x[istart].hour == x[iend].hour):
+                    iend += 1
+                miny = np.append(miny, np.amin(y[istart:iend]))
+                maxy = np.append(maxy, np.amax(y[istart:iend]))
+                avgy = np.append(avgy, np.mean(y[istart:iend]))
+                istart = iend
+                iend = istart + 1
+        else:
+            return False
+        self.datalines[line_num] = (x, (miny, maxy, avgy))
+        return True
+
     def prepare_axis_labels(self):
         if self.axislabels is not None:
             return
@@ -341,17 +388,64 @@ class CustomPlot:
             else:
                 sb = label
             self.axes[i] = [sa, sb]
-        axes = filter(lambda x: x is not None, self.axes)
+        self.axes = list(filter(lambda x: x is not None, self.axes))
+
+    def distribute_lines_to_axes(self):
+        self.lines_of_axes = []
+        numbers = [int(so.get_axis()[0]) for so in self.sensoroptions]
+        ma = max(set(numbers))  # set(...) to remove duplicates
+        for i in range(ma):
+            self.lines_of_axes.append([[], []])
+        for i, option in self.sensoroptions:
+            ax = int(option.get_axis()[0])
+            ab = option.get_axis()[1].lower()
+            n = (0 if ab == "a" else 1)
+            self.lines_of_axes[ax][n].append(i)
+        self.lines_of_axes = list(filter(lambda x: len(x[0]) == 0 and len(x[1]) == 0,
+                                         self.lines_of_axes))
 
     def generate_xticks(self):
         if self.data is None:
             raise ValueError("Load data first!!")
         self.xtick_pos = []
         self.xtick_str = []
-        for day in self.
+        for day in self.data:
+            self.xtick_pos.append(day.array[:, 0])
+        self.xtick_str = [pos.strftime(self.dateformat) for pos in self.xtick_pos]
+
+    def generate_legends(self):
+        self.legends = [option.get_sensor().get_long_name() for option in self.sensoroptions]
 
     def create_plots(self):
+        self.load_data()
+        self.set_all_linecolors()
+        self.prepare_axis_labels()
+        self.generate_xticks()
+        self.make_all_lines_minmaxavg()
+        self.distribute_lines_to_axes()
+        self.generate_legends()
         fig, subs = plt.subplots(nrows=len(self.axes), sharex="all", figsize=self.figsize, dpi=self.dpi)
         plt.xticks(self.xtick_pos, self.xtick_str, rotation=90)
-        for i, subplt in enumerate(subs):
-            labels = self.axes[i]
+        for i_subplt, subplt in enumerate(subs):
+            labels = self.axes[i_subplt]
+            left_axis = subplt
+            right_axis = subplt.twinx()
+            left_axis.set_ylabel(labels[0])
+            right_axis.set_ylabel(labels[1])
+            lines = self.lines_of_axes[i_subplt]
+            all_lines = lines[0] + lines[1]
+            for li in all_lines:
+                axis = (left_axis if li in lines[0] else right_axis)
+                option = self.sensoroptions[li]
+                x, y = self.datalines[li]
+                color = option.get_line_color()
+                if option.get_minmaxavg_interval is not None:
+                    miny, maxy, avgy = y
+                    axis.plot(x, maxy, color=color, linewidth=self.linewidth * 0.7)
+                    axis.plot(x, miny, color=color, linewidth=self.linewidth * 0.7)
+                    axis.plot(x, avgy, color=color, linewidth=self.linewidth * 1.2,
+                              label=self.legends[li])
+                    axis.fill_between(x, maxy, miny, color=color, alpha=0.2)
+                else:
+                    axis.plot(x, y, label=self.legends[li], color=color, linewidth=self.linewidth)
+        # TODO make legend somewhere
