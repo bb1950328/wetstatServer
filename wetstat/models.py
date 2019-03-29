@@ -194,12 +194,15 @@ class CustomPlot:
                 raise ValueError("axis[0] should be digit!")
             if axis[1] != "a" and axis[1] != "b":
                 raise ValueError("axis[1] should be 'a' or 'b'!")
+            self.axis = axis
 
         def __hash__(self):
-            st = self.sensor.get_short_name + self.line_color + self.minmaxavg_interval
-            return hash(st)
+            return hash(str(self.sensor.get_short_name) +
+                        str(self.line_color) +
+                        str(self.minmaxavg_interval))
 
     def __init__(self):
+        self.filename = None
         self.legends = None
         self.linewidth = 0.75
         self.dateformat = "%d.%m.%y %H:%M"
@@ -396,10 +399,11 @@ class CustomPlot:
         ma = max(set(numbers))  # set(...) to remove duplicates
         for i in range(ma):
             self.lines_of_axes.append([[], []])
-        for i, option in self.sensoroptions:
+        for i, option in enumerate(self.sensoroptions):
             ax = int(option.get_axis()[0])
             ab = option.get_axis()[1].lower()
             n = (0 if ab == "a" else 1)
+            # TODO throws IndexError: list index out of range
             self.lines_of_axes[ax][n].append(i)
         self.lines_of_axes = list(filter(lambda x: len(x[0]) == 0 and len(x[1]) == 0,
                                          self.lines_of_axes))
@@ -409,8 +413,8 @@ class CustomPlot:
             raise ValueError("Load data first!!")
         self.xtick_pos = []
         self.xtick_str = []
-        for day in self.data:
-            self.xtick_pos.append(day.array[:, 0])
+        for day in self.data.data:
+            self.xtick_pos.extend(day.array[:, 0])
         self.xtick_str = [pos.strftime(self.dateformat) for pos in self.xtick_pos]
 
     def generate_legends(self):
@@ -449,3 +453,20 @@ class CustomPlot:
                 else:
                     axis.plot(x, y, label=self.legends[li], color=color, linewidth=self.linewidth)
         # TODO make legend somewhere
+        if self.filename is not None:
+            plt.savefig(self.filename)
+        fig.show()
+
+
+"""
+from wetstat import models, csvtools
+cp = models.CustomPlot()
+import datetime
+cp.set_start(datetime.datetime(2018, 1, 1))
+cp.set_end(datetime.datetime(2018, 1, 31))
+import wetstat.sensors.TempSensor
+ts = wetstat.sensors.TempSensor.TempSensor(1)
+so = models.CustomPlot.CustomPlotSensorOptions(ts)
+so.set_axis("1a")
+cp.add_sensoroption(so)
+"""
