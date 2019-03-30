@@ -304,9 +304,11 @@ class CustomPlot:
             elif color in standards:
                 standards.remove(color)
 
-    def split_date_to_lines(self):
+    def split_data_to_lines(self):
         if self.datalines is not None:
             return  # Already splitted
+        else:
+            self.datalines = {}
         for sensoroption in self.sensoroptions:
             shortname = sensoroption.get_sensor().get_short_name()
             x = np.array([])
@@ -397,15 +399,15 @@ class CustomPlot:
         self.lines_of_axes = []
         numbers = [int(so.get_axis()[0]) for so in self.sensoroptions]
         ma = max(set(numbers))  # set(...) to remove duplicates
-        for i in range(ma):
+        for i in range(ma + 1):
             self.lines_of_axes.append([[], []])
         for i, option in enumerate(self.sensoroptions):
             ax = int(option.get_axis()[0])
             ab = option.get_axis()[1].lower()
             n = (0 if ab == "a" else 1)
-            # TODO throws IndexError: list index out of range
             self.lines_of_axes[ax][n].append(i)
-        self.lines_of_axes = list(filter(lambda x: len(x[0]) == 0 and len(x[1]) == 0,
+
+        self.lines_of_axes = list(filter(lambda x: not (len(x[0]) == 0 and len(x[1]) == 0),
                                          self.lines_of_axes))
 
     def generate_xticks(self):
@@ -425,10 +427,13 @@ class CustomPlot:
         self.set_all_linecolors()
         self.prepare_axis_labels()
         self.generate_xticks()
+        self.split_data_to_lines()
         self.make_all_lines_minmaxavg()
         self.distribute_lines_to_axes()
         self.generate_legends()
         fig, subs = plt.subplots(nrows=len(self.axes), sharex="all", figsize=self.figsize, dpi=self.dpi)
+        if len(self.axes) < 2:
+            subs = [subs]
         plt.xticks(self.xtick_pos, self.xtick_str, rotation=90)
         for i_subplt, subplt in enumerate(subs):
             labels = self.axes[i_subplt]
@@ -441,9 +446,10 @@ class CustomPlot:
             for li in all_lines:
                 axis = (left_axis if li in lines[0] else right_axis)
                 option = self.sensoroptions[li]
-                x, y = self.datalines[li]
+                shortname = option.get_sensor().get_short_name()
+                x, y = self.datalines[shortname]
                 color = option.get_line_color()
-                if option.get_minmaxavg_interval is not None:
+                if option.get_minmaxavg_interval() is not None:
                     miny, maxy, avgy = y
                     axis.plot(x, maxy, color=color, linewidth=self.linewidth * 0.7)
                     axis.plot(x, miny, color=color, linewidth=self.linewidth * 0.7)
@@ -451,6 +457,7 @@ class CustomPlot:
                               label=self.legends[li])
                     axis.fill_between(x, maxy, miny, color=color, alpha=0.2)
                 else:
+                    # TODO: nothing in result image
                     axis.plot(x, y, label=self.legends[li], color=color, linewidth=self.linewidth)
         # TODO make legend somewhere
         if self.filename is not None:
