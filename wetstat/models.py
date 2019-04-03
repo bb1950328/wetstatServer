@@ -219,6 +219,7 @@ class CustomPlot:
         self.title = None
         self.axislabels = None  # dict, key: for example "1b", value: label
         self.lines_of_axes = None  # list [[[1, 3], [2, 4]], [[5, 6], [7, 8]]]
+        self.max_xticks = 32
 
     def add_sensoroption(self, option: CustomPlotSensorOptions):
         ha = hash(option)
@@ -315,8 +316,8 @@ class CustomPlot:
             y = np.array([])
             for day in self.data.data:
                 if shortname in day.fields:
-                    np.append(x, day.array[:, 0])
-                    np.append(y, day.array[:, day.fields.index(shortname)])
+                    x = np.append(x, day.array[:, 0])
+                    y = np.append(y, day.array[:, day.fields.index(shortname)])
             self.datalines[shortname] = (x, y)
 
     def make_all_lines_minmaxavg(self):
@@ -415,8 +416,14 @@ class CustomPlot:
             raise ValueError("Load data first!!")
         self.xtick_pos = []
         self.xtick_str = []
-        for day in self.data.data:
-            self.xtick_pos.extend(day.array[:, 0])
+        start = self.data.data[0].array[0, 0].timestamp()
+        end = self.data.data[-1].array[-1, 0].timestamp()
+        fts = np.vectorize(datetime.datetime.fromtimestamp)
+        self.xtick_pos = np.linspace(start, end, self.max_xticks)
+        self.xtick_pos = fts(self.xtick_pos)
+        # for day in self.data.data:
+        #     self.xtick_pos.extend(day.array[:, 0])
+        
         self.xtick_str = [pos.strftime(self.dateformat) for pos in self.xtick_pos]
 
     def generate_legends(self):
@@ -457,7 +464,6 @@ class CustomPlot:
                               label=self.legends[li])
                     axis.fill_between(x, maxy, miny, color=color, alpha=0.2)
                 else:
-                    # TODO: nothing in result image
                     axis.plot(x, y, label=self.legends[li], color=color, linewidth=self.linewidth)
         # TODO make legend somewhere
         if self.filename is not None:

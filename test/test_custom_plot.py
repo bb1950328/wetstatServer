@@ -1,4 +1,5 @@
 import datetime
+import os
 
 import wetstat.sensors.TempSensor
 from wetstat import models
@@ -12,4 +13,5 @@ ts = wetstat.sensors.TempSensor.TempSensor(1)
 so = models.CustomPlot.CustomPlotSensorOptions(ts)
 so.set_axis("1a")
 cp.add_sensoroption(so)
+cp.filename = os.path.realpath(__file__ + ".png")
 cp.create_plots()
