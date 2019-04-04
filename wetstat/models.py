@@ -301,7 +301,7 @@ class CustomPlot:
         for sensor in self.get_sensoroptions():
             color = sensor.get_line_color()
             if not color:
-                sensor.set_line_color(standards.pop())
+                sensor.set_line_color(standards.pop(0))  # remove first
             elif color in standards:
                 standards.remove(color)
 
@@ -317,7 +317,9 @@ class CustomPlot:
             for day in self.data.data:
                 if shortname in day.fields:
                     x = np.append(x, day.array[:, 0])
+                    # debug:
                     y = np.append(y, day.array[:, day.fields.index(shortname)])
+            x = [d.timestamp() for d in x]
             self.datalines[shortname] = (x, y)
 
     def make_all_lines_minmaxavg(self):
@@ -423,8 +425,12 @@ class CustomPlot:
         self.xtick_pos = fts(self.xtick_pos)
         # for day in self.data.data:
         #     self.xtick_pos.extend(day.array[:, 0])
-        
-        self.xtick_str = [pos.strftime(self.dateformat) for pos in self.xtick_pos]
+
+        self.xtick_str = np.array([pos.strftime(self.dateformat) for pos in self.xtick_pos])
+
+        # debug:
+        self.xtick_pos = [d.timestamp() for d in self.xtick_pos]
+        print()
 
     def generate_legends(self):
         self.legends = [option.get_sensor().get_long_name() for option in self.sensoroptions]
@@ -442,7 +448,9 @@ class CustomPlot:
         if len(self.axes) < 2:
             subs = [subs]
         plt.xticks(self.xtick_pos, self.xtick_str, rotation=90)
+
         for i_subplt, subplt in enumerate(subs):
+            subplt.xaxis.grid(True, linestyle="-")
             labels = self.axes[i_subplt]
             left_axis = subplt
             right_axis = subplt.twinx()
