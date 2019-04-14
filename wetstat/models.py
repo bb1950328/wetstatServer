@@ -299,7 +299,7 @@ class CustomPlot:
 
     def set_all_linecolors(self):
         standards = ["red", "green", "blue", "orange", "black", "yellow", "black"]
-        for sensor in self.get_sensoroptions():
+        for key, sensor in self.sensoroptions.items():
             color = sensor.get_line_color()
             if not color:
                 sensor.set_line_color(standards.pop(0))  # remove first
@@ -436,8 +436,8 @@ class CustomPlot:
         print()
 
     def generate_legends(self):
-        self.legends = [self.sensoroptions[short_name].get_sensor().get_long_name()
-                        for short_name in self.sensoroptions]
+        self.legends = {short_name: self.sensoroptions[short_name].get_sensor().get_long_name()
+                        for short_name in self.sensoroptions}
 
     def create_plots(self):
         self.load_data()
@@ -462,22 +462,26 @@ class CustomPlot:
             right_axis.set_ylabel(labels[1])
             lines = self.lines_of_axes[i_subplt]
             all_lines = lines[0] + lines[1]
+            total_lines = len(all_lines)
+            i = 1
             for short_name in all_lines:
-                print("processing line ", short_name)
+                print("processing line {} of {} ".format(i, total_lines), short_name)
+                i += 1
                 axis = (left_axis if short_name in lines[0] else right_axis)
-                option = self.sensoroptions[short_name]  #TODO: read with key instead of index
+                option = self.sensoroptions[short_name]
                 shortname = option.get_sensor().get_short_name()
                 x, y = self.datalines[shortname]
                 color = option.get_line_color()
+                label = self.legends[short_name]
                 if option.get_minmaxavg_interval() is not None:
                     miny, maxy, avgy = y
                     axis.plot(x, maxy, color=color, linewidth=self.linewidth * 0.7)
                     axis.plot(x, miny, color=color, linewidth=self.linewidth * 0.7)
                     axis.plot(x, avgy, color=color, linewidth=self.linewidth * 1.2,
-                              label=self.legends[short_name])
+                              label=label)
                     axis.fill_between(x, maxy, miny, color=color, alpha=0.2)
                 else:
-                    axis.plot(x, y, label=self.legends[short_name], color=color, linewidth=self.linewidth)
+                    axis.plot(x, y, label=label, color=color, linewidth=self.linewidth)
 
         fig.legend(loc="upper center", ncol=20, fancybox=True, shadow=True, bbox_to_anchor=(0.5, 0.945))
 
