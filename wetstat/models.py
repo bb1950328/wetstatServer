@@ -2,7 +2,6 @@ import datetime
 import os
 
 import matplotlib.pyplot as plt
-import mpld3
 import numpy as np
 
 from wetstat import csvtools, config
@@ -39,7 +38,7 @@ def generate_plot(container: csvtools.DataContainer,
                   linewidth=0.75,
                   figsize=(16, 9),
                   dpi=100,
-                  makeTooltips=True,
+                  make_tooltips=True,
                   filename=None):
     if make_minmaxavg is None:
         make_minmaxavg = []
@@ -100,7 +99,7 @@ def generate_plot(container: csvtools.DataContainer,
             axis.plot(x, avg_arr, color=linecolors[i], linewidth=linewidth * 1.2, label=name + " Day AVG")
             axis.fill_between(x, max_arr, min_arr, color=linecolors[i], alpha=0.2)
             useaxis[i] = 0  # avoid plotting that data twice
-            if i == 0 and makeTooltips:
+            if i == 0 and make_tooltips:
                 pass
                 # TODO
                 # labels = ['point {0}'.format(i + 1) for i in range(datalength)]
@@ -137,7 +136,7 @@ def get_nearest_record(dt: datetime.datetime) -> dict:  # (field: value)
             ret[name] = arr[i]
         return ret
     except FileNotFoundError as e:
-        raise ValueError("No data available for date " + dt.isoformat())
+        raise ValueError("No data available for date " + dt.isoformat()) from e
 
 
 class CustomPlot:
@@ -175,7 +174,7 @@ class CustomPlot:
                 raise ValueError("sensor has to be a subclass of BaseSensor!")
             self.sensor = sensor
 
-        def get_sensor(self):
+        def get_sensor(self) -> BaseSensor:
             return self.sensor
 
         def get_axis(self):
@@ -197,9 +196,16 @@ class CustomPlot:
             self.axis = axis
 
         def __hash__(self):
-            return hash(str(self.sensor.get_short_name) +
-                        str(self.line_color) +
-                        str(self.minmaxavg_interval))
+            return hash(self.hr_hash())
+
+        def hr_hash(self):
+            """
+            :return: human readable hash, str
+            """
+            return (str(self.sensor.get_short_name()) +
+                    str(self.line_color) +
+                    str(self.minmaxavg_interval) +
+                    str(self.axis))
 
     def __init__(self):
         self.filename = None
@@ -223,11 +229,11 @@ class CustomPlot:
         self.vectorized_from_ts = np.vectorize(datetime.datetime.fromtimestamp)
 
     def add_sensoroption(self, option: CustomPlotSensorOptions):
-        for op in self.sensoroptions:
+        for op in self.sensoroptions.values():
             if hash(op) == option:
                 return  # already in list
-        sn = option.get_sensor().get_short_name()
-        self.sensoroptions[sn] = option
+        hrh = option.hr_hash()
+        self.sensoroptions[hrh] = option
 
     def get_sensoroptions(self) -> dict:
         return self.sensoroptions
@@ -311,7 +317,8 @@ class CustomPlot:
             return  # Already splitted
         else:
             self.datalines = {}
-        for short_name in self.sensoroptions:
+        for hr_hash in self.sensoroptions:
+            short_name = self.sensoroptions[hr_hash].get_sensor().get_short_name()
             x = np.array([])
             y = np.array([])
             for day in self.data.data:
@@ -320,22 +327,23 @@ class CustomPlot:
                     # debug:
                     y = np.append(y, day.array[:, day.fields.index(short_name)])
             x = [d.timestamp() for d in x]
-            self.datalines[short_name] = (x, y)
+            self.datalines[hr_hash] = (x, y)
 
     def make_all_lines_minmaxavg(self):
-        for short_name in self.sensoroptions:
-            if self.sensoroptions[short_name].get_minmaxavg_interval() is not None:
-                self.make_line_minmaxavg(short_name)
+        for hr_hash in self.sensoroptions:
+            if self.sensoroptions[hr_hash].get_minmaxavg_interval() is not None:
+                self.make_line_minmaxavg(hr_hash)
 
-    def make_line_minmaxavg(self, short_name):
+    def make_line_minmaxavg(self, hr_hash):
         """
-        :param short_name: key of self.sensoroptions
+        :param hr_hash: key of self.sensoroptions
         :return: True when something changed, otherwise False
         """
-        options = self.sensoroptions[short_name]
+        options = self.sensoroptions[hr_hash]
         interval = options.get_minmaxavg_interval()
-        x, y = self.datalines[short_name]
+        x, y = self.datalines[hr_hash]
         x_dt = self.vectorized_from_ts(x)
+        x_new = []
         miny = np.array([])
         maxy = np.array([])
         avgy = np.array([])
@@ -348,6 +356,7 @@ class CustomPlot:
                 miny = np.append(miny, np.amin(y[istart:iend]))
                 maxy = np.append(maxy, np.amax(y[istart:iend]))
                 avgy = np.append(avgy, np.mean(y[istart:iend]))
+                x_new.append(x_dt[istart].replace(hour=12, minute=0, second=0, microsecond=0).timestamp())
                 istart = iend
                 iend = istart + 1
         elif interval == "hour":
@@ -359,19 +368,20 @@ class CustomPlot:
                 miny = np.append(miny, np.amin(y[istart:iend]))
                 maxy = np.append(maxy, np.amax(y[istart:iend]))
                 avgy = np.append(avgy, np.mean(y[istart:iend]))
+                x_new.append(datetime.datetime.fromtimestamp(x[istart])
+                             .replace(minute=0, second=0, microsecond=0).timestamp())
                 istart = iend
                 iend = istart + 1
         else:
             return False
-        self.datalines[short_name] = (x, (miny, maxy, avgy))
+        self.datalines[hr_hash] = (x_new, (miny, maxy, avgy))
         return True
 
     def prepare_axis_labels(self):
         if self.axislabels is not None:
             return
         self.axislabels = {}
-        for short_name in self.sensoroptions:
-            option = self.sensoroptions[short_name]
+        for hr_hash, option in self.sensoroptions.items():
             label = option.get_sensor().get_long_name() + \
                     " [" + option.get_sensor().get_unit() + "]"
             axis = option.get_axis()
@@ -406,12 +416,11 @@ class CustomPlot:
         ma = max(set(numbers))  # set(...) to remove duplicates
         for i in range(ma + 1):
             self.lines_of_axes.append([[], []])
-        for short_name in self.sensoroptions:
-            option = self.sensoroptions[short_name]
+        for hr_hash, option in self.sensoroptions.items():
             ax = int(option.get_axis()[0])
             ab = option.get_axis()[1].lower()
             n = (0 if ab == "a" else 1)
-            self.lines_of_axes[ax][n].append(short_name)
+            self.lines_of_axes[ax][n].append(hr_hash)
 
         self.lines_of_axes = list(filter(lambda x: not (len(x[0]) == 0 and len(x[1]) == 0),
                                          self.lines_of_axes))
@@ -436,8 +445,8 @@ class CustomPlot:
         print()
 
     def generate_legends(self):
-        self.legends = {short_name: self.sensoroptions[short_name].get_sensor().get_long_name()
-                        for short_name in self.sensoroptions}
+        self.legends = {hr_hash: self.sensoroptions[hr_hash].get_sensor().get_long_name()
+                        for hr_hash in self.sensoroptions}
 
     def create_plots(self):
         self.load_data()
@@ -452,7 +461,7 @@ class CustomPlot:
         if len(self.axes) < 2:
             subs = [subs]
         plt.xticks(self.xtick_pos, self.xtick_str, rotation=90)
-
+        plt.xlim(self.xtick_pos[0], self.xtick_pos[-1])
         for i_subplt, subplt in enumerate(subs):
             subplt.xaxis.grid(True, linestyle="-")
             labels = self.axes[i_subplt]
@@ -462,17 +471,14 @@ class CustomPlot:
             right_axis.set_ylabel(labels[1])
             lines = self.lines_of_axes[i_subplt]
             all_lines = lines[0] + lines[1]
-            total_lines = len(all_lines)
-            i = 1
-            for short_name in all_lines:
-                print("processing line {} of {} ".format(i, total_lines), short_name)
-                i += 1
-                axis = (left_axis if short_name in lines[0] else right_axis)
-                option = self.sensoroptions[short_name]
-                shortname = option.get_sensor().get_short_name()
-                x, y = self.datalines[shortname]
+            for hr_hash in all_lines:
+                option = self.sensoroptions[hr_hash]
+                short_name = option.get_sensor().get_short_name()
+                axis = (left_axis if hr_hash in lines[0] else right_axis)
+                option = self.sensoroptions[hr_hash]
+                x, y = self.datalines[hr_hash]
                 color = option.get_line_color()
-                label = self.legends[short_name]
+                label = self.legends[hr_hash]
                 if option.get_minmaxavg_interval() is not None:
                     miny, maxy, avgy = y
                     axis.plot(x, maxy, color=color, linewidth=self.linewidth * 0.7)
@@ -488,17 +494,3 @@ class CustomPlot:
         if self.filename is not None:
             plt.savefig(self.filename)
         fig.show()
-
-
-"""
-from wetstat import models, csvtools
-cp = models.CustomPlot()
-import datetime
-cp.set_start(datetime.datetime(2018, 1, 1))
-cp.set_end(datetime.datetime(2018, 1, 31))
-import wetstat.sensors.TempSensor
-ts = wetstat.sensors.TempSensor.TempSensor(1)
-so = models.CustomPlot.CustomPlotSensorOptions(ts)
-so.set_axis("1a")
-cp.add_sensoroption(so)
-"""

@@ -10,3 +10,15 @@ class BaseSensor:
                     "unit": self.get_unit()}
         except NameError:
             raise NotImplementedError("child class hasn't defined one of the info methods correctly!")
+
+    def get_long_name(self):
+        raise NotImplementedError("child class hasn't defined get_long_name() correctly!")
+
+    def get_short_name(self):
+        raise NotImplementedError("child class hasn't defined get_short_name() correctly!")
+
+    def get_display_color(self):
+        raise NotImplementedError("child class hasn't defined get_display_color() correctly!")
+
+    def get_unit(self):
+        raise NotImplementedError("child class hasn't defined get_unit() correctly!")
