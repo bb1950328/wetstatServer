@@ -213,22 +213,23 @@ class CustomPlot:
         self.axes = []  # axes[0] is ["label left", "label right"]
         self.data = None
         self.datalines = None  # dict, key: shortname of sensor, value: (x: np.array, y: np.array)
-        self.sensoroptions = []
+        self.sensoroptions = {}  # dict, key=shortname, value=CustomPlotSensorOptions
         self.start = None
         self.end = None
         self.title = None
         self.axislabels = None  # dict, key: for example "1b", value: label
-        self.lines_of_axes = None  # list [[[1, 3], [2, 4]], [[5, 6], [7, 8]]]
+        self.lines_of_axes = None  # list [[["Temp3", "Light2"], ["...", "..."]], [["...", "..."], ["...", "..."]]]
         self.max_xticks = 32
+        self.vectorized_from_ts = np.vectorize(datetime.datetime.fromtimestamp)
 
     def add_sensoroption(self, option: CustomPlotSensorOptions):
-        ha = hash(option)
         for op in self.sensoroptions:
             if hash(op) == option:
                 return  # already in list
-        self.sensoroptions.append(option)
+        sn = option.get_sensor().get_short_name()
+        self.sensoroptions[sn] = option
 
-    def get_sensoroptions(self):
+    def get_sensoroptions(self) -> dict:
         return self.sensoroptions
 
     def set_start(self, start: datetime.datetime):
@@ -310,31 +311,31 @@ class CustomPlot:
             return  # Already splitted
         else:
             self.datalines = {}
-        for sensoroption in self.sensoroptions:
-            shortname = sensoroption.get_sensor().get_short_name()
+        for short_name in self.sensoroptions:
             x = np.array([])
             y = np.array([])
             for day in self.data.data:
-                if shortname in day.fields:
+                if short_name in day.fields:
                     x = np.append(x, day.array[:, 0])
                     # debug:
-                    y = np.append(y, day.array[:, day.fields.index(shortname)])
+                    y = np.append(y, day.array[:, day.fields.index(short_name)])
             x = [d.timestamp() for d in x]
-            self.datalines[shortname] = (x, y)
+            self.datalines[short_name] = (x, y)
 
     def make_all_lines_minmaxavg(self):
-        for i, option in enumerate(self.sensoroptions):
-            if option.get_minmaxavg_interval() is not None:
-                self.make_line_minmaxavg(i)
+        for short_name in self.sensoroptions:
+            if self.sensoroptions[short_name].get_minmaxavg_interval() is not None:
+                self.make_line_minmaxavg(short_name)
 
-    def make_line_minmaxavg(self, line_num):
+    def make_line_minmaxavg(self, short_name):
         """
-        :param line_num: index of self.sensoroptions
-        :return: True when somethong changed, otherwise False
+        :param short_name: key of self.sensoroptions
+        :return: True when something changed, otherwise False
         """
-        options = self.get_sensoroptions()[line_num]
+        options = self.sensoroptions[short_name]
         interval = options.get_minmaxavg_interval()
-        x, y = self.datalines[line_num]
+        x, y = self.datalines[short_name]
+        x_dt = self.vectorized_from_ts(x)
         miny = np.array([])
         maxy = np.array([])
         avgy = np.array([])
@@ -342,7 +343,7 @@ class CustomPlot:
             istart = 0
             iend = 1
             while iend < len(x):
-                while iend < len(x) and (x[istart].date() == x[iend].date()):
+                while iend < len(x) and (x_dt[istart].date() == x_dt[iend].date()):
                     iend += 1
                 miny = np.append(miny, np.amin(y[istart:iend]))
                 maxy = np.append(maxy, np.amax(y[istart:iend]))
@@ -353,7 +354,7 @@ class CustomPlot:
             istart = 0
             iend = 1
             while iend < len(x):
-                while iend < len(x) and (x[istart].hour == x[iend].hour):
+                while iend < len(x) and (x_dt[istart].hour == x_dt[iend].hour):
                     iend += 1
                 miny = np.append(miny, np.amin(y[istart:iend]))
                 maxy = np.append(maxy, np.amax(y[istart:iend]))
@@ -362,17 +363,18 @@ class CustomPlot:
                 iend = istart + 1
         else:
             return False
-        self.datalines[line_num] = (x, (miny, maxy, avgy))
+        self.datalines[short_name] = (x, (miny, maxy, avgy))
         return True
 
     def prepare_axis_labels(self):
         if self.axislabels is not None:
             return
         self.axislabels = {}
-        for sensoroption in self.sensoroptions:
-            label = sensoroption.get_sensor().get_long_name() + \
-                    " [" + sensoroption.get_sensor().get_unit() + "]"
-            axis = sensoroption.get_axis()
+        for short_name in self.sensoroptions:
+            option = self.sensoroptions[short_name]
+            label = option.get_sensor().get_long_name() + \
+                    " [" + option.get_sensor().get_unit() + "]"
+            axis = option.get_axis()
             if axis in self.axislabels.keys():
                 if self.axislabels[axis] != label:
                     self.axislabels[axis] += (", " + label)
@@ -400,15 +402,16 @@ class CustomPlot:
 
     def distribute_lines_to_axes(self):
         self.lines_of_axes = []
-        numbers = [int(so.get_axis()[0]) for so in self.sensoroptions]
+        numbers = [int(so.get_axis()[0]) for so in self.sensoroptions.values()]
         ma = max(set(numbers))  # set(...) to remove duplicates
         for i in range(ma + 1):
             self.lines_of_axes.append([[], []])
-        for i, option in enumerate(self.sensoroptions):
+        for short_name in self.sensoroptions:
+            option = self.sensoroptions[short_name]
             ax = int(option.get_axis()[0])
             ab = option.get_axis()[1].lower()
             n = (0 if ab == "a" else 1)
-            self.lines_of_axes[ax][n].append(i)
+            self.lines_of_axes[ax][n].append(short_name)
 
         self.lines_of_axes = list(filter(lambda x: not (len(x[0]) == 0 and len(x[1]) == 0),
                                          self.lines_of_axes))
@@ -420,9 +423,9 @@ class CustomPlot:
         self.xtick_str = []
         start = self.data.data[0].array[0, 0].timestamp()
         end = self.data.data[-1].array[-1, 0].timestamp()
-        fts = np.vectorize(datetime.datetime.fromtimestamp)
+
         self.xtick_pos = np.linspace(start, end, self.max_xticks)
-        self.xtick_pos = fts(self.xtick_pos)
+        self.xtick_pos = self.vectorized_from_ts(self.xtick_pos)
         # for day in self.data.data:
         #     self.xtick_pos.extend(day.array[:, 0])
 
@@ -433,7 +436,8 @@ class CustomPlot:
         print()
 
     def generate_legends(self):
-        self.legends = [option.get_sensor().get_long_name() for option in self.sensoroptions]
+        self.legends = [self.sensoroptions[short_name].get_sensor().get_long_name()
+                        for short_name in self.sensoroptions]
 
     def create_plots(self):
         self.load_data()
@@ -458,9 +462,10 @@ class CustomPlot:
             right_axis.set_ylabel(labels[1])
             lines = self.lines_of_axes[i_subplt]
             all_lines = lines[0] + lines[1]
-            for li in all_lines:
-                axis = (left_axis if li in lines[0] else right_axis)
-                option = self.sensoroptions[li]
+            for short_name in all_lines:
+                print("processing line ", short_name)
+                axis = (left_axis if short_name in lines[0] else right_axis)
+                option = self.sensoroptions[short_name]  #TODO: read with key instead of index
                 shortname = option.get_sensor().get_short_name()
                 x, y = self.datalines[shortname]
                 color = option.get_line_color()
@@ -469,11 +474,13 @@ class CustomPlot:
                     axis.plot(x, maxy, color=color, linewidth=self.linewidth * 0.7)
                     axis.plot(x, miny, color=color, linewidth=self.linewidth * 0.7)
                     axis.plot(x, avgy, color=color, linewidth=self.linewidth * 1.2,
-                              label=self.legends[li])
+                              label=self.legends[short_name])
                     axis.fill_between(x, maxy, miny, color=color, alpha=0.2)
                 else:
-                    axis.plot(x, y, label=self.legends[li], color=color, linewidth=self.linewidth)
-        # TODO make legend somewhere
+                    axis.plot(x, y, label=self.legends[short_name], color=color, linewidth=self.linewidth)
+
+        fig.legend(loc="upper center", ncol=20, fancybox=True, shadow=True, bbox_to_anchor=(0.5, 0.945))
+
         if self.filename is not None:
             plt.savefig(self.filename)
         fig.show()
