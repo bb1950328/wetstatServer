@@ -1,10 +1,15 @@
 import datetime
 import os
+from datetime import datetime
+from time import perf_counter_ns
+from typing import Callable, List, Tuple, Dict, Any, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.core._multiarray_umath import ndarray
 
 from wetstat import csvtools, config
+from wetstat.csvtools import DataContainer
 from wetstat.sensors.BaseSensor import BaseSensor
 
 
@@ -123,7 +128,7 @@ def generate_plot(container: csvtools.DataContainer,
     fig.show()
 
 
-def get_nearest_record(dt: datetime.datetime) -> dict:  # (field: value)
+def get_nearest_record(dt: datetime) -> dict:  # (field: value)
     try:
         day = csvtools.load_csv_to_daydata(os.path.join(config.get_datafolder(),
                                                         csvtools.get_filename_for_date(dt)))
@@ -139,73 +144,92 @@ def get_nearest_record(dt: datetime.datetime) -> dict:  # (field: value)
         raise ValueError("No data available for date " + dt.isoformat()) from e
 
 
+class CustomPlotSensorOptions:
+    def __init__(self, sensor: BaseSensor):
+        self.sensor = None
+        self.set_sensor(sensor)
+        self.minmaxavg_interval = None
+        self.line_color = None
+        self.axis = None
+
+    def set_minmaxavg_interval(self, interval):
+        """
+        Sets the interval for MinMaxAvg
+        :param interval: None=disable, "day"=day, "hour"=hour
+        :return: None
+        """
+        allowed = [None, "day", "hour", "month", "year", "week"]
+        if interval in allowed:
+            self.minmaxavg_interval = interval
+        else:
+            raise ValueError("Wrong parameter, has to be " + "or".join(allowed))
+
+    def get_minmaxavg_interval(self):
+        return self.minmaxavg_interval
+
+    def set_line_color(self, color):
+        self.line_color = color
+
+    def get_line_color(self):
+        return self.line_color
+
+    def set_sensor(self, sensor):
+        if not issubclass(type(sensor), BaseSensor):
+            raise ValueError("sensor has to be a subclass of BaseSensor!")
+        self.sensor = sensor
+
+    def get_sensor(self) -> BaseSensor:
+        return self.sensor
+
+    def get_axis(self):
+        return self.axis
+
+    def set_axis(self, axis: str):
+        """
+        :param axis: 1a=1st plot, left y axis
+                     3b=3rd plot, right y axis
+        :return: None
+        """
+        axis = axis.lower()
+        if len(axis) != 2:
+            raise ValueError("len(axis) should be 2!")
+        if not axis[0].isdigit():
+            raise ValueError("axis[0] should be digit!")
+        if axis[1] != "a" and axis[1] != "b":
+            raise ValueError("axis[1] should be 'a' or 'b'!")
+        self.axis = axis
+
+    def __hash__(self):
+        return hash(self.hr_hash())
+
+    def hr_hash(self):
+        """
+        :return: human readable hash, str
+        """
+        return (str(self.sensor.get_short_name()) +
+                str(self.line_color) +
+                str(self.minmaxavg_interval) +
+                str(self.axis))
+
+
 class CustomPlot:
-    class CustomPlotSensorOptions:
-        def __init__(self, sensor: BaseSensor):
-            self.sensor = None
-            self.set_sensor(sensor)
-            self.minmaxavg_interval = None
-            self.line_color = None
-            self.axis = None
-
-        def set_minmaxavg_interval(self, interval):
-            """
-            Sets the interval for MinMaxAvg
-            :param interval: None=disable, "day"=day, "hour"=hour
-            :return: None
-            """
-            allowed = [None, "day", "hour"]
-            if interval in allowed:
-                self.minmaxavg_interval = interval
-            else:
-                raise ValueError("Wrong parameter, has to be " + "or".join(allowed))
-
-        def get_minmaxavg_interval(self):
-            return self.minmaxavg_interval
-
-        def set_line_color(self, color):
-            self.line_color = color
-
-        def get_line_color(self):
-            return self.line_color
-
-        def set_sensor(self, sensor):
-            if not issubclass(type(sensor), BaseSensor):
-                raise ValueError("sensor has to be a subclass of BaseSensor!")
-            self.sensor = sensor
-
-        def get_sensor(self) -> BaseSensor:
-            return self.sensor
-
-        def get_axis(self):
-            return self.axis
-
-        def set_axis(self, axis: str):
-            """
-            :param axis: 1a=1st plot, left y axis
-                         3b=3rd plot, right y axis
-            :return: None
-            """
-            axis = axis.lower()
-            if len(axis) != 2:
-                raise ValueError("len(axis) should be 2!")
-            if not axis[0].isdigit():
-                raise ValueError("axis[0] should be digit!")
-            if axis[1] != "a" and axis[1] != "b":
-                raise ValueError("axis[1] should be 'a' or 'b'!")
-            self.axis = axis
-
-        def __hash__(self):
-            return hash(self.hr_hash())
-
-        def hr_hash(self):
-            """
-            :return: human readable hash, str
-            """
-            return (str(self.sensor.get_short_name()) +
-                    str(self.line_color) +
-                    str(self.minmaxavg_interval) +
-                    str(self.axis))
+    legends: Dict[str, str]
+    xtick_str: ndarray
+    xtick_pos: List[Union[datetime, float]]
+    lines_of_axes: List[List[List[str]]]
+    vectorized_from_ts: Callable
+    datalines: Dict[str, Tuple]
+    title: str
+    start: datetime
+    end: datetime
+    sensoroptions: Dict[str, CustomPlotSensorOptions]
+    axislabels: dict
+    data: DataContainer
+    dpi: int
+    figsize: Tuple[int, int]
+    linewidth: float
+    axes: List[Optional[list]]
+    filename: str
 
     def __init__(self):
         self.filename = None
@@ -226,7 +250,7 @@ class CustomPlot:
         self.axislabels = None  # dict, key: for example "1b", value: label
         self.lines_of_axes = None  # list [[["Temp3", "Light2"], ["...", "..."]], [["...", "..."], ["...", "..."]]]
         self.max_xticks = 32
-        self.vectorized_from_ts = np.vectorize(datetime.datetime.fromtimestamp)
+        self.vectorized_from_ts = np.vectorize(datetime.fromtimestamp)
 
     def add_sensoroption(self, option: CustomPlotSensorOptions):
         for op in self.sensoroptions.values():
@@ -238,8 +262,8 @@ class CustomPlot:
     def get_sensoroptions(self) -> dict:
         return self.sensoroptions
 
-    def set_start(self, start: datetime.datetime):
-        now = datetime.datetime.now()
+    def set_start(self, start: datetime):
+        now = datetime.now()
         if start > now:
             raise ValueError("Start must be before now!")
         if self.end is not None and self.end < start:
@@ -249,8 +273,8 @@ class CustomPlot:
     def get_start(self):
         return self.start
 
-    def set_end(self, end: datetime.datetime):
-        now = datetime.datetime.now()
+    def set_end(self, end: datetime):
+        now = datetime.now()
         if end > now:
             raise ValueError("End must be before now!")
         if self.start is not None and self.start > end:
@@ -348,6 +372,32 @@ class CustomPlot:
         maxy = np.array([])
         avgy = np.array([])
         if interval == "day":
+            relevant: Callable[[datetime.datetime], datetime.date] = lambda dt: dt.date()
+        elif interval == "hour":
+            relevant: Callable[[datetime.datetime], int] = lambda dt: dt.hour
+        elif interval == "week":
+            relevant: Callable[[datetime.datetime], int] = lambda dt: int(dt.strftime("%W"))  # week of year
+        elif interval == "month":
+            relevant: Callable[[datetime.datetime], int] = lambda dt: dt.month
+        elif interval == "year":
+            relevant: Callable[[datetime.datetime], int] = lambda dt: dt.year
+        else:
+            raise ValueError("interval of {} is None or unknown!".format(hr_hash))
+
+        istart = 0
+        iend = 1
+        while iend < len(x):
+            while iend < len(x) and (relevant(x_dt[istart]) == relevant(x_dt[iend])):
+                iend += 1
+            miny = np.append(miny, np.amin(y[istart:iend]))
+            maxy = np.append(maxy, np.amax(y[istart:iend]))
+            avgy = np.append(avgy, np.mean(y[istart:iend]))
+            idx = int((istart + iend) // 2)  # median
+            x_new.append(x_dt[idx].timestamp())
+            istart = iend
+            iend = istart + 1
+
+        """if interval == "day":
             istart = 0
             iend = 1
             while iend < len(x):
@@ -373,7 +423,7 @@ class CustomPlot:
                 istart = iend
                 iend = istart + 1
         else:
-            return False
+            return False"""
         self.datalines[hr_hash] = (x_new, (miny, maxy, avgy))
         return True
 
@@ -442,13 +492,13 @@ class CustomPlot:
 
         # debug:
         self.xtick_pos = [d.timestamp() for d in self.xtick_pos]
-        print()
 
     def generate_legends(self):
         self.legends = {hr_hash: self.sensoroptions[hr_hash].get_sensor().get_long_name()
                         for hr_hash in self.sensoroptions}
 
     def create_plots(self):
+        start_ts = perf_counter_ns()
         self.load_data()
         self.set_all_linecolors()
         self.prepare_axis_labels()
@@ -472,8 +522,6 @@ class CustomPlot:
             lines = self.lines_of_axes[i_subplt]
             all_lines = lines[0] + lines[1]
             for hr_hash in all_lines:
-                option = self.sensoroptions[hr_hash]
-                short_name = option.get_sensor().get_short_name()
                 axis = (left_axis if hr_hash in lines[0] else right_axis)
                 option = self.sensoroptions[hr_hash]
                 x, y = self.datalines[hr_hash]
@@ -493,4 +541,8 @@ class CustomPlot:
 
         if self.filename is not None:
             plt.savefig(self.filename)
+        end_ts = perf_counter_ns()
+        time_used = (end_ts - start_ts) / 10 ** 9
+        print("custom plot creation finished in {} sec.".format(time_used))
         fig.show()
+        return time_used
