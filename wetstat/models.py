@@ -2,13 +2,14 @@ import datetime
 import os
 from datetime import datetime
 from time import perf_counter_ns
-from typing import Callable, List, Tuple, Dict, Any, Optional, Union
+from typing import Callable, List, Tuple, Dict, Optional, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.core._multiarray_umath import ndarray
+from matplotlib.image import imread, imsave
+from numpy import ndarray
 
-from wetstat import csvtools, config
+from wetstat import csvtools, config, logger
 from wetstat.csvtools import DataContainer
 from wetstat.sensors.BaseSensor import BaseSensor
 
@@ -145,6 +146,11 @@ def get_nearest_record(dt: datetime) -> dict:  # (field: value)
 
 
 class CustomPlotSensorOptions:
+    axis: Optional[str]
+    line_color: Optional[str]
+    minmaxavg_interval: Optional[str]
+    sensor: Optional[BaseSensor]
+
     def __init__(self, sensor: BaseSensor):
         self.sensor = None
         self.set_sensor(sensor)
@@ -152,7 +158,7 @@ class CustomPlotSensorOptions:
         self.line_color = None
         self.axis = None
 
-    def set_minmaxavg_interval(self, interval):
+    def set_minmaxavg_interval(self, interval: str):
         """
         Sets the interval for MinMaxAvg
         :param interval: None=disable, "day"=day, "hour"=hour
@@ -164,16 +170,32 @@ class CustomPlotSensorOptions:
         else:
             raise ValueError("Wrong parameter, has to be " + "or".join(allowed))
 
-    def get_minmaxavg_interval(self):
+    def get_minmaxavg_interval(self) -> str:
         return self.minmaxavg_interval
 
-    def set_line_color(self, color):
+    def get_minmaxavg_interval_for_legend(self) -> str:
+        if self.minmaxavg_interval is None:
+            return ""
+        elif self.minmaxavg_interval == "hour":
+            return " (Stunde)"
+        elif self.minmaxavg_interval == "day":
+            return " (Tag)"
+        elif self.minmaxavg_interval == "week":
+            return " (Woche)"
+        elif self.minmaxavg_interval == "month":
+            return " (Monat)"
+        elif self.minmaxavg_interval == "year":
+            return " (Jahr)"
+        else:
+            return ""
+
+    def set_line_color(self, color: str):
         self.line_color = color
 
-    def get_line_color(self):
+    def get_line_color(self) -> str:
         return self.line_color
 
-    def set_sensor(self, sensor):
+    def set_sensor(self, sensor: BaseSensor):
         if not issubclass(type(sensor), BaseSensor):
             raise ValueError("sensor has to be a subclass of BaseSensor!")
         self.sensor = sensor
@@ -181,7 +203,7 @@ class CustomPlotSensorOptions:
     def get_sensor(self) -> BaseSensor:
         return self.sensor
 
-    def get_axis(self):
+    def get_axis(self) -> str:
         return self.axis
 
     def set_axis(self, axis: str):
@@ -202,7 +224,7 @@ class CustomPlotSensorOptions:
     def __hash__(self):
         return hash(self.hr_hash())
 
-    def hr_hash(self):
+    def hr_hash(self) -> str:
         """
         :return: human readable hash, str
         """
@@ -213,23 +235,25 @@ class CustomPlotSensorOptions:
 
 
 class CustomPlot:
-    legends: Dict[str, str]
-    xtick_str: ndarray
-    xtick_pos: List[Union[datetime, float]]
-    lines_of_axes: List[List[List[str]]]
+    # Type hints:
+    legend_mode: int
+    legends: Optional[Dict[str, str]]
+    xtick_str: Optional[Union[List[str], ndarray]]
+    xtick_pos: Optional[Union[List[Union[datetime, float]], ndarray]]
+    lines_of_axes: Optional[List[List[List[str]]]]
     vectorized_from_ts: Callable
-    datalines: Dict[str, Tuple]
-    title: str
-    start: datetime
-    end: datetime
+    datalines: Optional[Dict[str, Tuple]]
+    title: Optional[str]
+    start: Optional[datetime]
+    end: Optional[datetime]
     sensoroptions: Dict[str, CustomPlotSensorOptions]
-    axislabels: dict
-    data: DataContainer
+    axislabels: Optional[dict]
+    data: Optional[DataContainer]
     dpi: int
     figsize: Tuple[int, int]
     linewidth: float
     axes: List[Optional[list]]
-    filename: str
+    filename: Optional[str]
 
     def __init__(self):
         self.filename = None
@@ -249,8 +273,15 @@ class CustomPlot:
         self.title = None
         self.axislabels = None  # dict, key: for example "1b", value: label
         self.lines_of_axes = None  # list [[["Temp3", "Light2"], ["...", "..."]], [["...", "..."], ["...", "..."]]]
-        self.max_xticks = 32
+        self.max_xticks = 24
         self.vectorized_from_ts = np.vectorize(datetime.fromtimestamp)
+        self.legend_mode = 0  # 0=inside plot, 1=save in separate file, 2=no legend
+
+    def set_legend_mode(self, legend_mode: int):
+        if 0 <= legend_mode <= 2:
+            self.legend_mode = legend_mode
+        else:
+            raise ValueError("legend_mode not in range!!, see comment in __init__()")
 
     def add_sensoroption(self, option: CustomPlotSensorOptions):
         for op in self.sensoroptions.values():
@@ -397,33 +428,6 @@ class CustomPlot:
             istart = iend
             iend = istart + 1
 
-        """if interval == "day":
-            istart = 0
-            iend = 1
-            while iend < len(x):
-                while iend < len(x) and (x_dt[istart].date() == x_dt[iend].date()):
-                    iend += 1
-                miny = np.append(miny, np.amin(y[istart:iend]))
-                maxy = np.append(maxy, np.amax(y[istart:iend]))
-                avgy = np.append(avgy, np.mean(y[istart:iend]))
-                x_new.append(x_dt[istart].replace(hour=12, minute=0, second=0, microsecond=0).timestamp())
-                istart = iend
-                iend = istart + 1
-        elif interval == "hour":
-            istart = 0
-            iend = 1
-            while iend < len(x):
-                while iend < len(x) and (x_dt[istart].hour == x_dt[iend].hour):
-                    iend += 1
-                miny = np.append(miny, np.amin(y[istart:iend]))
-                maxy = np.append(maxy, np.amax(y[istart:iend]))
-                avgy = np.append(avgy, np.mean(y[istart:iend]))
-                x_new.append(datetime.datetime.fromtimestamp(x[istart])
-                             .replace(minute=0, second=0, microsecond=0).timestamp())
-                istart = iend
-                iend = istart + 1
-        else:
-            return False"""
         self.datalines[hr_hash] = (x_new, (miny, maxy, avgy))
         return True
 
@@ -485,17 +489,27 @@ class CustomPlot:
 
         self.xtick_pos = np.linspace(start, end, self.max_xticks)
         self.xtick_pos = self.vectorized_from_ts(self.xtick_pos)
-        # for day in self.data.data:
-        #     self.xtick_pos.extend(day.array[:, 0])
-
         self.xtick_str = np.array([pos.strftime(self.dateformat) for pos in self.xtick_pos])
-
-        # debug:
         self.xtick_pos = [d.timestamp() for d in self.xtick_pos]
 
     def generate_legends(self):
-        self.legends = {hr_hash: self.sensoroptions[hr_hash].get_sensor().get_long_name()
-                        for hr_hash in self.sensoroptions}
+        self.legends = {hr_hash: op.get_sensor().get_long_name() + op.get_minmaxavg_interval_for_legend()
+                        for hr_hash, op in self.sensoroptions.items()}
+
+    @staticmethod
+    def save_legend(legend, filename="legend.png", expand=None, crop=4):
+        if expand is None:
+            expand = [-5, -5, 5, 5]
+        fig = legend.figure
+        fig.canvas.draw()
+        bbox = legend.get_window_extent()
+        bbox = bbox.from_extents(*(bbox.extents + np.array(expand)))
+        bbox = bbox.transformed(fig.dpi_scale_trans.inverted())
+        fig.savefig(filename, dpi="figure", bbox_inches=bbox)
+        img = imread(filename)
+        w, h, d = img.shape
+        img = img[crop:w - crop, crop:h - crop]
+        imsave(filename, img)
 
     def create_plots(self):
         start_ts = perf_counter_ns()
@@ -536,13 +550,22 @@ class CustomPlot:
                     axis.fill_between(x, maxy, miny, color=color, alpha=0.2)
                 else:
                     axis.plot(x, y, label=label, color=color, linewidth=self.linewidth)
+        title = plt.suptitle(self.get_title(), y=1.0, size=32)
 
-        fig.legend(loc="upper center", ncol=20, fancybox=True, shadow=True, bbox_to_anchor=(0.5, 0.945))
-
+        bbox_extra_artists = (title,)
+        if self.legend_mode == 0:  # inside
+            lgd = fig.legend(loc="upper center", ncol=20, fancybox=True, shadow=True, bbox_to_anchor=(0.5, 0.97))
+            bbox_extra_artists = (lgd, title)
+        elif self.legend_mode == 1:  # separate file
+            lgd = fig.legend(ncol=1, loc=5, framealpha=1, frameon=True)
+            if self.filename is not None:
+                self.save_legend(lgd, filename=self.filename + "_legend.png")
+            lgd.remove()
         if self.filename is not None:
-            plt.savefig(self.filename)
+            plt.savefig(self.filename, bbox_extra_artists=bbox_extra_artists, bbox_inches='tight')
+
         end_ts = perf_counter_ns()
         time_used = (end_ts - start_ts) / 10 ** 9
-        print("custom plot creation finished in {} sec.".format(time_used))
-        fig.show()
+        logger.log.info("custom plot creation finished in {} sec.".format(time_used))
+        # fig.show()
         return time_used

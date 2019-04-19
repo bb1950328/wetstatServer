@@ -6,8 +6,8 @@ from wetstat import models
 
 cp = models.CustomPlot()
 
-cp.set_start(datetime.datetime(2015, 1, 1))
-cp.set_end(datetime.datetime(2017, 12, 31))
+cp.set_start(datetime.datetime(2018, 7, 1))
+cp.set_end(datetime.datetime(2018, 7, 31))
 
 ts = wetstat.sensors.TempSensor.TempSensor(1)
 
@@ -41,5 +41,7 @@ cp.add_sensoroption(so4)
 cp.add_sensoroption(so5)
 cp.add_sensoroption(so6)
 
-cp.filename = os.path.realpath(__file__ + ".png")
+cp.set_legend_mode(1)
+
+cp.filename = os.path.realpath(__file__ + ".svg")
 cp.create_plots()
