@@ -1,3 +1,4 @@
+# coding=utf-8
 import datetime
 import os
 
@@ -55,7 +56,7 @@ def load_csv_to_daydata(filename: str, separator=";") -> DayData:
     :param separator:
     :return: DayData
     """
-    with open(filename, "r") as file:
+    with open(filename) as file:
         d = datetime.datetime.strptime(os.path.basename(filename).split(".")[0], "day%jin%y")
         fields = list(map(str.strip, file.readline().split(separator)))
         data = []
@@ -69,7 +70,7 @@ def load_csv_to_daydata(filename: str, separator=";") -> DayData:
                         dataline.append(None)
                     else:
                         dataline.append(float(value))
-                except ValueError as e:
+                except ValueError:
                     dataline.append(0.0)
             data.append(dataline)
     res = DayData(d, np.array(data), fields)
@@ -116,7 +117,7 @@ def save_values(folder: str, heads: list, data: list, timelabel: datetime.dateti
                 col_indexes.append(idx)
             except ValueError:  # h not in fileheads
                 col_indexes.append(-1)
-        real_cols = heads
+        # real_cols = heads
         if -1 in col_indexes:  # new columns
             f.seek(0)
             oldlines = f.readlines()
@@ -135,7 +136,7 @@ def save_values(folder: str, heads: list, data: list, timelabel: datetime.dateti
             oldlines[-1] = oldlines[-1].strip()  # remove newline from last line
             f.seek(0)
             f.writelines(oldlines)
-            real_cols = oldlines[0].split(";")
+            # real_cols = oldlines[0].split(";")
         f.seek(0, 2)  # move cursor to the end
 
         output = [""] * len(fileheads)

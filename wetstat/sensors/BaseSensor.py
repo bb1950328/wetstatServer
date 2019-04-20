@@ -1,6 +1,7 @@
+# coding=utf-8
 class BaseSensor:
     def __init__(self):
-        raise RuntimeWarning("you should not instanciate this class directly!")
+        raise RuntimeWarning("you should not instantiate this class directly!")
 
     def get_info(self):
         try:

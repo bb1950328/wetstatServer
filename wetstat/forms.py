@@ -1,8 +1,9 @@
+# coding=utf-8
 import datetime
 
 from django import forms
 from django.core.exceptions import ValidationError
-from django.forms import DateTimeField, BooleanField, ChoiceField, Field
+from django.forms import DateTimeField, ChoiceField, Field
 
 from wetstat.sensors import SensorMaster
 

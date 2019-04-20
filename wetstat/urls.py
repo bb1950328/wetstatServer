@@ -1,3 +1,4 @@
+# coding=utf-8
 from django.urls import path
 
 from wetstat import views
@@ -14,4 +15,6 @@ urlpatterns = [
     path("custom.html", views.custom),
     path("customplot", views.customplot),
     path("customplot.html", views.customplot),
+    path("generate_plot", views.generate_plot),
+    path("generate_plot.html", views.generate_plot),
 ]

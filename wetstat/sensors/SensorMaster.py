@@ -1,10 +1,14 @@
+# coding=utf-8
 import datetime
+from typing import Optional, List
+
 import numpy as np
 import time
 
 import schedule
 
 from wetstat import logger, csvtools
+from wetstat.sensors.BaseSensor import BaseSensor
 from wetstat.sensors.LightSensor import LightSensor
 from wetstat.sensors.TempSensor import TempSensor
 
@@ -38,7 +42,7 @@ class SensorMaster:
         pass
 
     @staticmethod
-    def get_sensor_for_info(name: str, value):
+    def get_sensor_for_info(name: str, value) -> Optional[BaseSensor]:
         for sensor in ALL_SENSORS:
             info = sensor.get_info()
             if name in info.keys():
@@ -47,7 +51,7 @@ class SensorMaster:
         return None
 
     @staticmethod
-    def get_sensor_short_names():
+    def get_sensor_short_names() -> List[str]:
         return [s.get_short_name() for s in SENSORS]
 
     @staticmethod
@@ -115,5 +119,5 @@ class SensorMaster:
                 logger.log.info("Measured and saved under label '" + next_stop.isoformat() + "'")
                 next_stop += datetime.timedelta(seconds=freq)
 
-            except Exception as e:
+            except Exception:
                 logger.log.exception("Exception occurred in SensorMaster.measure")

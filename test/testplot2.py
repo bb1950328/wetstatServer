@@ -1,3 +1,4 @@
+# coding=utf-8
 import wetstat.csvtools as csvtools
 import wetstat.models as models
 import datetime

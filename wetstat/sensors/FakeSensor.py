@@ -1,3 +1,4 @@
+# coding=utf-8
 import random
 
 from wetstat.sensors.BaseSensor import BaseSensor
@@ -5,6 +6,7 @@ from wetstat.sensors.BaseSensor import BaseSensor
 
 class FakeSensor(BaseSensor):
 
+    # noinspection PyMissingConstructor
     def __init__(self, number):
         self.number = number
         self.last = random.randint(-500, 500) / 10

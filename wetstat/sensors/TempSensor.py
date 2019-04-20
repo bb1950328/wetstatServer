@@ -1,9 +1,11 @@
+# coding=utf-8
 from wetstat.sensors.AnalogDigitalConverter import AnalogDigitalConverter
 from wetstat.sensors.BaseSensor import BaseSensor
 
 
 class TempSensor(BaseSensor):
 
+    # noinspection PyMissingConstructor
     def __init__(self, number):
         self.number = number
         self.adc = None

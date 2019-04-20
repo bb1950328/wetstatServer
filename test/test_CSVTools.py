@@ -1,3 +1,4 @@
+# coding=utf-8
 import datetime
 import os
 import tempfile
@@ -28,8 +29,8 @@ class TestCSVTools(TestCase):
         self.assertEqual(datetime.datetime(2018, 5, 3, 0, 0), res.date)
 
         csvtools.save_daydata_to_csv(res, tempdir)
-        afile = open(os.path.join(resourcesdir, "day123in18.csv"), "r")
-        bfile = open(os.path.join(tempdir, "day123in18.csv"), "r")
+        afile = open(os.path.join(resourcesdir, "day123in18.csv"))
+        bfile = open(os.path.join(tempdir, "day123in18.csv"))
         self.assertEqual(afile.read(),
                          bfile.read())
         afile.close()

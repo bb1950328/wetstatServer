@@ -1,7 +1,9 @@
+# coding=utf-8
 from wetstat.sensors.AnalogDigitalConverter import AnalogDigitalConverter
 from wetstat.sensors.BaseSensor import BaseSensor
 
 
+# noinspection PyMissingConstructor
 class LightSensor(BaseSensor):
 
     def __init__(self):

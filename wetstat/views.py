@@ -1,16 +1,15 @@
+# coding=utf-8
 import datetime
 import os
-import random
 
-from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect
-
-# Create your views here.
-from django.urls import reverse
+from django.shortcuts import render
 
 from wetstat import csvtools, models, logger, config
 from wetstat.forms import CustomPlotForm
 from wetstat.sensors.SensorMaster import SensorMaster
+
+
+# Create your views here.
 
 
 def get_date() -> datetime.datetime:
@@ -44,6 +43,7 @@ def number_maxlength(inp: float, maxlen: int) -> str:
     return si
 
 
+# noinspection PyUnusedLocal
 def index(request):
     log_request(request)
 
@@ -55,8 +55,10 @@ def index(request):
         def __init__(self, value=0):
             self.value = value
 
+        # noinspection PyUnusedLocal
         def get(self, *args):
             return self.value
+
     now = MockDict()
     yesterday = MockDict()
     lastmonth = MockDict()
@@ -64,9 +66,9 @@ def index(request):
     errors = []
     try:
         now = models.get_nearest_record(get_date())
-    except ValueError or FileNotFoundError as e:
+    except ValueError or FileNotFoundError:
         logger.log.error("Data for HomePage not found! ")
-        return showError(request, "Es wurden keine Daten zum aktuellen Zeitpunkt gefunden.", "week.html")
+        return show_error(request, "Es wurden keine Daten zum aktuellen Zeitpunkt gefunden.", "week.html")
     try:
         yesterday = models.get_nearest_record(get_date() - datetime.timedelta(days=1))
     except ValueError or FileNotFoundError as e:
@@ -166,12 +168,11 @@ def custom(request):
             end_fn = end_fn.replace(":", "_")
             start_view = start.strftime("%d.%m.%Y %H:%M")
             end_view = end.strftime("%d.%m.%Y %H:%M")
-            data = None
             try:
                 data = csvtools.load_csv_for_range(csvtools.get_data_folder(), start, end)
             except Exception:
                 logger.log.exception("Could not load data for custom plot!")
-                return showError(request, "Daten konnten nicht geladen werden!", "custom.html")
+                return show_error(request, "Daten konnten nicht geladen werden!", "custom.html")
             filename = "from" + start_fn + "to" + end_fn + ".svg"
             logger.log.info("generating custom plot from " + start_iso + " to " + end_iso + " -> " + filename)
             try:
@@ -180,7 +181,7 @@ def custom(request):
                                      make_minmaxavg=[form.clean_use_minmaxavg(), False, False])
             except Exception:
                 logger.log.exception("Exception occurred while generating Graph")
-                return showError(request, "Graph konnte nicht erstellt werden!", "custom.html")
+                return show_error(request, "Graph konnte nicht erstellt werden!", "custom.html")
 
             context = {"plotfile": "plot/" + filename,
                        "start": start_view,
@@ -200,10 +201,22 @@ def custom(request):
 
 
 def customplot(request):
+    log_request(request)
     return render(request, "wetstat/customplot.html")
 
 
-def showError(request, message: str, backlink: str):
+def generate_plot(request):
+    log_request(request)
+    print(request.GET)
+    cpr = models.CustomPlotRequest(request.GET)
+    try:
+        cpr.parse()
+    except ValueError as e:
+        return show_error(request, str(e), "wetstat/index.html")
+    return render(request, "wetstat/index.html", content_type="text")
+
+
+def show_error(request, message: str, backlink: str):
     context = {"msg": message,
                "backlink": backlink}
     return render(request, "wetstat/error.html", context=context)
