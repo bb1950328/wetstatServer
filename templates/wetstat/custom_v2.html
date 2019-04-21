@@ -20,15 +20,87 @@
 </div>
 <h1>Benutzerdefinierter Bereich</h1>
 <form>
-    <label for="id_start_date"></label><input type="datetime-local" name="start_date" value="{{ start_date }}"
-                                              required="" id="id_start_date">
-    <label for="id_end_date"></label><input type="datetime-local" name="end_date" value="{{ end_date }}" required=""
-                                            id="id_end_date">
+    <label>
+        <select onchange="change_date_type()" id="id_change_date_type">
+            <option value="fix">Fixes Start/Enddatum</option>
+            <option value="relative">Relatives Start/Enddatum</option>
+        </select>
+    </label>
+    <table id="id_start_end_fix" style="background-color:#cccccc; display: table;">
+        <tr>
+            <td>
+                Startdatum:
+            </td>
+            <td>
+                <label for="id_start_date"></label>
+                <input type="datetime-local" name="start_date" value="{{ start_date }}" required="" id="id_start_date">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Enddatum:
+            </td>
+            <td>
+                <label for="id_end_date"></label>
+                <input type="datetime-local" name="end_date" value="{{ end_date }}" required="" id="id_end_date">
+            </td>
+        </tr>
+    </table>
+    <table id="id_start_end_relative" style="background-color:#cccccc; display: none">
+        <tr>
+            <td></td>
+            <td>Jahre</td>
+            <td>Tage</td>
+            <td>Stunden</td>
+        </tr>
+        <tr>
+            <td>
+                Startdatum:
+            </td>
+            <td>
+                <label for="id_start_years"></label>
+                <input id="id_start_years" type="number" min="0" max="100">
+            </td>
+            <td>
+                <label for="id_start_days"></label>
+                <input id="id_start_days" type="number" min="0" max="365">
+            </td>
+            <td>
+                <label for="id_start_hours"></label>
+                <input id="id_start_hours" type="number" min="0" max="23">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Enddatum:
+            </td>
+            <td>
+                <label for="id_end_years"></label>
+                <input id="id_end_years" type="number" min="0" max="100">
+            </td>
+            <td>
+                <label for="id_end_days"></label>
+                <input id="id_end_days" type="number" min="0" max="365">
+            </td>
+            <td>
+                <label for="id_end_hours"></label>
+                <input id="id_end_hours" type="number" min="0" max="23">
+            </td>
+        </tr>
+    </table>
+
 </form>
 <script>
-    function showhelp() {
-        let popup = document.getElementById("helpPopup");
-        popup.classList.toggle("show");
+    function change_date_type() {
+        console.log("changed");
+        //let sel = document.getElementById("id_change_date_type");
+        let t_fix = document.getElementById("id_start_end_fix");
+        let t_rel = document.getElementById("id_start_end_relative");
+        let di_fix = t_fix.style.display;
+        let di_rel = t_rel.style.display;
+        [di_fix, di_rel] = [di_rel, di_fix];
+        t_fix.style.display = di_fix;
+        t_rel.style.display = di_rel;
     }
 </script>
 </body>
