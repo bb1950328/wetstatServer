@@ -88,6 +88,46 @@
             </td>
         </tr>
     </table>
+    <table>
+        <tr>
+            <td>
+                <label>
+                    <input type="checkbox" id="id_check_title" onclick="update_disabling()">
+                </label>
+            </td>
+            <td>
+                Anderer Titel
+            </td>
+            <td colspan="3">
+                <label for="id_input_title"></label>
+                <input id="id_input_title" onchange="update_link()" onkeyup="update_link()">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>
+                    <input type="checkbox" id="id_check_aspect" onclick="update_disabling()">
+                </label>
+            </td>
+            <td>
+                Anderes Seitenverhältnis
+            </td>
+            <td>
+                <label for="id_input_aspect_w"></label>
+                <input type="number" min="1" max="1000" value="16" id="id_input_aspect_w" onchange="update_link()"
+                       onkeyup="update_link()">
+            </td>
+            <td>
+                :
+            </td>
+            <td>
+                <label for="id_input_aspect_h"></label>
+                <input type="number" min="1" max="1000" value="9" id="id_input_aspect_h" onchange="update_link()"
+                       onkeyup="update_link()">
+            </td>
+        </tr>
+
+    </table>
 </form>
 <p>Link zum Graph:</p>
 <a id="id_result_link"></a>
@@ -119,15 +159,43 @@
             end += document.getElementById("id_end_years").valueAsNumber * 3600 * 24 * 365;
             end = "now-" + end
         }
-        //TODO: read other form fields
+
         let link = "/generate_plot";
         link += "?start=" + start;
         link += "&end=" + end;
+
+        //todo: insert sensoroptions in link here
+
+        let inp_title = document.getElementById("id_input_title");
+        if (!inp_title.disabled) {
+            link += "&title=" + inp_title.value
+        }
+
+        let input_aspect_w = document.getElementById("id_input_aspect_w");
+        if (!input_aspect_w.disabled) {
+            let input_aspect_h = document.getElementById("id_input_aspect_h");
+            link += "&aspect_ratio=" + input_aspect_w.value + ":" + input_aspect_h.value;
+        }
+
         let a = document.getElementById("id_result_link");
         a.href = link;
         a.innerText = a.href; // reading from 'a.href' because that's a absolute link now, 'link' is only relative
     }
 
+    function update_disabling() {
+        let check_title = document.getElementById("id_check_title");
+        let input_title = document.getElementById("id_input_title");
+        input_title.disabled = !check_title.checked;
+        let check_aspect = document.getElementById("id_check_aspect");
+
+        let input_aspect_w = document.getElementById("id_input_aspect_w");
+        let input_aspect_h = document.getElementById("id_input_aspect_h");
+        input_aspect_w.disabled = !check_aspect.checked;
+        input_aspect_h.disabled = !check_aspect.checked;
+        update_link();
+    }
+
+    update_disabling();
     update_link();
 </script>
 </body>
