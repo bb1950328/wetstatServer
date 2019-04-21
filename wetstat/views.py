@@ -205,6 +205,25 @@ def customplot(request):
     return render(request, "wetstat/customplot.html")
 
 
+def custom_v2(request):
+    def isoformat_no_seconds(dt: datetime.datetime) -> str:
+        isof = dt.isoformat()
+        idx = isof.rindex(":")
+        return isof[:idx]
+
+    context = {
+        "start_date": isoformat_no_seconds(get_date()),
+        "end_date": isoformat_no_seconds(get_date() - datetime.timedelta(days=1))
+    }
+    return render(request, "wetstat/custom_v2.html", context=context)
+
+
+def show_error(request, message: str, backlink: str):
+    context = {"msg": message,
+               "backlink": backlink}
+    return render(request, "wetstat/error.html", context=context)
+
+
 def generate_plot(request):
     log_request(request)
     print(request.GET)
@@ -214,9 +233,3 @@ def generate_plot(request):
     except ValueError as e:
         return show_error(request, str(e), "wetstat/index.html")
     return render(request, "wetstat/index.html", content_type="text")
-
-
-def show_error(request, message: str, backlink: str):
-    context = {"msg": message,
-               "backlink": backlink}
-    return render(request, "wetstat/error.html", context=context)

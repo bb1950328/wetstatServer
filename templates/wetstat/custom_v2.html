@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+</head>
+<body>
+{% load static %}
+<link rel="stylesheet" href="{% static "fontawesome.css" %}">
+<link rel="stylesheet" href="{% static "style.css" %}">
+<div class="topnav" id="myTopnav">
+    <a href="/../">Home</a>
+    <a href="/week">Woche</a>
+    <a href="/month">Monat</a>
+    <a href="/year">Jahr</a>
+    <a class="active" href="">Bereich</a>
+    <a href="javascript:void(0);" class="icon" onclick="topnavResponsive()">
+        <i class="fa fa-bars"></i>
+    </a>
+</div>
+<h1>Benutzerdefinierter Bereich</h1>
+<form>
+    <label for="id_start_date"></label><input type="datetime-local" name="start_date" value="{{ start_date }}"
+                                              required="" id="id_start_date">
+    <label for="id_end_date"></label><input type="datetime-local" name="end_date" value="{{ end_date }}" required=""
+                                            id="id_end_date">
+</form>
+<script>
+    function showhelp() {
+        let popup = document.getElementById("helpPopup");
+        popup.classList.toggle("show");
+    }
+</script>
+</body>
+</html>
