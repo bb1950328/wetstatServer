@@ -59,15 +59,15 @@
             </td>
             <td>
                 <label for="id_start_years"></label>
-                <input id="id_start_years" type="number" min="0" max="100">
+                <input id="id_start_years" type="number" min="0" max="100" value="0">
             </td>
             <td>
                 <label for="id_start_days"></label>
-                <input id="id_start_days" type="number" min="0" max="365">
+                <input id="id_start_days" type="number" min="0" max="365" value="0">
             </td>
             <td>
                 <label for="id_start_hours"></label>
-                <input id="id_start_hours" type="number" min="0" max="23">
+                <input id="id_start_hours" type="number" min="0" max="23" value="0">
             </td>
         </tr>
         <tr>
@@ -76,24 +76,23 @@
             </td>
             <td>
                 <label for="id_end_years"></label>
-                <input id="id_end_years" type="number" min="0" max="100">
+                <input id="id_end_years" type="number" min="0" max="100" value="0">
             </td>
             <td>
                 <label for="id_end_days"></label>
-                <input id="id_end_days" type="number" min="0" max="365">
+                <input id="id_end_days" type="number" min="0" max="365" value="1">
             </td>
             <td>
                 <label for="id_end_hours"></label>
-                <input id="id_end_hours" type="number" min="0" max="23">
+                <input id="id_end_hours" type="number" min="0" max="23" value="0">
             </td>
         </tr>
     </table>
-
 </form>
+<p>Link zum Graph:</p>
+<a id="id_result_link"></a>
 <script>
     function change_date_type() {
-        console.log("changed");
-        //let sel = document.getElementById("id_change_date_type");
         let t_fix = document.getElementById("id_start_end_fix");
         let t_rel = document.getElementById("id_start_end_relative");
         let di_fix = t_fix.style.display;
@@ -101,7 +100,35 @@
         [di_fix, di_rel] = [di_rel, di_fix];
         t_fix.style.display = di_fix;
         t_rel.style.display = di_rel;
+        update_link();
     }
+
+    function update_link() {
+        let date_type_sel = document.getElementById("id_change_date_type");
+        let start, end;
+        if (date_type_sel.selectedIndex === 0) {
+            start = document.getElementById("id_start_date").value;
+            end = document.getElementById("id_end_date").value;
+        } else {
+            start = document.getElementById("id_start_hours").valueAsNumber * 3600; // 3600 seconds = 1 hour
+            start += document.getElementById("id_start_days").valueAsNumber * 3600 * 24;
+            start += document.getElementById("id_start_years").valueAsNumber * 3600 * 24 * 365;
+            start = "now-" + start;
+            end = document.getElementById("id_end_hours").valueAsNumber * 3600;
+            end += document.getElementById("id_end_days").valueAsNumber * 3600 * 24;
+            end += document.getElementById("id_end_years").valueAsNumber * 3600 * 24 * 365;
+            end = "now-" + end
+        }
+        //TODO: read other form fields
+        let link = "/generate_plot";
+        link += "?start=" + start;
+        link += "&end=" + end;
+        let a = document.getElementById("id_result_link");
+        a.href = link;
+        a.innerText = a.href; // reading from 'a.href' because that's a absolute link now, 'link' is only relative
+    }
+
+    update_link();
 </script>
 </body>
 </html>
