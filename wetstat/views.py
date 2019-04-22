@@ -6,7 +6,7 @@ from django.shortcuts import render
 
 from wetstat import csvtools, models, logger, config
 from wetstat.forms import CustomPlotForm
-from wetstat.sensors.SensorMaster import SensorMaster
+from wetstat.sensors.SensorMaster import SensorMaster, ALL_SENSORS
 
 
 # Create your views here.
@@ -211,9 +211,15 @@ def custom_v2(request):
         idx = isof.rindex(":")
         return isof[:idx]
 
+    short_names = [s.get_short_name() for s in ALL_SENSORS]
+    long_names = [s.get_long_name() for s in ALL_SENSORS]
+    short_names = "[\"" + "\", \"".join(short_names) + "\"]"
+    long_names = "[\"" + "\", \"".join(long_names) + "\"]"
     context = {
         "start_date": isoformat_no_seconds(get_date()),
-        "end_date": isoformat_no_seconds(get_date() - datetime.timedelta(days=1))
+        "end_date": isoformat_no_seconds(get_date() - datetime.timedelta(days=1)),
+        "short_names": short_names,
+        "long_names": long_names,
     }
     return render(request, "wetstat/custom_v2.html", context=context)
 

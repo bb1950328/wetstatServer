@@ -97,6 +97,10 @@ p.before {
     animation: fadeIn 1s
 }
 
+table#id_sensor_table tr:nth-child(odd) {
+    background-color: #cccccc;
+}
+
 /* Add animation (fade in the popup) */
 @-webkit-keyframes fadeIn {
     from {
