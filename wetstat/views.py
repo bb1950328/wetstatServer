@@ -3,6 +3,7 @@ import datetime
 import os
 
 from django.shortcuts import render
+from django.utils.safestring import mark_safe
 
 from wetstat import csvtools, models, logger, config
 from wetstat.forms import CustomPlotForm
@@ -218,8 +219,8 @@ def custom_v2(request):
     context = {
         "start_date": isoformat_no_seconds(get_date()),
         "end_date": isoformat_no_seconds(get_date() - datetime.timedelta(days=1)),
-        "short_names": short_names,
-        "long_names": long_names,
+        "short_names": mark_safe(short_names),
+        "long_names": mark_safe(long_names),
     }
     return render(request, "wetstat/custom_v2.html", context=context)
 
