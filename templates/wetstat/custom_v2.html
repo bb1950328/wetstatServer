@@ -149,20 +149,19 @@
 <p>Link zum Graph:</p>
 <a id="id_result_link"></a>
 <script>
-    //TODO django shouldn't escape " to &quot;
-    let available_sensors_short_name = {{ short_names }};//["sens_a", "sens_b", "sens_c"];
-    let available_sensors_long_name = {{ long_names }};//["sensor a", "sensor b", "sensor c"];
+    let available_sensors_short_name = {{ short_names }};
+    let available_sensors_long_name = {{ long_names }};
 
     function add_sensor() {
         let st = document.getElementById("id_sensor_table_body");
         let row = st.insertRow(-1);
 
-        let cell_1 = row.insertCell(-1);
+        let cell = row.insertCell(-1);
         let checkbox = document.createElement("input");
         checkbox.type = "checkbox";
-        cell_1.appendChild(checkbox);
+        cell.appendChild(checkbox);
 
-        let cell_2 = row.insertCell(-1);
+        cell = row.insertCell(-1);
         let combobox = document.createElement("select");
         for (let i in available_sensors_short_name) {
             let opt = document.createElement("option");
@@ -170,7 +169,13 @@
             opt.innerHTML = available_sensors_long_name[i];
             combobox.appendChild(opt);
         }
-        cell_2.appendChild(combobox);
+        cell.appendChild(combobox);
+
+        cell = row.insertCell(-1);
+        let entry = document.createElement("input");
+        entry.maxLength = 4;
+        entry.size = 4;
+        cell.appendChild(entry);
     }
 
     function change_date_type() {
