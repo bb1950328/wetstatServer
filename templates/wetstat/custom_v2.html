@@ -2,12 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Index</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static "fontawesome.css" %}">
+    <link rel="stylesheet" href="{% static "style.css" %}">
+    <link rel="stylesheet" href="{% static "bootstrap.min.css" %}"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 </head>
 <body>
-{% load static %}
-<link rel="stylesheet" href="{% static "fontawesome.css" %}">
-<link rel="stylesheet" href="{% static "style.css" %}">
+<script src="{% static "jquery-3.3.1.slim.min.js" %}"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="{% static "popper.min.js" %}"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="{% static "bootstrap.min.js" %}"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
 <div class="topnav" id="myTopnav">
     <a href="/../">Home</a>
     <a href="/week">Woche</a>
@@ -21,7 +34,7 @@
 <h1>Benutzerdefinierter Bereich</h1>
 <form>
     <label>
-        <select onchange="change_date_type()" id="id_change_date_type">
+        <select class="form-control" onchange="change_date_type()" id="id_change_date_type">
             <option value="fix">Fixes Start/Enddatum</option>
             <option value="relative">Relatives Start/Enddatum</option>
         </select>
@@ -92,12 +105,12 @@
     <table>
         <tr>
             <td>
-                <label>
-                    <input type="checkbox" id="id_check_title" onclick="update_disabling()">
-                </label>
-            </td>
-            <td>
-                Anderer Titel
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="id_check_title" onclick="update_disabling()">
+                    <label class="form-check-label" for="id_check_title">
+                        Anderer Titel
+                    </label>
+                </div>
             </td>
             <td colspan="3">
                 <label for="id_input_title"></label>
@@ -106,12 +119,12 @@
         </tr>
         <tr>
             <td>
-                <label>
-                    <input type="checkbox" id="id_check_aspect" onclick="update_disabling()">
-                </label>
-            </td>
-            <td>
-                Anderes Seitenverhältnis
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="id_check_aspect" onclick="update_disabling()">
+                    <label for="id_check_aspect" class="form-check-label">
+                        Anderes Seitenverhältnis
+                    </label>
+                </div>
             </td>
             <td>
                 <label for="id_input_aspect_w"></label>
@@ -130,21 +143,22 @@
 
     </table>
     <br>
+    <p>Sensoren:</p>
     <table id="id_sensor_table">
-        <caption style="background-color: #cccccc">
-            <p>Sensoren:</p>
-        </caption>
-        <tbody id="id_sensor_table_body">
+        <thead>
         <tr style="background-color: #cccccc; border-top-color: #000; border-top: 5px;">
-            <td></td>
-            <td>Sensor</td>
-            <td>Y-Achse</td>
-            <td>Zusammenführungs-Intervall</td>
-            <td>Farbe</td>
+            <th></th>
+            <th>Sensor</th>
+            <th>Y-Achse</th>
+            <th>Zusammenführungs-Intervall</th>
+            <th>Farbe</th>
         </tr>
+        </thead>
+        <tbody id="id_sensor_table_body">
+
         </tbody>
     </table>
-    <button type="button" id="id_add_sensor_button" onclick="add_sensor()">Hinzufügen</button>
+    <button class="btn btn-primary" type="button" id="id_add_sensor_button" onclick="add_sensor()">Hinzufügen</button>
 </form>
 <p>Link zum Graph:</p>
 <a id="id_result_link"></a>
@@ -163,6 +177,7 @@
 
         cell = row.insertCell(-1);
         let combobox = document.createElement("select");
+        combobox.class = "form-control";
         for (let i in available_sensors_short_name) {
             let opt = document.createElement("option");
             opt.value = available_sensors_short_name[i];
