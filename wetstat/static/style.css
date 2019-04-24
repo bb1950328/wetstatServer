@@ -97,7 +97,7 @@ p.before {
     animation: fadeIn 1s
 }
 
-table#id_sensor_table tr:nth-child(odd) {
+table#id_sensor_table tr:nth-child(even) {
     background-color: #cccccc;
 }
 

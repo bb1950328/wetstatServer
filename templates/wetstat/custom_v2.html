@@ -144,7 +144,7 @@
     </table>
     <br>
     <p>Sensoren:</p>
-    <table id="id_sensor_table">
+    <table id="id_sensor_table" class="table-bordered">
         <thead>
         <tr style="background-color: #cccccc; border-top-color: #000; border-top: 5px;">
             <th></th>
@@ -159,6 +159,8 @@
         </tbody>
     </table>
     <button class="btn btn-primary" type="button" id="id_add_sensor_button" onclick="add_sensor()">Hinzufügen</button>
+    <button class="btn btn-danger" type="button" id="id_remove_sensor_button" onclick="remove_selected()">Entfernen
+    </button>
 </form>
 <p>Link zum Graph:</p>
 <a id="id_result_link"></a>
@@ -166,9 +168,15 @@
     let available_sensors_short_name = {{ short_names }};
     let available_sensors_long_name = {{ long_names }};
 
+    function remove_selected() {
+        let rows = document.getElementsByClassName("sensor_row");
+        console.log(rows);
+    }
+
     function add_sensor() {
         let st = document.getElementById("id_sensor_table_body");
         let row = st.insertRow(-1);
+        row.class = "sensor_row";
 
         let cell = row.insertCell(-1);
         let checkbox = document.createElement("input");
