@@ -9,18 +9,22 @@
     <link rel="stylesheet" href="{% static "fontawesome.css" %}">
     <link rel="stylesheet" href="{% static "style.css" %}">
     <link rel="stylesheet" href="{% static "bootstrap.min.css" %}"
-          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+          crossorigin="anonymous">
+    <!--integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"-->
 </head>
 <body>
 <script src="{% static "jquery-3.3.1.slim.min.js" %}"
-        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
         crossorigin="anonymous"></script>
+<!--integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"-->
+
 <script src="{% static "popper.min.js" %}"
-        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
         crossorigin="anonymous"></script>
+<!--integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"-->
+
 <script src="{% static "bootstrap.min.js" %}"
-        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
+<!--integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"-->
+
 <div class="topnav" id="myTopnav">
     <a href="/../">Home</a>
     <a href="/week">Woche</a>
@@ -31,139 +35,145 @@
         <i class="fa fa-bars"></i>
     </a>
 </div>
-<h1>Benutzerdefinierter Bereich</h1>
-<form>
-    <label>
-        <select class="form-control" onchange="change_date_type()" id="id_change_date_type">
-            <option value="fix">Fixes Start/Enddatum</option>
-            <option value="relative">Relatives Start/Enddatum</option>
-        </select>
-    </label>
-    <table id="id_start_end_fix" style="background-color:#cccccc; display: table;">
-        <tr>
-            <td>
-                Startdatum:
-            </td>
-            <td>
-                <label for="id_start_date"></label>
-                <input type="datetime-local" name="start_date" value="{{ start_date }}" required="" id="id_start_date">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Enddatum:
-            </td>
-            <td>
-                <label for="id_end_date"></label>
-                <input type="datetime-local" name="end_date" value="{{ end_date }}" required="" id="id_end_date">
-            </td>
-        </tr>
-    </table>
-    <table id="id_start_end_relative" style="background-color:#cccccc; display: none">
-        <tr>
-            <td></td>
-            <td>Jahre</td>
-            <td>Tage</td>
-            <td>Stunden</td>
-        </tr>
-        <tr>
-            <td>
-                Startdatum:
-            </td>
-            <td>
-                <label for="id_start_years"></label>
-                <input id="id_start_years" type="number" min="0" max="100" value="0">
-            </td>
-            <td>
-                <label for="id_start_days"></label>
-                <input id="id_start_days" type="number" min="0" max="365" value="0">
-            </td>
-            <td>
-                <label for="id_start_hours"></label>
-                <input id="id_start_hours" type="number" min="0" max="23" value="0">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                Enddatum:
-            </td>
-            <td>
-                <label for="id_end_years"></label>
-                <input id="id_end_years" type="number" min="0" max="100" value="0">
-            </td>
-            <td>
-                <label for="id_end_days"></label>
-                <input id="id_end_days" type="number" min="0" max="365" value="1">
-            </td>
-            <td>
-                <label for="id_end_hours"></label>
-                <input id="id_end_hours" type="number" min="0" max="23" value="0">
-            </td>
-        </tr>
-    </table>
-    <br>
-    <table>
-        <tr>
-            <td>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="id_check_title" onclick="update_disabling()">
-                    <label class="form-check-label" for="id_check_title">
-                        Anderer Titel
-                    </label>
-                </div>
-            </td>
-            <td colspan="3">
-                <label for="id_input_title"></label>
-                <input id="id_input_title" onchange="update_link()" onkeyup="update_link()">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="id_check_aspect" onclick="update_disabling()">
-                    <label for="id_check_aspect" class="form-check-label">
-                        Anderes Seitenverhältnis
-                    </label>
-                </div>
-            </td>
-            <td>
-                <label for="id_input_aspect_w"></label>
-                <input type="number" min="1" max="1000" value="16" id="id_input_aspect_w" onchange="update_link()"
-                       onkeyup="update_link()">
-            </td>
-            <td>
-                :
-            </td>
-            <td>
-                <label for="id_input_aspect_h"></label>
-                <input type="number" min="1" max="1000" value="9" id="id_input_aspect_h" onchange="update_link()"
-                       onkeyup="update_link()">
-            </td>
-        </tr>
+<main>
+    <h1>Benutzerdefinierter Bereich</h1>
+    <form>
+        <label>
+            <select class="form-control" onchange="change_date_type()" id="id_change_date_type">
+                <option value="fix">Fixes Start/Enddatum</option>
+                <option value="relative">Relatives Start/Enddatum</option>
+            </select>
+        </label>
+        <table id="id_start_end_fix" style="background-color:#cccccc; display: table;">
+            <tr>
+                <td>
+                    Startdatum:
+                </td>
+                <td>
+                    <label for="id_start_date"></label>
+                    <input type="datetime-local" name="start_date" value="{{ start_date }}" required=""
+                           id="id_start_date">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Enddatum:
+                </td>
+                <td>
+                    <label for="id_end_date"></label>
+                    <input type="datetime-local" name="end_date" value="{{ end_date }}" required="" id="id_end_date">
+                </td>
+            </tr>
+        </table>
+        <table id="id_start_end_relative" style="background-color:#cccccc; display: none">
+            <tr>
+                <td></td>
+                <td>Jahre</td>
+                <td>Tage</td>
+                <td>Stunden</td>
+            </tr>
+            <tr>
+                <td>
+                    Startdatum:
+                </td>
+                <td>
+                    <label for="id_start_years"></label>
+                    <input id="id_start_years" type="number" min="0" max="100" value="0">
+                </td>
+                <td>
+                    <label for="id_start_days"></label>
+                    <input id="id_start_days" type="number" min="0" max="365" value="0">
+                </td>
+                <td>
+                    <label for="id_start_hours"></label>
+                    <input id="id_start_hours" type="number" min="0" max="23" value="0">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Enddatum:
+                </td>
+                <td>
+                    <label for="id_end_years"></label>
+                    <input id="id_end_years" type="number" min="0" max="100" value="0">
+                </td>
+                <td>
+                    <label for="id_end_days"></label>
+                    <input id="id_end_days" type="number" min="0" max="365" value="1">
+                </td>
+                <td>
+                    <label for="id_end_hours"></label>
+                    <input id="id_end_hours" type="number" min="0" max="23" value="0">
+                </td>
+            </tr>
+        </table>
+        <br>
+        <table>
+            <tr>
+                <td>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="id_check_title"
+                               onclick="update_disabling()">
+                        <label class="form-check-label" for="id_check_title">
+                            Anderer Titel
+                        </label>
+                    </div>
+                </td>
+                <td colspan="3">
+                    <label for="id_input_title"></label>
+                    <input id="id_input_title" onchange="update_link()" onkeyup="update_link()">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="id_check_aspect"
+                               onclick="update_disabling()">
+                        <label for="id_check_aspect" class="form-check-label">
+                            Anderes Seitenverhältnis
+                        </label>
+                    </div>
+                </td>
+                <td>
+                    <label for="id_input_aspect_w"></label>
+                    <input type="number" min="1" max="1000" value="16" id="id_input_aspect_w" onchange="update_link()"
+                           onkeyup="update_link()">
+                </td>
+                <td>
+                    :
+                </td>
+                <td>
+                    <label for="id_input_aspect_h"></label>
+                    <input type="number" min="1" max="1000" value="9" id="id_input_aspect_h" onchange="update_link()"
+                           onkeyup="update_link()">
+                </td>
+            </tr>
 
-    </table>
-    <br>
-    <p>Sensoren:</p>
-    <table id="id_sensor_table" class="table-bordered">
-        <thead>
-        <tr style="background-color: #cccccc; border-top-color: #000; border-top: 5px;">
-            <th></th>
-            <th>Sensor</th>
-            <th>Y-Achse</th>
-            <th>Zusammenführungs-Intervall</th>
-            <th>Farbe</th>
-        </tr>
-        </thead>
-        <tbody id="id_sensor_table_body">
+        </table>
+        <br>
+        <p>Sensoren:</p>
+        <table id="id_sensor_table" class="table-bordered">
+            <thead>
+            <tr style="background-color: #cccccc; border-top-color: #000; border-top: 5px;">
+                <th></th>
+                <th>Sensor</th>
+                <th>Y-Achse</th>
+                <th>Zusammenführungs-Intervall</th>
+                <th>Farbe</th>
+            </tr>
+            </thead>
+            <tbody id="id_sensor_table_body">
 
-        </tbody>
-    </table>
-    <button class="btn btn-primary" type="button" id="id_add_sensor_button" onclick="add_sensor()">Hinzufügen</button>
-    <button class="btn btn-danger" type="button" id="id_remove_sensor_button" onclick="remove_selected()">Entfernen
-    </button>
-</form>
-<p>Link zum Graph:</p>
-<a id="id_result_link"></a>
+            </tbody>
+        </table>
+        <button class="btn btn-primary" type="button" id="id_add_sensor_button" onclick="add_sensor()">Hinzufügen
+        </button>
+        <button class="btn btn-danger" type="button" id="id_remove_sensor_button" onclick="remove_selected()">Entfernen
+        </button>
+    </form>
+    <p>Link zum Graph:</p>
+    <a id="id_result_link"></a>
+</main>
 <script>
     let available_sensors_short_name = {{ short_names }};
     let available_sensors_long_name = {{ long_names }};

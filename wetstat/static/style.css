@@ -97,6 +97,10 @@ p.before {
     animation: fadeIn 1s
 }
 
+main {
+    padding: 20pt;
+}
+
 table#id_sensor_table tr:nth-child(even) {
     background-color: #cccccc;
 }
