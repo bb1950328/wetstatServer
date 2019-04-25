@@ -96,9 +96,10 @@ def index(request):
         else:
             img = "arrow_neutral_transparent.png"
         val = now.get(name)
-        if len(str(val)) > 7:  # too long to display
-            val = number_maxlength(val, 7)
         sensor = SensorMaster.get_sensor_for_info("short_name", name)
+        unit = sensor.get_unit()
+        if len(str(val)) + len(unit) > 7:  # too long to display
+            val = number_maxlength(val, 7 - len(unit))
         sarr.append(
             {
                 "name": sensor.get_long_name(),
@@ -106,7 +107,7 @@ def index(request):
                 "img": img,
                 "before_month": lastmonth.get(name, "?"),
                 "before_year": lastyear.get(name, "?"),
-                "unit": sensor.get_unit(),
+                "unit": unit,
                 "color": sensor.get_display_color(),
             }
         )

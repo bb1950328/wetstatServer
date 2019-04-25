@@ -44,7 +44,7 @@ p.sensorname {
     margin: 5px;
 }
 
-b.sensorvalue {
+.sensorvalue {
     font-size: 40px;
     padding-right: 5px;
 }
@@ -52,6 +52,14 @@ b.sensorvalue {
 p.before {
     margin: 5px;
     font-size: 16px;
+}
+
+input[type="number"] {
+    width: 100px;
+}
+
+input#id_input_title {
+    width: 100%;
 }
 
 /* Popup container */
