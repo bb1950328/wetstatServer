@@ -179,8 +179,17 @@
     let available_sensors_long_name = {{ long_names }};
 
     function remove_selected() {
-        let rows = document.getElementsByClassName("sensor_row");
-        console.log(rows);
+        let tbody = document.getElementById("id_sensor_table_body");
+
+        let rows = tbody.getElementsByTagName("tr");//document.getElementsByClassName("sensor_row");
+        for (let i in rows) {
+            let row = rows[i];
+            let check = (row.getElementsByTagName("input"))[0];
+            if (check.checked) {
+                let select = row.getElementsByTagName("select");
+                console.log(select);
+            }
+        }
     }
 
     function add_sensor() {
@@ -191,6 +200,7 @@
         let cell = row.insertCell(-1);
         let checkbox = document.createElement("input");
         checkbox.type = "checkbox";
+        checkbox.class = "sensor_checkbox";
         cell.appendChild(checkbox);
 
         cell = row.insertCell(-1);
