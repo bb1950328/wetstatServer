@@ -43,43 +43,51 @@
 </nav>
 <main>
     <h1>Benutzerdefinierter Bereich</h1>
-    <form>
-        <label>
-            <select class="form-control" onchange="change_date_type()" id="id_change_date_type">
-                <option value="fix">Fixes Start/Enddatum</option>
-                <option value="relative">Relatives Start/Enddatum</option>
-            </select>
-        </label>
-        <table id="id_start_end_fix" style="background-color:#cccccc; display: table;">
+    <form id="id_customplot_form">
+        <h3>Optionen:</h3>
+        <table id="id_options_table" style="background-color:#cccccc; display: table;">
             <tr>
-                <td>
+                <td class="formlabel">
+                    Start/Enddatum Typ:
+                </td>
+                <td colspan="3">
+                    <label>
+                        <select class="form-control" onchange="change_date_type()" id="id_change_date_type">
+                            <option value="fix">Fixes Start/Enddatum</option>
+                            <option value="relative">Relatives Start/Enddatum</option>
+                        </select>
+                    </label>
+                </td>
+            </tr>
+            <tr class="absolute_row">
+                <td class="formlabel">
                     Startdatum:
                 </td>
-                <td>
-                    <label for="id_start_date"></label>
+                <td colspan="3">
+                    <label for="id_start_date" style="display:none;"></label>
                     <input type="datetime-local" name="start_date" value="{{ start_date }}" required=""
                            id="id_start_date">
                 </td>
             </tr>
-            <tr>
-                <td>
+            <tr class="absolute_row">
+                <td class="formlabel">
                     Enddatum:
                 </td>
-                <td>
-                    <label for="id_end_date"></label>
+                <td colspan="3">
+                    <label for="id_end_date" style="display:none;"></label>
                     <input type="datetime-local" name="end_date" value="{{ end_date }}" required="" id="id_end_date">
                 </td>
             </tr>
-        </table>
-        <table id="id_start_end_relative" style="background-color:#cccccc; display: none">
-            <tr>
+            <tr class="separator-row">
+            </tr>
+            <tr class="relative_row">
                 <td></td>
                 <td>Jahre</td>
                 <td>Tage</td>
                 <td>Stunden</td>
             </tr>
-            <tr>
-                <td>
+            <tr class="relative_row">
+                <td class="formlabel">
                     Startdatum:
                 </td>
                 <td>
@@ -95,8 +103,8 @@
                     <input id="id_start_hours" type="number" min="0" max="23" value="0">
                 </td>
             </tr>
-            <tr>
-                <td>
+            <tr class="relative_row">
+                <td class="formlabel">
                     Enddatum:
                 </td>
                 <td>
@@ -112,11 +120,10 @@
                     <input id="id_end_hours" type="number" min="0" max="23" value="0">
                 </td>
             </tr>
-        </table>
-        <br>
-        <table>
+            <tr class="separator-row">
+            </tr>
             <tr>
-                <td>
+                <td class="formlabel">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="id_check_title"
                                onclick="update_disabling()">
@@ -126,12 +133,12 @@
                     </div>
                 </td>
                 <td colspan="3">
-                    <label for="id_input_title"></label>
+                    <label for="id_input_title" style="display: none"></label>
                     <input id="id_input_title" onchange="update_link()" onkeyup="update_link()">
                 </td>
             </tr>
             <tr>
-                <td>
+                <td class="formlabel">
                     <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="id_check_aspect"
                                onclick="update_disabling()">
@@ -140,26 +147,34 @@
                         </label>
                     </div>
                 </td>
-                <td>
-                    <label for="id_input_aspect_w"></label>
-                    <input size="4" type="number" min="1" max="1000" value="16" id="id_input_aspect_w"
-                           onchange="update_link()"
-                           onkeyup="update_link()">
-                </td>
-                <td>
-                    :
-                </td>
-                <td>
-                    <label for="id_input_aspect_h"></label>
-                    <input size="4" type="number" min="1" max="1000" value="9" id="id_input_aspect_h"
-                           onchange="update_link()"
-                           onkeyup="update_link()">
+                <td colspan="3">
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td>
+                                <label for="id_input_aspect_w"></label>
+                                <input size="4" type="number" min="1" max="1000" value="16" id="id_input_aspect_w"
+                                       onchange="update_link()"
+                                       onkeyup="update_link()">
+                            </td>
+                            <td>
+                                :
+                            </td>
+                            <td>
+                                <label for="id_input_aspect_h"></label>
+                                <input size="4" type="number" min="1" max="1000" value="9" id="id_input_aspect_h"
+                                       onchange="update_link()"
+                                       onkeyup="update_link()">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </td>
             </tr>
 
         </table>
         <br>
-        <p>Sensoren:</p>
+        <h3>Sensoren:</h3>
         <table id="id_sensor_table" class="table-bordered">
             <thead>
             <tr style="background-color: #cccccc; border-top-color: #000; border-top: 5px;">
@@ -180,7 +195,12 @@
             Entfernen
         </button>
     </form>
-    <p>Link zum Graph:</p>
+    <h3>Resultat:</h3>
+    Link zum Graph:
+    <label id="id_label_auto_update_link">
+        <input type="checkbox" id="id_check_auto_update_link" onchange="real_update_link()" checked>
+        Link automatisch aktualisieren
+    </label>
     <a id="id_result_link"></a>
 </main>
 <script>
@@ -284,17 +304,27 @@
     }
 
     function change_date_type() {
-        let t_fix = document.getElementById("id_start_end_fix");
-        let t_rel = document.getElementById("id_start_end_relative");
-        let di_fix = t_fix.style.display;
-        let di_rel = t_rel.style.display;
-        [di_fix, di_rel] = [di_rel, di_fix];
-        t_fix.style.display = di_fix;
-        t_rel.style.display = di_rel;
+        let abs_rows = document.getElementsByClassName("absolute_row");
+        let rel_rows = document.getElementsByClassName("relative_row");
+
+        let date_type_sel = document.getElementById("id_change_date_type");
+        let disabled = date_type_sel.selectedIndex === 1;
+        for (let i = 0; i < abs_rows.length; i++) {
+            let abs_inputs = abs_rows[i].getElementsByTagName("input");
+            for (let k = 0; k < abs_inputs.length; k++) {
+                abs_inputs[k].disabled = disabled;
+            }
+        }
+        for (let i = 0; i < rel_rows.length; i++) {
+            let rel_inputs = rel_rows[i].getElementsByTagName("input");
+            for (let k = 0; k < rel_inputs.length; k++) {
+                rel_inputs[k].disabled = !disabled;
+            }
+        }
         update_link();
     }
 
-    function update_link() {
+    function real_update_link() {
         let date_type_sel = document.getElementById("id_change_date_type");
         let start, end;
         if (date_type_sel.selectedIndex === 0) {
@@ -334,6 +364,14 @@
         a.innerText = a.href; // reading from 'a.href' because that's a absolute link now, 'link' is only relative
     }
 
+    function update_link() {
+        let auto_update = document.getElementById("id_check_auto_update_link");
+        if (auto_update.checked) {
+            real_update_link();
+        }
+
+    }
+
     function update_disabling() {
         let check_title = document.getElementById("id_check_title");
         let input_title = document.getElementById("id_input_title");
@@ -347,8 +385,9 @@
         update_link();
     }
 
+    change_date_type();
     update_disabling();
-    update_link();
+    real_update_link();
 </script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+/*----------------------------------Sensors on index.html-------------------------------*/
 div.sensor {
     display: inline-block;
     padding: 10px;
@@ -27,13 +28,58 @@ p.before {
     font-size: 16px;
 }
 
+/*------------------------------------Form for custom plot:--------------------------------*/
 input[type="number"] {
     width: 100px;
+    float: left;
 }
 
-input#id_input_title {
+input#id_input_title, #id_start_date, #id_end_date {
     width: 100%;
 }
+
+#id_customplot_form {
+    margin-bottom: 20px;
+}
+
+#id_sensor_table {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/*for debug:*/
+#id_options_table > tbody > tr > td {
+    border: dashed red;
+}
+
+.formlabel {
+    width: 250px;
+    padding: 5px;
+    margin: 0;
+}
+
+form {
+    width: fit-content;
+}
+
+.separator-row {
+    height: 10px;
+}
+
+main {
+    padding: 20pt;
+}
+
+table#id_sensor_table tr:nth-child(even) {
+    background-color: #cccccc;
+}
+
+#id_label_auto_update_link {
+    display: block;
+    margin: 0;
+}
+
+/*---------------------------------------Popup-----------------------------------------------*/
 
 /* Popup container */
 .popup {
@@ -76,14 +122,6 @@ input#id_input_title {
     visibility: visible;
     -webkit-animation: fadeIn 1s;
     animation: fadeIn 1s
-}
-
-main {
-    padding: 20pt;
-}
-
-table#id_sensor_table tr:nth-child(even) {
-    background-color: #cccccc;
 }
 
 /* Add animation (fade in the popup) */
