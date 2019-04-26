@@ -247,7 +247,7 @@
 
         cell = row.insertCell(-1);
         let combobox = document.createElement("select");
-        combobox.class = "form-control";
+        combobox.classList.add("form-control");
         for (let i in available_sensors_short_name) {
             let opt = document.createElement("option");
             opt.value = available_sensors_short_name[i];
@@ -264,7 +264,7 @@
 
         cell = row.insertCell(-1);
         combobox = document.createElement("select");
-        combobox.class = "form-control";
+        combobox.classList.add("form-control");
         let interval_display = ["Kein", "Stunde", "Tag", "Woche", "Monat", "Jahr"];
         let interval_value = ["none", "hour", "day", "week", "month", "year"];
         for (let i in interval_value) {
