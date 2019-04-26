@@ -6,22 +6,22 @@
     <title>Index</title>
 
     {% load static %}
-    <link rel="stylesheet" href="{% static "fontawesome.css" %}">
-    <link rel="stylesheet" href="{% static "style.css" %}">
-    <link rel="stylesheet" href="{% static "bootstrap.min.css" %}"
+    <link rel="stylesheet" href="{% static "css/fontawesome.css" %}">
+    <link rel="stylesheet" href="{% static "css/style.css" %}">
+    <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}"
           crossorigin="anonymous">
     <!--integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"-->
 </head>
 <body>
-<script src="{% static "jquery-3.3.1.slim.min.js" %}"
+<script src="{% static "js/jquery-3.3.1.slim.min.js" %}"
         crossorigin="anonymous"></script>
 <!--integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"-->
 
-<script src="{% static "popper.min.js" %}"
+<script src="{% static "js/popper.min.js" %}"
         crossorigin="anonymous"></script>
 <!--integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"-->
 
-<script src="{% static "bootstrap.min.js" %}"
+<script src="{% static "js/bootstrap.min.js" %}"
         crossorigin="anonymous"></script>
 <!--integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"-->
 
@@ -160,7 +160,7 @@
                 <th></th>
                 <th>Sensor</th>
                 <th>Y-Achse</th>
-                <th>Zusammenführungs-Intervall</th>
+                <th>Intervall</th>
                 <th>Farbe</th>
             </tr>
             </thead>
@@ -170,7 +170,8 @@
         </table>
         <button class="btn btn-primary" type="button" id="id_add_sensor_button" onclick="add_sensor()">Hinzufügen
         </button>
-        <button class="btn btn-danger" type="button" id="id_remove_sensor_button" onclick="remove_selected()">Entfernen
+        <button class="btn btn-danger" type="button" id="id_remove_sensor_button" onclick="remove_selected_sensors()">
+            Entfernen
         </button>
     </form>
     <p>Link zum Graph:</p>
@@ -192,6 +193,37 @@
             if (check.checked) {
                 let select = (tds[1].getElementsByTagName("select"))[0];
                 let short_name = select.options[select.selectedIndex].value;
+                let input = (tds[2].getElementsByTagName("input"))[0];
+                let axis = input.value;
+                if (axis === "") {
+                    axis = "auto";
+                }
+                select = (tds[3].getElementsByTagName("select"))[0];
+                let interval = select.options[select.selectedIndex].value;
+                input = (tds[4].getElementsByTagName("input"))[0];
+                let color = input.value;
+                if (color === "#ffffff") {
+                    color = "auto";
+                }
+                console.log(short_name, axis, interval, color);
+            }
+        }
+        return "";
+    }
+
+    function remove_selected_sensors() {
+        let tbody = document.getElementById("id_sensor_table_body");
+
+        let rows = tbody.getElementsByTagName("tr");//document.getElementsByClassName("sensor_row");
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+            let tds = row.getElementsByTagName("td");
+            let check = (tds[0].getElementsByTagName("input"))[0];
+            console.log(check.checked);
+            if (check.checked) {
+                row.parentNode.removeChild(row);
+                remove_selected_sensors(); //restart for loop because rows changed
+                return;
             }
         }
     }
@@ -221,6 +253,26 @@
         cell = row.insertCell(-1);
         let entry = document.createElement("input");
         entry.maxLength = 4;
+        entry.size = 4;
+        cell.appendChild(entry);
+
+        cell = row.insertCell(-1);
+        combobox = document.createElement("select");
+        combobox.class = "form-control";
+        let interval_display = ["Kein", "Stunde", "Tag", "Woche", "Monat", "Jahr"];
+        let interval_value = ["none", "hour", "day", "week", "month", "year"];
+        for (let i in interval_value) {
+            let opt = document.createElement("option");
+            opt.value = interval_value[i];
+            opt.innerHTML = interval_display[i];
+            combobox.appendChild(opt);
+        }
+        cell.appendChild(combobox);
+
+        cell = row.insertCell(-1);
+        entry = document.createElement("input");
+        entry.type = "color";
+        entry.value = "#ffffff";
         entry.size = 4;
         cell.appendChild(entry);
     }
@@ -258,6 +310,7 @@
         link += "&end=" + end;
 
         //todo: insert sensoroptions in link here
+        let sl = build_sensor_link();
 
         let inp_title = document.getElementById("id_input_title");
         if (!inp_title.disabled) {
