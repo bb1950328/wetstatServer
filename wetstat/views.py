@@ -241,3 +241,8 @@ def generate_plot(request):
     except ValueError as e:
         return show_error(request, str(e), "wetstat/index.html")
     return render(request, "wetstat/index.html", content_type="text")
+
+
+def system(request):
+    context = {}
+    return render(request, "wetstat/system.html", context)

@@ -28,4 +28,7 @@ urlpatterns = [
 
     path("generate_plot", views.generate_plot),
     path("generate_plot.html", views.generate_plot),
+
+    path("system", views.system),
+    path("system.html", views.system),
 ]
