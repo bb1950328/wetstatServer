@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Index</title>
+    <title>Bereich</title>
 
     {% load static %}
     <link rel="stylesheet" href="{% static "css/fontawesome.css" %}">
@@ -25,16 +25,22 @@
         crossorigin="anonymous"></script>
 <!--integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"-->
 
-<div class="topnav" id="myTopnav">
-    <a href="/../">Home</a>
-    <a href="/week">Woche</a>
-    <a href="/month">Monat</a>
-    <a href="/year">Jahr</a>
-    <a class="active" href="">Bereich</a>
-    <a href="javascript:void(0);" class="icon" onclick="topnavResponsive()">
-        <i class="fa fa-bars"></i>
-    </a>
-</div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <!--a class="navbar-brand" href="/../">Wetstat</a-->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/index">Home</a>
+            <a class="nav-item nav-link" href="/week">Woche</a>
+            <a class="nav-item nav-link" href="/month">Monat</a>
+            <a class="nav-item nav-link" href="/year">Jahr</a>
+            <a class="nav-item nav-link active" href="/custom_v2">Bereich</a>
+        </div>
+    </div>
+</nav>
 <main>
     <h1>Benutzerdefinierter Bereich</h1>
     <form>
