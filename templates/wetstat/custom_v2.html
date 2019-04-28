@@ -209,32 +209,38 @@
 
     function build_sensor_link() {
         let tbody = document.getElementById("id_sensor_table_body");
-
+        let link = "";
         let rows = tbody.getElementsByTagName("tr");//document.getElementsByClassName("sensor_row");
         for (let i = 0; i < rows.length; i++) {
             let row = rows[i];
             let tds = row.getElementsByTagName("td");
             let check = (tds[0].getElementsByTagName("input"))[0];
             console.log(check.checked);
-            if (check.checked) {
-                let select = (tds[1].getElementsByTagName("select"))[0];
-                let short_name = select.options[select.selectedIndex].value;
-                let input = (tds[2].getElementsByTagName("input"))[0];
-                let axis = input.value;
-                if (axis === "") {
-                    axis = "auto";
-                }
-                select = (tds[3].getElementsByTagName("select"))[0];
-                let interval = select.options[select.selectedIndex].value;
-                input = (tds[4].getElementsByTagName("input"))[0];
-                let color = input.value;
-                if (color === "#ffffff") {
-                    color = "auto";
-                }
-                console.log(short_name, axis, interval, color);
+            let select = (tds[1].getElementsByTagName("select"))[0];
+            let short_name = select.options[select.selectedIndex].value;
+            let input = (tds[2].getElementsByTagName("input"))[0];
+            let axis = input.value;
+            if (axis === "") {
+                axis = "auto";
             }
+            select = (tds[3].getElementsByTagName("select"))[0];
+            let interval = select.options[select.selectedIndex].value;
+            input = (tds[4].getElementsByTagName("input"))[0];
+            let color = input.value;
+            if (color === "#ffffff") {
+                color = "auto";
+            }
+            link += "&line=";
+            link += short_name;
+            link += ",";
+            link += axis;
+            link += ",";
+            link += interval;
+            link += ",";
+            link += color;
+            console.log(short_name, axis, interval, color);
         }
-        return "";
+        return link;
     }
 
     function remove_selected_sensors() {
@@ -248,6 +254,7 @@
             console.log(check.checked);
             if (check.checked) {
                 row.parentNode.removeChild(row);
+                update_link();
                 remove_selected_sensors(); //restart for loop because rows changed
                 return;
             }
@@ -268,6 +275,7 @@
         cell = row.insertCell(-1);
         let combobox = document.createElement("select");
         combobox.classList.add("form-control");
+        combobox.onchange = update_link;
         for (let i in available_sensors_short_name) {
             let opt = document.createElement("option");
             opt.value = available_sensors_short_name[i];
@@ -280,6 +288,7 @@
         let entry = document.createElement("input");
         entry.maxLength = 4;
         entry.size = 4;
+        entry.onchange = update_link;
         cell.appendChild(entry);
 
         cell = row.insertCell(-1);
@@ -293,6 +302,7 @@
             opt.innerHTML = interval_display[i];
             combobox.appendChild(opt);
         }
+        combobox.onchange = update_link;
         cell.appendChild(combobox);
 
         cell = row.insertCell(-1);
@@ -300,7 +310,9 @@
         entry.type = "color";
         entry.value = "#ffffff";
         entry.size = 4;
+        entry.onchange = update_link;
         cell.appendChild(entry);
+        update_link();
     }
 
     function change_date_type() {
@@ -345,8 +357,7 @@
         link += "?start=" + start;
         link += "&end=" + end;
 
-        //todo: insert sensoroptions in link here
-        let sl = build_sensor_link();
+        link += build_sensor_link();
 
         let inp_title = document.getElementById("id_input_title");
         if (!inp_title.disabled) {

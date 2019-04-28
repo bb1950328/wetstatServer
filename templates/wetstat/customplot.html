@@ -21,7 +21,7 @@
 <script src="{% static "js/bootstrap.min.js" %}"
         crossorigin="anonymous"></script>
 <!--integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"-->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary" onresize="set_img_width()">
     <!--a class="navbar-brand" href="/../">Wetstat</a-->
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
             aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,33 +37,39 @@
         </div>
     </div>
 </nav>
-<h1>Von {{ start }} bis {{ end }}</h1>
-<img src="{% static plotfile %}" alt="plot" width="100%" id="graph">
-<a href="custom.html">
-    <button>Neuen Graph generieren</button>
-</a>
-<button onclick="make_zoomable()" id="zoomable_button">Graph zoombar machen</button>
+{% comment %}<h1>Von {{ start }} bis {{ end }}</h1>{% endcomment %}
+<main onresize="set_img_width()">
+    <img src="{% static plotfile %}" alt="plot" id="graph">
+</main>
 <script>
-    function topnavResponsive() {
-        let x = document.getElementById("myTopnav");
-        if (x.className === "topnav") {
-            x.className += " responsive";
-        } else {
-            x.className = "topnav";
-        }
+    function set_img_width() {
+        let img = document.getElementById("graph");
+        img.width = window.innerWidth;
+        window.onresize = set_img_width;
     }
 
-    function make_zoomable() {
-        let x = document.getElementById("graph");
-        let y = document.getElementById("zoomable_button");
-        if (y.innerText === "Graph zoombar machen") {
-            x.style.width = "auto";
-            y.innerText = "Graphbreite anpassen";
-        } else {
-            x.style.width = "100%";
-            y.innerText = "Graph zoombar machen";
+    {% comment %}
+        function topnavResponsive() {
+            let x = document.getElementById("myTopnav");
+            if (x.className === "topnav") {
+                x.className += " responsive";
+            } else {
+                x.className = "topnav";
+            }
         }
-    }
+
+        function make_zoomable() {
+            let x = document.getElementById("graph");
+            let y = document.getElementById("zoomable_button");
+            if (y.innerText === "Graph zoombar machen") {
+                x.style.width = "auto";
+                y.innerText = "Graphbreite anpassen";
+            } else {
+                x.style.width = "100%";
+                y.innerText = "Graph zoombar machen";
+            }
+        }{% endcomment %}
+    set_img_width();
 </script>
 </body>
 </html>

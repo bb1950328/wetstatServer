@@ -11,7 +11,7 @@ from django.http import QueryDict
 from matplotlib.image import imread, imsave
 from numpy import ndarray
 
-from wetstat import csvtools, config, logger
+from wetstat import csvtools, config, logger, views
 from wetstat.csvtools import DataContainer
 from wetstat.sensors.BaseSensor import BaseSensor
 from wetstat.sensors.SensorMaster import SensorMaster
@@ -469,18 +469,45 @@ class CustomPlot:
 
     def distribute_lines_to_axes(self):
         self.lines_of_axes = []
-        numbers = [int(so.get_axis()[0]) for so in self.sensoroptions.values()]
+        numbers = [(0 if so.get_axis() is None else int(so.get_axis()[0])) for so in self.sensoroptions.values()]
         ma = max(set(numbers))  # set(...) to remove duplicates
         for i in range(ma + 1):
             self.lines_of_axes.append([[], []])
+        format_axis: Callable[[int, int], str] = lambda ii, nn: str(ii) + ("a" if nn == 0 else "b")
         for hr_hash, option in self.sensoroptions.items():
-            ax = int(option.get_axis()[0])
-            ab = option.get_axis()[1].lower()
-            n = (0 if ab == "a" else 1)
-            self.lines_of_axes[ax][n].append(hr_hash)
+            if option.get_axis() is None:
+                not_found = True
+                for i in range(len(self.lines_of_axes)):
+                    for n in range(2):
+                        short_names = self.lines_of_axes[i][n]
+                        if short_names:
+                            sensor = self.sensoroptions[hr_hash].get_sensor()
+                            if sensor.get_unit() == option.get_sensor().get_unit():
+                                print(f"Distributed SO {hr_hash} to ax {i}, {n} with same unit")
+                                self.lines_of_axes[i][n].append(hr_hash)
+                                option.set_axis(format_axis(i, n))
+                                not_found = False
+                if not_found:
+                    for i in range(len(self.lines_of_axes)):
+                        for n in range(2):
+                            if not self.lines_of_axes[i][n] and not_found:
+                                self.lines_of_axes[i][n].append(hr_hash)
+                                option.set_axis(format_axis(i, n))
+                                print(f"Dirstibuted SO {hr_hash} to empty ax {i}, {n}")
+                                not_found = False
+                if not_found:
+                    self.lines_of_axes.append([[hr_hash], []])
+                    option.set_axis(format_axis(len(self.lines_of_axes), 0))
+                    print(f"Dirstibuted SO {hr_hash} to new ax")
+                    continue
+            else:
+                ax = int(option.get_axis()[0])
+                ab = option.get_axis()[1].lower()
+                n = (0 if ab == "a" else 1)
+                self.lines_of_axes[ax][n].append(hr_hash)
 
         self.lines_of_axes = list(filter(lambda x: not (len(x[0]) == 0 and len(x[1]) == 0),
-                                         self.lines_of_axes))
+                                         self.lines_of_axes))  # remove empty subplots
 
     def generate_xticks(self):
         if self.data is None:
@@ -519,11 +546,11 @@ class CustomPlot:
         start_ts = perf_counter_ns()
         self.load_data()
         self.set_all_linecolors()
+        self.distribute_lines_to_axes()
         self.prepare_axis_labels()
         self.generate_xticks()
         self.split_data_to_lines()
         self.make_all_lines_minmaxavg()
-        self.distribute_lines_to_axes()
         self.generate_legends()
         fig, subs = plt.subplots(nrows=len(self.axes), sharex="all", figsize=self.figsize, dpi=self.dpi)
         if len(self.axes) < 2:
@@ -608,26 +635,40 @@ class CustomPlotRequest:
 
     def parse(self):
         self.custom_plot = CustomPlot()
-        start = self.get.get("start")
-        end = self.get.get("end")
+        start: str = self.get.get("start")
+        end: str = self.get.get("end")
         if start is not None and end is not None:
-            start = start[0]
-            end = end[0]
             if not len(start) or not len(end):
                 raise ValueError("Start and/or end empty!")
         else:
             raise ValueError("Start and/or end not specified!")
         try:
-            start = int(start)
-            end = int(end)
-            self.custom_plot.set_start(datetime.fromtimestamp(start / 1000))
-            self.custom_plot.set_end(datetime.fromtimestamp(end / 1000))
+            if start.startswith("now-"):
+                def make_absolute(inp: str):
+                    return views.get_date() - \
+                           datetime.timedelta(seconds=int(
+                               inp.split("-")[1]  # remove "now-"
+                           ))
+
+                start_dt = make_absolute(start)
+                end_dt = make_absolute(end)
+            else:
+                try:
+                    start_dt = datetime.fromtimestamp(int(start) / 1000)
+                    end_dt = datetime.fromtimestamp(int(end) / 1000)
+                except ValueError:
+                    start_dt = datetime.fromisoformat(start)
+                    end_dt = datetime.fromisoformat(end)
+            self.custom_plot.set_start(start_dt)
+            self.custom_plot.set_end(end_dt)
         except ValueError or OSError as e:
             raise ValueError("Start and/or end has wrong format!") from e
         for key in self.get.keys():
             if key == "start" or key == "end":
                 continue  # already processed
-            value: List[str] = self.get.get(key)
+            value: List[str] = self.get.getlist(key)
+            if isinstance(value, str):
+                value = [value]
             if key == "line":
                 # value = "short_name,axis,minmaxavg_interval,linecolor
                 #         |     0    |  1 |       2          |    3    |
@@ -638,7 +679,10 @@ class CustomPlotRequest:
                     try:
                         sensor = SensorMaster.get_sensor_for_info("short_name", args[0])
                         so = CustomPlotSensorOptions(sensor)
-                        so.set_axis(args[1])
+                        if args[1] != "auto":
+                            so.set_axis(args[1])
+                        if args[2] == "none":
+                            args[2] = None
                         so.set_minmaxavg_interval(args[2])
                         if args[3] != "auto":
                             so.set_line_color(args[3])
@@ -661,4 +705,3 @@ class CustomPlotRequest:
                     self.custom_plot.figsize = (x, y)
                 except ValueError or IndexError as e:
                     raise ValueError("invalid aspect_ratio! (should be something like \"16:9\")") from e
-

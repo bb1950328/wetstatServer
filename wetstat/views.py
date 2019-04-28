@@ -1,6 +1,7 @@
 # coding=utf-8
 import datetime
 import os
+import random
 
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
@@ -218,8 +219,8 @@ def custom_v2(request):
     short_names = "[\"" + "\", \"".join(short_names) + "\"]"
     long_names = "[\"" + "\", \"".join(long_names) + "\"]"
     context = {
-        "start_date": isoformat_no_seconds(get_date()),
-        "end_date": isoformat_no_seconds(get_date() - datetime.timedelta(days=1)),
+        "start_date": isoformat_no_seconds(get_date() - datetime.timedelta(days=1)),
+        "end_date": isoformat_no_seconds(get_date()),
         "short_names": mark_safe(short_names),
         "long_names": mark_safe(long_names),
     }
@@ -235,12 +236,19 @@ def show_error(request, message: str, backlink: str):
 def generate_plot(request):
     log_request(request)
     print(request.GET)
-    cpr = models.CustomPlotRequest(request.GET)
+    cpr: models.CustomPlotRequest = models.CustomPlotRequest(request.GET)
     try:
         cpr.parse()
+        filename = "plot{}.svg".format(hex(random.randint(0x1000000000000,
+                                                          0xfffffffffffff)
+                                           )[2:])
+        path = os.path.join(config.get_staticfolder(), "plot", filename)
+        context = {"plotfile": "/plot/" + filename}
+        cpr.custom_plot.filename = path
+        cpr.custom_plot.create_plots()
+        return render(request, "wetstat/customplot.html", context=context)
     except ValueError as e:
         return show_error(request, str(e), "wetstat/index.html")
-    return render(request, "wetstat/index.html", content_type="text")
 
 
 def system(request):
