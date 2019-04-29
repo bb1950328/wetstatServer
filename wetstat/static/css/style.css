@@ -28,6 +28,11 @@ p.before {
     font-size: 16px;
 }
 
+#id_main_no_padding {
+    margin: 0;
+    padding: 0;
+}
+
 /*------------------------------------Form for custom plot:--------------------------------*/
 input[type="number"] {
     width: 100px;

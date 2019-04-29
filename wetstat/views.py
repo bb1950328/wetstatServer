@@ -2,6 +2,8 @@
 import datetime
 import os
 import random
+import threading
+from typing import Dict, List, Optional
 
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
@@ -12,6 +14,26 @@ from wetstat.sensors.SensorMaster import SensorMaster, ALL_SENSORS
 
 
 # Create your views here.
+class MessageContainer:
+    def __init__(self):
+        self._messages: Dict[str, List[str]] = {}
+        self.messages_lock = threading.Lock()
+
+    def add_message(self, plot_id: str, messge: str) -> None:
+        with self.messages_lock:
+            if plot_id not in self._messages.keys():
+                self._messages[plot_id] = []
+            self._messages[plot_id].append(messge)
+
+    def get_messages(self, plot_id: str) -> Optional[List[str]]:
+        with self.messages_lock:
+            try:
+                return self._messages[plot_id]
+            except KeyError:
+                return None
+
+
+message_container = MessageContainer()
 
 
 def get_date() -> datetime.datetime:
@@ -234,21 +256,41 @@ def show_error(request, message: str, backlink: str):
 
 
 def generate_plot(request):
+    class GeneratePlotThread(threading.Thread):
+        def __init__(self, custom_plot_request: models.CustomPlotRequest):
+            super().__init__()
+            self.cpr = custom_plot_request
+
+        def run(self) -> None:
+            self.cpr.custom_plot.create_plots()
+
     log_request(request)
     print(request.GET)
     cpr: models.CustomPlotRequest = models.CustomPlotRequest(request.GET)
     try:
         cpr.parse()
-        filename = "plot{}.svg".format(hex(random.randint(0x1000000000000,
-                                                          0xfffffffffffff)
-                                           )[2:])
+        cpr.custom_plot.plot_id = hex(random.randint(0x1000000000000, 0xfffffffffffff))[2:]
+        cpr.custom_plot.message_container = message_container
+        filename = "plot{}.svg".format(cpr.custom_plot.plot_id)
         path = os.path.join(config.get_staticfolder(), "plot", filename)
-        context = {"plotfile": "/plot/" + filename}
+        context = {"plotfile": "/plot/" + filename,
+                   "plot_id": cpr.custom_plot.plot_id,
+                   }
         cpr.custom_plot.filename = path
-        cpr.custom_plot.create_plots()
+        cpr.custom_plot.set_legend_mode(1)  # separate file
+        thread = GeneratePlotThread(cpr)
+        thread.start()
+        # cpr.custom_plot.create_plots()
         return render(request, "wetstat/customplot.html", context=context)
     except ValueError as e:
         return show_error(request, str(e), "wetstat/index.html")
+
+
+def progress(request):
+    plot_id = request.GET.get("id")
+    msgs = message_container.get_messages(plot_id)
+    context = {"content": "Wrong plot id!!!" if msgs is None else "\n".join(msgs)}
+    return render(request, "wetstat/dummy.html", context)
 
 
 def system(request):

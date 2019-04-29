@@ -38,14 +38,30 @@
     </div>
 </nav>
 {% comment %}<h1>Von {{ start }} bis {{ end }}</h1>{% endcomment %}
-<main onresize="set_img_width()">
+<main onresize="set_img_width()" id="id_main_no_padding">
     <img src="{% static plotfile %}" alt="plot" id="graph">
+    <img src="{% static plotfile %}_legend.png" alt="Legende">
 </main>
 <script>
+    let req;
     function set_img_width() {
+        //console.log(window.innerWidth);
         let img = document.getElementById("graph");
-        img.width = window.innerWidth;
+        img.width = (window.innerWidth - 20);
+        //TODO: make zoomable
+        {% comment %}if (img.height > (window.innerHeight - 20)) {
+            img.height = window.innerHeight - 20;
+        }{% endcomment %}
         window.onresize = set_img_width;
+    }
+
+    function get_progress() {
+        req = new XMLHttpRequest();
+        req.open("GET", "/progress?id={{ plot_id }}", false);
+        //req.timeout = 5000;
+        req.send();
+        //TODO: use a sleep function to wait until a response comes back
+        console.log(req.response);
     }
 
     {% comment %}

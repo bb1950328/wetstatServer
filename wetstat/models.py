@@ -239,6 +239,8 @@ class CustomPlotSensorOptions:
 
 class CustomPlot:
     # Type hints:
+    message_container: Optional[views.MessageContainer]
+    plot_id: Optional[str]
     legend_mode: int
     legends: Optional[Dict[str, str]]
     xtick_str: Optional[Union[List[str], ndarray]]
@@ -279,6 +281,8 @@ class CustomPlot:
         self.max_xticks = 24
         self.vectorized_from_ts = np.vectorize(datetime.fromtimestamp)
         self.legend_mode = 0  # 0=inside plot, 1=save in separate file, 2=no legend
+        self.plot_id = None
+        self.message_container = None
 
     def set_legend_mode(self, legend_mode: int):
         if 0 <= legend_mode <= 2:
@@ -347,6 +351,10 @@ class CustomPlot:
         self.data = csvtools.load_csv_for_range(csvtools.get_data_folder(),
                                                 self.start, self.end,
                                                 ignore_missing=ignore_missing)
+
+    def add_message(self, message: str):
+        if self.plot_id is not None and self.message_container is not None:
+            self.message_container.add_message(self.plot_id, message)
 
     def set_title(self, title: str):
         self.title = title
@@ -544,19 +552,29 @@ class CustomPlot:
 
     def create_plots(self):
         start_ts = perf_counter_ns()
+        self.add_message("Lade Daten")
         self.load_data()
+        self.add_message("Setze Farben")
         self.set_all_linecolors()
+        self.add_message("Verteile Datenreihen")
         self.distribute_lines_to_axes()
+        self.add_message("Bereite Beschriftungen vor")
         self.prepare_axis_labels()
+        self.add_message("Generiere X-Beschriftungen")
         self.generate_xticks()
+        self.add_message("Teile Daten auf")
         self.split_data_to_lines()
+        self.add_message("Verkleinere Daten")
         self.make_all_lines_minmaxavg()
+        self.add_message("Generiere Legenden")
         self.generate_legends()
         fig, subs = plt.subplots(nrows=len(self.axes), sharex="all", figsize=self.figsize, dpi=self.dpi)
         if len(self.axes) < 2:
             subs = [subs]
         plt.xticks(self.xtick_pos, self.xtick_str, rotation=90)
         plt.xlim(self.xtick_pos[0], self.xtick_pos[-1])
+        num_lines = len(self.sensoroptions.keys())
+        num_actual_line = 0
         for i_subplt, subplt in enumerate(subs):
             subplt.xaxis.grid(True, linestyle="-")
             labels = self.axes[i_subplt]
@@ -567,6 +585,8 @@ class CustomPlot:
             lines = self.lines_of_axes[i_subplt]
             all_lines = lines[0] + lines[1]
             for hr_hash in all_lines:
+                num_actual_line += 1
+                self.add_message(f"Zeichne Linie {num_actual_line} von {num_lines}")
                 axis = (left_axis if hr_hash in lines[0] else right_axis)
                 option = self.sensoroptions[hr_hash]
                 x, y = self.datalines[hr_hash]
@@ -601,6 +621,7 @@ class CustomPlot:
             plt.savefig(self.filename, bbox_extra_artists=bbox_extra_artists, bbox_inches='tight')
             
         ###################################################################################################"""
+        self.add_message("Speichere Graph")
         bbox_extra_artists = (title,)
         if self.legend_mode == 0:  # legend inside
             lgd = fig.legend(loc="upper center", ncol=20, fancybox=True, shadow=True, bbox_to_anchor=(0.5, 0.97))
@@ -621,6 +642,8 @@ class CustomPlot:
         time_used = (end_ts - start_ts) / 10 ** 9
         logger.log.info("custom plot creation finished in {} sec.".format(time_used))
         # fig.show()
+        self.add_message("Fertig")
+        self.add_message("%%finished%%")
         return time_used
 
 
