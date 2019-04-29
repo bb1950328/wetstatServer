@@ -38,13 +38,40 @@
     </div>
 </nav>
 {% comment %}<h1>Von {{ start }} bis {{ end }}</h1>{% endcomment %}
-<main onresize="set_img_width()" id="id_main_no_padding">
-    <img src="{% static plotfile %}" alt="plot" id="graph">
-    <img src="{% static plotfile %}_legend.png" alt="Legende">
+<div id="id_messagebox">
+    <h3>Bitte warten sie, während der Graph generiert wird.</h3>
+    <span id="id_message_span"></span>
+</div>
+<main id="id_main_no_padding">
+    {% comment %}<img src="{% static plotfile %}" alt="plot" id="graph">
+    <img src="{% static plotfile %}_legend.png" alt="Legende">{% endcomment %}
 </main>
 <script>
     let req;
+    let plotfile = "{% static plotfile %}";
+    let image_loaded = false;
+
+    function show_image() {
+        let msg = document.getElementById("id_messagebox");
+        msg.style.display = "none";
+        let main = document.getElementById("id_main_no_padding");
+        let graph = document.createElement("img");
+        let legend = document.createElement("img");
+        graph.src = plotfile;
+        legend.src = plotfile + "_legend.png";
+        graph.id = "graph";
+        graph.alt = "Graph";
+        legend.alt = "Legende";
+        main.appendChild(graph);
+        main.appendChild(legend);
+        main.onresize = set_img_width;
+        image_loaded = true;
+    }
+
     function set_img_width() {
+        if (!image_loaded) {
+            return;
+        }
         //console.log(window.innerWidth);
         let img = document.getElementById("graph");
         img.width = (window.innerWidth - 20);
@@ -57,11 +84,18 @@
 
     function get_progress() {
         req = new XMLHttpRequest();
-        req.open("GET", "/progress?id={{ plot_id }}", false);
+        req.open("GET", "/progress?id={{ plot_id }}&wait=500", false);
         //req.timeout = 5000;
         req.send();
-        //TODO: use a sleep function to wait until a response comes back
+        //TODO: messages aren't displayed in browser bc this function blocks
         console.log(req.response);
+        let span = document.getElementById("id_message_span");
+        span.innerText = req.response;
+        if (req.response.endsWith("%%finished%%")) {
+            show_image();
+        } else {
+            get_progress();
+        }
     }
 
     {% comment %}
@@ -85,6 +119,7 @@
                 y.innerText = "Graph zoombar machen";
             }
         }{% endcomment %}
+    get_progress();
     set_img_width();
 </script>
 </body>

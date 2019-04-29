@@ -3,6 +3,7 @@ import datetime
 import os
 import random
 import threading
+import time
 from typing import Dict, List, Optional
 
 from django.shortcuts import render
@@ -18,6 +19,7 @@ class MessageContainer:
     def __init__(self):
         self._messages: Dict[str, List[str]] = {}
         self.messages_lock = threading.Lock()
+        self.messages_lock_reversed = threading.Lock()
 
     def add_message(self, plot_id: str, messge: str) -> None:
         with self.messages_lock:
@@ -287,7 +289,13 @@ def generate_plot(request):
 
 
 def progress(request):
+    # print("get_progress")
     plot_id = request.GET.get("id")
+    if "wait" in request.GET.keys():
+        try:
+            time.sleep(int(request.GET.get("wait")) / 1000)
+        except ValueError:
+            pass
     msgs = message_container.get_messages(plot_id)
     context = {"content": "Wrong plot id!!!" if msgs is None else "\n".join(msgs)}
     return render(request, "wetstat/dummy.html", context)
