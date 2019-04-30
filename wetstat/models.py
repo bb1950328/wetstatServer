@@ -501,12 +501,12 @@ class CustomPlot:
                             if not self.lines_of_axes[i][n] and not_found:
                                 self.lines_of_axes[i][n].append(hr_hash)
                                 option.set_axis(format_axis(i, n))
-                                print(f"Dirstibuted SO {hr_hash} to empty ax {i}, {n}")
+                                print(f"Distributed SO {hr_hash} to empty ax {i}, {n}")
                                 not_found = False
                 if not_found:
                     self.lines_of_axes.append([[hr_hash], []])
                     option.set_axis(format_axis(len(self.lines_of_axes), 0))
-                    print(f"Dirstibuted SO {hr_hash} to new ax")
+                    print(f"Distributed SO {hr_hash} to new ax")
                     continue
             else:
                 ax = int(option.get_axis()[0])
@@ -551,7 +551,7 @@ class CustomPlot:
             imsave(filename, img)
 
     def create_plots(self):
-        start_ts = perf_counter_ns()
+        self.start_ts = perf_counter_ns()  # self only for debug
         self.add_message("Lade Daten")
         self.load_data()
         self.add_message("Setze Farben")

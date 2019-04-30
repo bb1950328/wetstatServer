@@ -84,17 +84,17 @@
 
     function get_progress() {
         req = new XMLHttpRequest();
-        req.open("GET", "/progress?id={{ plot_id }}&wait=500", false);
+        req.open("GET", "/progress?id={{ plot_id }}", false);
         //req.timeout = 5000;
         req.send();
         //TODO: messages aren't displayed in browser bc this function blocks
-        console.log(req.response);
+        //console.log(req.response);
         let span = document.getElementById("id_message_span");
         span.innerText = req.response;
         if (req.response.endsWith("%%finished%%")) {
             show_image();
         } else {
-            get_progress();
+            setTimeout(get_progress, 50);
         }
     }
 
@@ -119,7 +119,8 @@
                 y.innerText = "Graph zoombar machen";
             }
         }{% endcomment %}
-    get_progress();
+    $(document).ready(get_progress);
+    //get_progress();
     set_img_width();
 </script>
 </body>
