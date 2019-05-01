@@ -6,6 +6,7 @@ from time import perf_counter_ns
 from typing import Callable, List, Tuple, Dict, Optional, Union
 
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
 from django.http import QueryDict
 from matplotlib.image import imread, imsave
@@ -353,8 +354,9 @@ class CustomPlot:
                                                 ignore_missing=ignore_missing)
 
     def add_message(self, message: str):
+        timestamp = (perf_counter_ns() - self.start_ts) / 10 ** 9
         if self.plot_id is not None and self.message_container is not None:
-            self.message_container.add_message(self.plot_id, message)
+            self.message_container.add_message(self.plot_id, str(round(timestamp, 3)).ljust(6) + ": " + message)
 
     def set_title(self, title: str):
         self.title = title
@@ -568,9 +570,11 @@ class CustomPlot:
         self.make_all_lines_minmaxavg()
         self.add_message("Generiere Legenden")
         self.generate_legends()
+        self.add_message("Erzeuge Zeichenbereich")
         fig, subs = plt.subplots(nrows=len(self.axes), sharex="all", figsize=self.figsize, dpi=self.dpi)
         if len(self.axes) < 2:
             subs = [subs]
+        self.add_message("Setze X-Beschriftungen")
         plt.xticks(self.xtick_pos, self.xtick_str, rotation=90)
         plt.xlim(self.xtick_pos[0], self.xtick_pos[-1])
         num_lines = len(self.sensoroptions.keys())
@@ -639,7 +643,7 @@ class CustomPlot:
             plt.savefig(self.filename, bbox_extra_artists=bbox_extra_artists, bbox_inches='tight')
 
         end_ts = perf_counter_ns()
-        time_used = (end_ts - start_ts) / 10 ** 9
+        time_used = (end_ts - self.start_ts) / 10 ** 9
         logger.log.info("custom plot creation finished in {} sec.".format(time_used))
         # fig.show()
         self.add_message("Fertig")
