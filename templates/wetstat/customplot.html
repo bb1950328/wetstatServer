@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Index</title>
+    <title>Benutzerdefinierter Graph</title>
 </head>
 <body>
 {% load static %}
@@ -96,28 +96,6 @@
             setTimeout(get_progress, 200);
         }
     }
-
-    {% comment %}
-        function topnavResponsive() {
-            let x = document.getElementById("myTopnav");
-            if (x.className === "topnav") {
-                x.className += " responsive";
-            } else {
-                x.className = "topnav";
-            }
-        }
-
-        function make_zoomable() {
-            let x = document.getElementById("graph");
-            let y = document.getElementById("zoomable_button");
-            if (y.innerText === "Graph zoombar machen") {
-                x.style.width = "auto";
-                y.innerText = "Graphbreite anpassen";
-            } else {
-                x.style.width = "100%";
-                y.innerText = "Graph zoombar machen";
-            }
-        }{% endcomment %}
     $(document).ready(get_progress);
     //get_progress();
     set_img_width();

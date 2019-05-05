@@ -7,7 +7,8 @@ import time
 
 import schedule
 
-from wetstat import logger, csvtools
+from wetstat.model import csvtools
+from wetstat.common import logger
 from wetstat.sensors.BaseSensor import BaseSensor
 from wetstat.sensors.LightSensor import LightSensor
 from wetstat.sensors.TempSensor import TempSensor

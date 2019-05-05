@@ -5,7 +5,7 @@ import os
 import numpy as np
 from dataclasses import dataclass
 
-from wetstat import config
+from wetstat.common import config
 
 
 @dataclass
@@ -146,3 +146,19 @@ def save_values(folder: str, heads: list, data: list, timelabel: datetime.dateti
         f.write("\n")
         output = [str(n) for n in output]
         f.write(";".join(output))
+
+
+def get_nearest_record(dt: datetime) -> dict:  # (field: value)
+    try:
+        day = load_csv_to_daydata(os.path.join(config.get_datafolder(),
+                                               get_filename_for_date(dt)))
+        i = 0
+        while (len(day.array) > i) and (day.array[i][0] < dt):
+            i += 1
+        arr = day.array[i]
+        ret = {}
+        for i, name in enumerate(day.fields):
+            ret[name] = arr[i]
+        return ret
+    except FileNotFoundError as e:
+        raise ValueError("No data available for date " + dt.isoformat()) from e

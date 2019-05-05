@@ -10,7 +10,7 @@ log = logging.getLogger("wetstat")
 
 fname = os.path.join(
     os.path.realpath(os.path.dirname(__file__)),
-    "wetstat.log")
+    "../wetstat.log")
 
 fileHandler = logging.FileHandler(fname)
 fileHandler.setFormatter(logFormatter)

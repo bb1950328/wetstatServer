@@ -4,45 +4,20 @@ import os
 import random
 import threading
 import time
-from typing import Dict, List, Optional
 
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
-from wetstat import csvtools, models, logger, config
-from wetstat.forms import CustomPlotForm
+from wetstat.common import config, logger
+from wetstat.common.config import get_date
+from wetstat.model import models, csvtools
+from wetstat.model.csvtools import get_nearest_record
+from wetstat.model.custom_plot.request import CustomPlotRequest
 from wetstat.sensors.SensorMaster import SensorMaster, ALL_SENSORS
-
-
-# Create your views here.
-class MessageContainer:
-    def __init__(self):
-        self._messages: Dict[str, List[str]] = {}
-        self.messages_lock = threading.Lock()
-        self.messages_lock_reversed = threading.Lock()
-
-    def add_message(self, plot_id: str, messge: str) -> None:
-        with self.messages_lock:
-            if plot_id not in self._messages.keys():
-                self._messages[plot_id] = []
-            self._messages[plot_id].append(messge)
-
-    def get_messages(self, plot_id: str) -> Optional[List[str]]:
-        with self.messages_lock:
-            try:
-                return self._messages[plot_id]
-            except KeyError:
-                return None
-
+from wetstat.view.MessageContainer import MessageContainer
+from wetstat.view.forms import CustomPlotForm
 
 message_container = MessageContainer()
-
-
-def get_date() -> datetime.datetime:
-    # for development
-    return datetime.datetime.now() - datetime.timedelta(days=365)
-    # noinspection PyUnreachableCode
-    return datetime.datetime.now()
 
 
 def number_maxlength(inp: float, maxlen: int) -> str:
@@ -91,20 +66,20 @@ def index(request):
     lastyear = MockDict()
     errors = []
     try:
-        now = models.get_nearest_record(get_date())
+        now = get_nearest_record(get_date())
     except ValueError or FileNotFoundError:
         logger.log.error("Data for HomePage not found! ")
         return show_error(request, "Es wurden keine Daten zum aktuellen Zeitpunkt gefunden.", "week.html")
     try:
-        yesterday = models.get_nearest_record(get_date() - datetime.timedelta(days=1))
+        yesterday = get_nearest_record(get_date() - datetime.timedelta(days=1))
     except ValueError or FileNotFoundError as e:
         errors.append(str(e))
     try:
-        lastmonth = models.get_nearest_record(get_date() - datetime.timedelta(days=30))
+        lastmonth = get_nearest_record(get_date() - datetime.timedelta(days=30))
     except ValueError or FileNotFoundError as e:
         errors.append(str(e))
     try:
-        lastyear = models.get_nearest_record(get_date() - datetime.timedelta(days=365))
+        lastyear = get_nearest_record(get_date() - datetime.timedelta(days=365))
     except ValueError or FileNotFoundError as e:
         errors.append(str(e))
     if errors:
@@ -259,7 +234,7 @@ def show_error(request, message: str, backlink: str):
 
 def generate_plot(request):
     class GeneratePlotThread(threading.Thread):
-        def __init__(self, custom_plot_request: models.CustomPlotRequest):
+        def __init__(self, custom_plot_request: CustomPlotRequest):
             super().__init__()
             self.cpr = custom_plot_request
 
@@ -268,7 +243,7 @@ def generate_plot(request):
 
     log_request(request)
     print(request.GET)
-    cpr: models.CustomPlotRequest = models.CustomPlotRequest(request.GET)
+    cpr: CustomPlotRequest = CustomPlotRequest(request.GET)
     try:
         cpr.parse()
         cpr.custom_plot.plot_id = hex(random.randint(0x1000000000000, 0xfffffffffffff))[2:]

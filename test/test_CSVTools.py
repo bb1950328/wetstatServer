@@ -4,7 +4,7 @@ import os
 import tempfile
 from unittest import TestCase
 
-from wetstat import csvtools
+from wetstat.model import csvtools
 
 
 def get_dirs():

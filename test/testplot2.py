@@ -1,6 +1,6 @@
 # coding=utf-8
-import wetstat.csvtools as csvtools
-import wetstat.models as models
+import wetstat.model.csvtools as csvtools
+import wetstat.model.models as models
 import datetime
 
 dc = csvtools.load_csv_for_range(r"C:\Users\dev\PycharmProjects\wetstatServer\data",

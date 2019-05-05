@@ -1,7 +1,7 @@
 # coding=utf-8
 import time
 
-from wetstat import logger
+from wetstat.common import logger
 
 try:
     import spidev

@@ -1,7 +1,7 @@
 # coding=utf-8
 import datetime
 
-from wetstat import csvtools
+from wetstat.model import csvtools
 
 timestamp = datetime.datetime(2018, 5, 3, 0, 0)
 timestamp = timestamp.replace(minute=3)
