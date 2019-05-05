@@ -87,7 +87,6 @@
         req.open("GET", "/progress?id={{ plot_id }}", false);
         //req.timeout = 5000;
         req.send();
-        //TODO: messages aren't displayed in browser bc this function blocks
         //console.log(req.response);
         let span = document.getElementById("id_message_span");
         span.innerText = req.response;

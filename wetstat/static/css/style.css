@@ -54,7 +54,7 @@ input#id_input_title, #id_start_date, #id_end_date {
 
 /*for debug:*/
 #id_options_table > tbody > tr > td {
-    border: dashed red;
+
 }
 
 .formlabel {
@@ -64,6 +64,8 @@ input#id_input_title, #id_start_date, #id_end_date {
 }
 
 form {
+    width: border-box;
+    width: -moz-fit-content;
     width: fit-content;
 }
 

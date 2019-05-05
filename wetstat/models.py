@@ -1,12 +1,11 @@
 # coding=utf-8
-import datetime
 import os
-from datetime import datetime
+import os.path
+from datetime import datetime, timedelta
 from time import perf_counter_ns
 from typing import Callable, List, Tuple, Dict, Optional, Union
 
 import matplotlib.pyplot as plt
-import matplotlib
 import numpy as np
 from django.http import QueryDict
 from matplotlib.image import imread, imsave
@@ -329,7 +328,7 @@ class CustomPlot:
         """
         if self.start is None or self.end is None:
             raise ValueError("Start and end have to be set when calling this method!")
-        oneday = datetime.timedelta(days=1)
+        oneday = timedelta(days=1)
         i = self.start
         files = []
         while i < self.end:
@@ -416,15 +415,15 @@ class CustomPlot:
         maxy = np.array([])
         avgy = np.array([])
         if interval == "day":
-            relevant: Callable[[datetime.datetime], datetime.date] = lambda dt: dt.date()
+            relevant: Callable[[datetime], datetime.date] = lambda dt: dt.date()
         elif interval == "hour":
-            relevant: Callable[[datetime.datetime], int] = lambda dt: dt.hour
+            relevant: Callable[[datetime], int] = lambda dt: dt.hour
         elif interval == "week":
-            relevant: Callable[[datetime.datetime], int] = lambda dt: int(dt.strftime("%W"))  # week of year
+            relevant: Callable[[datetime], int] = lambda dt: int(dt.strftime("%W"))  # week of year
         elif interval == "month":
-            relevant: Callable[[datetime.datetime], int] = lambda dt: dt.month
+            relevant: Callable[[datetime], int] = lambda dt: dt.month
         elif interval == "year":
-            relevant: Callable[[datetime.datetime], int] = lambda dt: dt.year
+            relevant: Callable[[datetime], int] = lambda dt: dt.year
         else:
             raise ValueError("interval of {} is None or unknown!".format(hr_hash))
 
@@ -673,7 +672,7 @@ class CustomPlotRequest:
             if start.startswith("now-"):
                 def make_absolute(inp: str):
                     return views.get_date() - \
-                           datetime.timedelta(seconds=int(
+                           timedelta(seconds=int(
                                inp.split("-")[1]  # remove "now-"
                            ))
 
@@ -732,3 +731,20 @@ class CustomPlotRequest:
                     self.custom_plot.figsize = (x, y)
                 except ValueError or IndexError as e:
                     raise ValueError("invalid aspect_ratio! (should be something like \"16:9\")") from e
+
+
+def cleanup_plots(max_age=timedelta(days=2)):
+    plotfolder = os.path.join(config.get_staticfolder(), "plot")
+    files = list(filter(os.path.isfile,
+                        os.listdir(plotfolder)))
+    split_dt = datetime.now() - max_age
+    to_delete = []
+    for f in files:
+        fullpath = os.path.join(plotfolder, f)
+        lastaccess = datetime.fromtimestamp(os.path.getatime(fullpath))
+        if lastaccess < split_dt:
+            to_delete.append(fullpath)
+    if len(to_delete) > 0:
+        logger.log.info(f"Deleting {len(to_delete)} plots because they are older than {str(max_age)}")
+        for f in to_delete:
+            os.remove(f)
