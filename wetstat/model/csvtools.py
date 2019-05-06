@@ -1,6 +1,7 @@
 # coding=utf-8
 import datetime
 import os
+from typing import List, Optional, Set
 
 import numpy as np
 from dataclasses import dataclass
@@ -162,3 +163,38 @@ def get_nearest_record(dt: datetime) -> dict:  # (field: value)
         return ret
     except FileNotFoundError as e:
         raise ValueError("No data available for date " + dt.isoformat()) from e
+
+
+def save_datacontainer_to_single_csv(container: DataContainer,
+                                     outfile: str,
+                                     columnselection: Optional[Set] = None,
+                                     always_export_time=True):
+    heads = set()
+    for day in container.data:
+        heads.update(day.fields)
+    if columnselection is not None:
+        heads &= columnselection  # only export heads which are selected
+    heads = list(heads)
+    if always_export_time and "Time" not in heads:
+        heads.insert(0, "Time")
+    elif "Time" in heads:
+        heads.remove("Time")
+        heads.insert(0, "Time")
+    print(heads)
+    with open(outfile, "w") as file:
+        file.write(",".join(heads))
+        file.write("\n")
+        for day in container.data:
+            data = day.array
+            for dataline in data:
+                dayfields = day.fields
+                for ihe in range(len(heads)):
+                    he = heads[ihe]
+                    try:
+                        idx = dayfields.index(he)
+                        file.write(str(dataline[idx]))
+                    except ValueError:
+                        pass
+                    if ihe + 1 < len(heads):  # all except the last
+                        file.write(",")
+                file.write("\n")
