@@ -6,7 +6,7 @@ from typing import List, Optional, Set
 import numpy as np
 from dataclasses import dataclass
 
-from wetstat.common import config
+from wetstat.common import config, logger
 
 
 @dataclass
@@ -57,6 +57,7 @@ def load_csv_to_daydata(filename: str, separator=";") -> DayData:
     :param separator:
     :return: DayData
     """
+    # logger.log.debug(f"loading file {filename} to daydata...")
     with open(filename) as file:
         d = datetime.datetime.strptime(os.path.basename(filename).split(".")[0], "day%jin%y")
         fields = list(map(str.strip, file.readline().split(separator)))
