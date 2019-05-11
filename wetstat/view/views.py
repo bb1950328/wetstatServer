@@ -272,8 +272,22 @@ def progress(request):
         except ValueError:
             pass
     msgs = message_container.get_messages(plot_id)
+    pps = message_container.percent_per_second
+    if pps:
+        print(pps)
+        msgs = msgs[:]
+        msgs.insert(0, f"%%pps={int(pps)}%%")
+    if "%%finished%%" in "".join(msgs):
+        save_perf(msgs)
     context = {"content": "Wrong plot id!!!" if msgs is None else "\n".join(msgs)}
     return render(request, "wetstat/dummy.html", context)
+
+
+def save_perf(msgs: list):
+    values = [m.split(":")[0].strip() for m in msgs]
+    print(values)
+    with open(os.path.join(config.get_wetstat_dir(), "perf.csv"), "a") as f:
+        f.write(";".join(values) + "\n")
 
 
 def system(request):

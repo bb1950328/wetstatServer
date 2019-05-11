@@ -72,6 +72,7 @@ class CustomPlotRequest:
                             args[2] = None
                         so.set_minmaxavg_interval(args[2])
                         if args[3] != "auto":
+                            args[3] = args[3].replace("_35", "#")
                             so.set_line_color(args[3])
                         self.custom_plot.add_sensoroption(so)
                     except ValueError as e:

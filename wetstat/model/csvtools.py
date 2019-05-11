@@ -1,12 +1,12 @@
 # coding=utf-8
 import datetime
 import os
-from typing import List, Optional, Set
+from dataclasses import dataclass
+from typing import Optional, Set
 
 import numpy as np
-from dataclasses import dataclass
 
-from wetstat.common import config, logger
+from wetstat.common import config
 
 
 @dataclass

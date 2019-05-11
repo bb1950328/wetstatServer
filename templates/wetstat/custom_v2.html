@@ -229,6 +229,8 @@
             let color = input.value;
             if (color === "#ffffff") {
                 color = "auto";
+            } else {
+                color.replace("#", "_35"); // because # is special char in GET URL
             }
             link += "&line=";
             link += short_name;

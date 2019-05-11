@@ -40,6 +40,12 @@
 {% comment %}<h1>Von {{ start }} bis {{ end }}</h1>{% endcomment %}
 <div id="id_messagebox">
     <h3>Bitte warten sie, während der Graph generiert wird.</h3>
+    <div class="progress">
+        <div id="pbar" class="progress-bar progress-bar-striped" role="progressbar" style="width: 0; text-align: left;"
+             aria-valuenow="0"
+             aria-valuemin="0" aria-valuemax="100">0%
+        </div>
+    </div>
     <span id="id_message_span"></span>
 </div>
 <main id="id_main_no_padding">
@@ -50,6 +56,16 @@
     let req;
     let plotfile = "{% static plotfile %}";
     let image_loaded = false;
+    let pps;
+    let intervalID = window.setInterval(function () {
+        let pbar = document.getElementById("pbar");
+        let oldvalue = parseInt(pbar.getAttribute("aria-valuenow"), 10);
+        let newvalue = oldvalue + (pps / 10);
+        let new_proz = newvalue + "%";
+        pbar.setAttribute("aria-valuenow", newvalue);
+        pbar.style.width = new_proz;
+        pbar.innerText = new_proz;
+    }, 100);
 
     function show_image() {
         let msg = document.getElementById("id_messagebox");
@@ -66,6 +82,7 @@
         main.appendChild(legend);
         main.onresize = set_img_width;
         image_loaded = true;
+        window.clearInterval(intervalID);
     }
 
     function set_img_width() {
@@ -89,13 +106,19 @@
         req.send();
         //console.log(req.response);
         let span = document.getElementById("id_message_span");
-        span.innerText = req.response;
+        let all_msgs = req.response;
+        let msg_lines = all_msgs.split("\n");
+        pps = msg_lines[0].match(/\d+/g).map(Number)[0];
+        console.log(pps);
+        msg_lines.splice(0, 1);
+        span.innerText = msg_lines.join("\n"); // rest
         if (req.response.endsWith("%%finished%%")) {
             show_image();
         } else {
             setTimeout(get_progress, 200);
         }
     }
+
     $(document).ready(get_progress);
     //get_progress();
     set_img_width();

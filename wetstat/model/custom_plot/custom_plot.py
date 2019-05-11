@@ -132,10 +132,12 @@ class CustomPlot:
                                                 self.start, self.end,
                                                 ignore_missing=ignore_missing)
 
-    def add_message(self, message: str):
+    def add_message(self, message: str, percent=None):
         timestamp = (perf_counter_ns() - self.start_ts) / 10 ** 9
         if self.plot_id is not None and self.message_container is not None:
-            self.message_container.add_message(self.plot_id, str(round(timestamp, 3)).ljust(6) + ": " + message)
+            pstr = ""
+            # pstr = "(" + str(int(percent)) + "%)" if percent is not None else ""
+            self.message_container.add_message(self.plot_id, pstr + str(round(timestamp, 3)) + ": " + message)
 
     def set_title(self, title: str):
         self.title = title
@@ -332,28 +334,32 @@ class CustomPlot:
             imsave(filename, img)
 
     def create_plots(self):
+        percents = [0.00, 47.07, 47.07, 47.07, 47.07, 47.09, 65.86, 86.72, 86.72, 87.34, 88.38, 88.82, 95.87, 100.00]
         self.start_ts = perf_counter_ns()  # self only for debug
-        self.add_message("Lade Daten")
+        self.add_message("Lade Daten", percents[0])
         self.load_data()
-        self.add_message("Setze Farben")
+        after_load_ts = perf_counter_ns()
+        pps = percents[1] / ((after_load_ts - self.start_ts) / (10 ** 9))
+        self.message_container.set_percent_per_second(pps)
+        self.add_message("Setze Farben", percents[1])
         self.set_all_linecolors()
-        self.add_message("Verteile Datenreihen")
+        self.add_message("Verteile Datenreihen", percents[2])
         self.distribute_lines_to_axes()
-        self.add_message("Bereite Beschriftungen vor")
+        self.add_message("Bereite Beschriftungen vor", percents[3])
         self.prepare_axis_labels()
-        self.add_message("Generiere X-Beschriftungen")
+        self.add_message("Generiere X-Beschriftungen", percents[4])
         self.generate_xticks()
-        self.add_message("Teile Daten auf")
+        self.add_message("Teile Daten auf", percents[5])
         self.split_data_to_lines()
-        self.add_message("Verkleinere Daten")
+        self.add_message("Verkleinere Daten", percents[6])
         self.make_all_lines_minmaxavg()
-        self.add_message("Generiere Legenden")
+        self.add_message("Generiere Legenden", percents[7])
         self.generate_legends()
-        self.add_message("Erzeuge Zeichenbereich")
+        self.add_message("Erzeuge Zeichenbereich", percents[8])
         fig, subs = plt.subplots(nrows=len(self.axes), sharex="all", figsize=self.figsize, dpi=self.dpi)
         if len(self.axes) < 2:
             subs = [subs]
-        self.add_message("Setze X-Beschriftungen")
+        self.add_message("Setze X-Beschriftungen", percents[9])
         plt.xticks(self.xtick_pos, self.xtick_str, rotation=90)
         plt.xlim(self.xtick_pos[0], self.xtick_pos[-1])
         num_lines = len(self.sensoroptions.keys())
@@ -386,7 +392,7 @@ class CustomPlot:
                     axis.plot(x, y, label=label, color=color, linewidth=self.linewidth)
         title = plt.suptitle(self.get_title(), y=1.0, size=32)
 
-        self.add_message("Speichere Graph")
+        self.add_message("Speichere Graph", percents[-3])
         bbox_extra_artists = (title,)
         if self.legend_mode == 0:  # legend inside
             lgd = fig.legend(loc="upper center", ncol=20, fancybox=True, shadow=True, bbox_to_anchor=(0.5, 0.97))
@@ -407,6 +413,6 @@ class CustomPlot:
         time_used = (end_ts - self.start_ts) / 10 ** 9
         logger.log.info("custom plot creation finished in {} sec.".format(time_used))
         # fig.show()
-        self.add_message("Fertig")
-        self.add_message("%%finished%%")
+        self.add_message("Fertig", 100)
+        self.add_message("%%finished%%", 100)
         return time_used

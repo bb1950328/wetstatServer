@@ -8,6 +8,7 @@ class MessageContainer:
         self._messages: Dict[str, List[str]] = {}
         self.messages_lock = threading.Lock()
         self.messages_lock_reversed = threading.Lock()
+        self.percent_per_second = 5
 
     def add_message(self, plot_id: str, messge: str) -> None:
         with self.messages_lock:
@@ -21,3 +22,6 @@ class MessageContainer:
                 return self._messages[plot_id]
             except KeyError:
                 return None
+
+    def set_percent_per_second(self, pps):
+        self.percent_per_second = pps
