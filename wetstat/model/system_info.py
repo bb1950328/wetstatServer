@@ -2,6 +2,7 @@
 import os
 import subprocess
 import sys
+from time import strftime, time
 from typing import List
 
 
@@ -12,7 +13,8 @@ class InfoCommand:
         myenv["COLUMNS"] = str(columns)
         pipe = subprocess.Popen(command, stdout=subprocess.PIPE, env=myenv)
         out, err = pipe.communicate()
-        out = out.decode()
+        out = out.decode(errors="replace")
+        out = out.replace("\r\n", "<br>")
         if err is not None:
             err = err.decode()
         return out if len(out) > 0 else err
@@ -63,8 +65,24 @@ class DiskUsageInfo(InfoCommand):
             return ["df", "-h"]
 
 
+class TimeInfo(InfoCommand):
+
+    def get_command(self) -> List[str]:
+        return ["time.strftime()"]
+
+    def get_output(self) -> str:
+        return strftime("%A, %d.%m.%Y %H:%M:%S.") + str(time()).split(".")[1]
+
+
+class NetworkInfo(InfoCommand):
+    def get_command(self) -> List[str]:
+        return ["ipconfig"] if self.get_system() == "win32" else ["ifconfig"]
+
+
 ALL_INFO_CLASSES = [ListOfAllProcesses(),
                     SystemInfo(),
                     RamInfo(),
+                    NetworkInfo(),
                     DiskUsageInfo(),
+                    TimeInfo(),
                     ]
