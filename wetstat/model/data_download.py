@@ -7,6 +7,7 @@ from typing import Optional
 
 from wetstat.common import config
 from wetstat.model import csvtools
+from wetstat.model.custom_plot.request import CustomPlotRequest
 
 
 class DataDownload:
@@ -73,3 +74,17 @@ class DataDownload:
             final_file = shutil.make_archive(self.get_filepath(), "zip", folder)
             shutil.rmtree(folder)
             return final_file
+
+
+class DataDownloadRequest(CustomPlotRequest):
+    def __init__(self, get):
+        self.get = get
+        self.start = None
+        self.end = None
+
+    def parse(self):
+        self.start, self.end = self.parse_start_end()
+        for key in self.get.keys():
+            if key == "onefile":
+                # TODO implemeint
+                pass

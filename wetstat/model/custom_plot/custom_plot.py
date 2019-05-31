@@ -340,7 +340,7 @@ class CustomPlot:
         self.load_data()
         after_load_ts = perf_counter_ns()
         pps = percents[1] / ((after_load_ts - self.start_ts) / (10 ** 9))
-        self.message_container.set_percent_per_second(pps)
+        self.message_container.set_percent_per_second(self.plot_id, pps)
         self.add_message("Setze Farben", percents[1])
         self.set_all_linecolors()
         self.add_message("Verteile Datenreihen", percents[2])

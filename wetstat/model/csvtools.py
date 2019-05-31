@@ -28,14 +28,15 @@ def load_csv_for_range(folder: str, start: datetime.date, end: datetime.date, ig
     container = DataContainer(list())
     while start <= end:
         filename = os.path.join(folder, get_filename_for_date(start))
+        start = start + datetime.timedelta(days=1)  # increase date
         if not os.path.isfile(filename):
             if ignore_missing:
                 continue
             else:
                 raise FileNotFoundError("File not found: " + filename +
                                         "You can set argument ignore_missing to True to ignore this.")
+
         container.data.append(load_csv_to_daydata(filename))
-        start = start + datetime.timedelta(days=1)  # increase date
     return container
 
 

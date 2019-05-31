@@ -272,7 +272,7 @@ def progress(request):
         except ValueError:
             pass
     msgs = message_container.get_messages(plot_id)
-    pps = message_container.percent_per_second
+    pps = message_container.get_percent_per_second(plot_id)
     if pps:
         print(pps)
         msgs = msgs[:]

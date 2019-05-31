@@ -1,5 +1,10 @@
 # coding=utf-8
 class BaseSensor:
+    MINMAXAVG = "minmaxavg"
+    SUM = "sum"
+    MIN = "min"
+    MAX = max
+
     def __init__(self):
         raise RuntimeWarning("you should not instantiate this class directly!")
 
@@ -23,3 +28,6 @@ class BaseSensor:
 
     def get_unit(self):
         raise NotImplementedError("child class hasn't defined get_unit() correctly!")
+
+    def get_compression_function(self):
+        return self.MINMAXAVG

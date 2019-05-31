@@ -12,16 +12,12 @@ from datetime import datetime, timedelta
 
 
 class CustomPlotRequest:
-    custom_plot: Optional[CustomPlot]
-    get: QueryDict
-    DATEFORMAT = ""
 
     def __init__(self, get: QueryDict):
-        self.get = get
-        self.custom_plot = None
+        self.get: QueryDict = get
+        self.custom_plot: Optional[CustomPlot] = None
 
-    def parse(self):
-        self.custom_plot = CustomPlot()
+    def parse_start_end(self):
         start: str = self.get.get("start")
         end: str = self.get.get("end")
         if start is not None and end is not None:
@@ -46,10 +42,16 @@ class CustomPlotRequest:
                 except ValueError:
                     start_dt = datetime.fromisoformat(start)
                     end_dt = datetime.fromisoformat(end)
-            self.custom_plot.set_start(start_dt)
-            self.custom_plot.set_end(end_dt)
         except ValueError or OSError as e:
             raise ValueError("Start and/or end has wrong format!") from e
+        return start_dt, end_dt
+
+    def parse(self):
+        self.custom_plot = CustomPlot()
+        start_dt, end_dt = self.parse_start_end()
+        self.custom_plot.set_start(start_dt)
+        self.custom_plot.set_end(end_dt)
+
         for key in self.get.keys():
             if key == "start" or key == "end":
                 continue  # already processed
