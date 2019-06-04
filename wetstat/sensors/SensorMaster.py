@@ -10,7 +10,7 @@ import schedule
 from wetstat.model import csvtools
 from wetstat.common import logger
 from wetstat.sensors.BaseSensor import BaseSensor
-from wetstat.sensors.LightSensor import LightSensor
+from wetstat.sensors.LightSensor import OldLightSensor
 from wetstat.sensors.TempSensor import TempSensor
 
 """
@@ -29,7 +29,7 @@ ALL_SENSORS = [
     FakeSensor(2),
     TempSensor(1),
     TempSensor(2),
-    LightSensor(),
+    OldLightSensor(),
 ]
 
 SENSORS = [

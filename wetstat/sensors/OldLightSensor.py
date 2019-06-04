@@ -4,7 +4,7 @@ from wetstat.sensors.BaseSensor import BaseSensor
 
 
 # noinspection PyMissingConstructor
-class LightSensor(BaseSensor):
+class OldLightSensor(BaseSensor):
 
     def __init__(self):
         self.adc = None
@@ -13,7 +13,7 @@ class LightSensor(BaseSensor):
         return "Licht"
 
     def get_short_name(self):
-        return "Light"
+        return "OldLight"
 
     def get_display_color(self):
         return "#f9d607"
