@@ -19,7 +19,7 @@ class AnalogSensor(BaseSensor, ABC):
         return self.adc
 
     def get_bits(self, channel: int) -> int:
-        return self.adc.read_channel_bits(channel)
+        return self.get_adc().read_channel_bits(channel)
 
     def get_volts(self, channel: int) -> float:
-        return self.adc.read_channel_volts(channel)
+        return self.get_adc().read_channel_volts(channel)
