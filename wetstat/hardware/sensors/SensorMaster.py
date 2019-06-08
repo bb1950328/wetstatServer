@@ -6,7 +6,7 @@ from typing import Optional, List
 import numpy as np
 import schedule
 
-from wetstat.common import logger
+from wetstat.common import logger, config
 from wetstat.hardware.sensors.BaseSensor import BaseSensor
 from wetstat.hardware.sensors.FakeSensor import FakeSensor
 from wetstat.hardware.sensors.OldLightSensor import OldLightSensor
@@ -77,7 +77,7 @@ class SensorMaster:
             time.sleep(1)
         means = list(np.mean(data, axis=0))
         means = [round(n) for n in means]
-        csvtools.save_values(csvtools.get_data_folder(), heads, means, savedate)
+        csvtools.save_values(config.get_datafolder(), heads, means, savedate)
         logger.log.debug("measured values" + str(means))
 
     @staticmethod

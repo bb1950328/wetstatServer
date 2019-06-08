@@ -7,7 +7,7 @@ from wetstat.hardware.sensors.BaseSensor import BaseSensor
 
 class AnalogSensor(BaseSensor, ABC):
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.adc = None
 
     def set_adc(self, adc: AnalogDigitalConverter) -> None:
