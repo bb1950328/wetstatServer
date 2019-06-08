@@ -14,6 +14,7 @@ class AnalogDigitalConverter:
     def __init__(self):
         self.spi = spidev.SpiDev()
         self.spi.open(0, 1)
+        self.spi.max_speed_hz = 7800000
 
     def read_channel(self, channel, timeout=1):
         if not ON_PI:
