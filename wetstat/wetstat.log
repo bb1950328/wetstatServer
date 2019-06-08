@@ -1,0 +1,21 @@
+2019-06-08 10:50:29,581 [Thread-2    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/
+2019-06-08 11:02:43,791 [Thread-2    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/
+2019-06-08 11:02:59,514 [Thread-4    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/week
+2019-06-08 11:04:42,035 [Thread-2    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/
+2019-06-08 11:05:15,240 [Thread-2    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/generate_plot?start=2018-06-07T11:04&end=2018-06-08T11:04&line=Temp1,auto,none,auto
+2019-06-08 11:07:55,939 [Thread-2    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/generate_plot?start=2018-06-07T11:04&end=2018-06-08T11:04&line=Temp1,auto,none,auto
+2019-06-08 11:08:29,563 [Thread-8    ] [INFO ]  custom plot creation finished in 33.58444 sec.
+2019-06-08 11:13:02,440 [Thread-2    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/
+2019-06-08 11:13:47,452 [Thread-4    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/week
+2019-06-08 11:27:30,926 [Thread-8    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/generate_plot?start=2018-06-07T11:04&end=2018-06-08T11:04&line=Temp1,auto,none,auto&line=Fake1,auto,none,auto
+2019-06-08 12:13:10,661 [Thread-2    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/index
+2019-06-08 12:13:14,413 [Thread-2    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/week
+2019-06-08 12:13:51,764 [Thread-4    ] [INFO ]  custom plot creation finished in 37.328802 sec.
+2019-06-08 12:14:27,492 [Thread-2    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/week
+2019-06-08 12:15:04,214 [Thread-6    ] [INFO ]  custom plot creation finished in 36.699882 sec.
+2019-06-08 12:18:20,918 [Thread-2    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/week
+2019-06-08 12:18:59,265 [Thread-4    ] [INFO ]  custom plot creation finished in 38.323939 sec.
+2019-06-08 12:23:41,659 [Thread-2    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/week
+2019-06-08 12:24:19,503 [Thread-4    ] [INFO ]  custom plot creation finished in 37.82131 sec.
+2019-06-08 12:30:19,816 [Thread-2    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/week
+2019-06-08 12:30:58,644 [Thread-4    ] [INFO ]  custom plot creation finished in 38.805871 sec.

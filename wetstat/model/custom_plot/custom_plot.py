@@ -338,6 +338,9 @@ class CustomPlot:
 
     def create_plots(self):
         percents = [0.00, 47.07, 47.07, 47.07, 47.07, 47.09, 65.86, 86.72, 86.72, 87.34, 88.38, 88.82, 95.87, 100.00]
+        ##debug:
+        percents = [0, 5.64786686, 5.650508519, 5.692775063, 5.695416722, 5.748249901, 6.020340774, 8.017434949,
+                    8.020076608, 23.36547352, 29.54695549, 30.09906221, 100, 100]
         self.start_ts = perf_counter_ns()  # self only for debug
         self.add_message("Lade Daten", percents[0])
         self.load_data()
