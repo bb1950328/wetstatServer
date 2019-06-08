@@ -1,12 +1,14 @@
 # coding=utf-8
-class BaseSensor:
-    MINMAXAVG = "minmaxavg"
-    SUM = "sum"
-    MIN = "min"
-    MAX = max
+from abc import ABC, abstractmethod
+from enum import Enum
 
-    def __init__(self):
-        raise RuntimeWarning("you should not instantiate this class directly!")
+
+class BaseSensor(ABC):
+    class CompressionFunction(Enum):
+        MINMAXAVG = "minmaxavg"
+        SUM = "sum"
+        MIN = "min"
+        MAX = "max"
 
     def get_info(self):
         try:
@@ -17,17 +19,25 @@ class BaseSensor:
         except NameError:
             raise NotImplementedError("child class hasn't defined one of the info methods correctly!")
 
-    def get_long_name(self):
-        raise NotImplementedError("child class hasn't defined get_long_name() correctly!")
+    @abstractmethod
+    def get_long_name(self) -> str:
+        pass
 
-    def get_short_name(self):
-        raise NotImplementedError("child class hasn't defined get_short_name() correctly!")
+    @abstractmethod
+    def get_short_name(self) -> str:
+        pass
 
-    def get_display_color(self):
-        raise NotImplementedError("child class hasn't defined get_display_color() correctly!")
+    @abstractmethod
+    def get_display_color(self) -> str:
+        pass
 
-    def get_unit(self):
-        raise NotImplementedError("child class hasn't defined get_unit() correctly!")
+    @abstractmethod
+    def get_unit(self) -> str:
+        pass
 
-    def get_compression_function(self):
-        return self.MINMAXAVG
+    def get_compression_function(self) -> CompressionFunction:
+        return self.CompressionFunction.MINMAXAVG
+
+    @abstractmethod
+    def measure(self) -> float:
+        pass

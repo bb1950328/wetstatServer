@@ -1,14 +1,14 @@
 # coding=utf-8
-from wetstat.sensors.AnalogDigitalConverter import AnalogDigitalConverter
-from wetstat.sensors.BaseSensor import BaseSensor
+from wetstat.sensors.AnalogSensor import AnalogSensor
 
 
-class TempSensor(BaseSensor):
+class TempSensor(AnalogSensor):
 
-    # noinspection PyMissingConstructor
-    def __init__(self, number):
+    def __init__(self, number: int):
+        if not (1 <= number <= 2):
+            raise ValueError("number must be 1 or 2!!!")
+        super().__init__()
         self.number = number
-        self.adc = None
 
     def get_long_name(self):
         return f"Temperatur {self.number}"
@@ -27,14 +27,6 @@ class TempSensor(BaseSensor):
     def get_unit(self):
         return "°C"
 
-    def set_adc(self, adc):
-        self.adc = adc
-
-    def get_adc(self):
-        if self.adc is None:
-            self.adc = AnalogDigitalConverter()
-        return self.adc
-
-    def measure(self):
-        volt = self.get_adc().read_channel(max(7, min(0, self.number - 1)))  # limit channel
+    def measure(self) -> float:
+        volt = self.get_volts(self.number - 1)  # limit channel
         return 35.744 * volt - 37.451
