@@ -1,5 +1,6 @@
 # coding=utf-8
 import time
+from typing import Optional
 
 from wetstat.common import logger
 
@@ -18,7 +19,7 @@ class AnalogDigitalConverter:
         self.spi.max_speed_hz = 7800000
         self.volts_per_bit = volt_reference / pow(2, num_bits)
 
-    def read_channel_bits(self, channel: int, timeout: float = 1) -> int:
+    def read_channel_bits(self, channel: int, timeout: float = 1) -> Optional[int]:
         if not ON_PI:
             logger.log.warning("Someone tried to read values from ADC but not on Raspberry Pi")
             return 0
@@ -30,7 +31,8 @@ class AnalogDigitalConverter:
         value = None
         while (value is None) and ((time.perf_counter() - start_time) < timeout):
             if 0 <= answer[1] <= 3:
-                value = ((answer[1] * 256) + answer[2])
+                return (answer[1] * 256) + answer[2]
+        return None
 
     def read_channel_volt(self, channel: int, timeout: float = 1) -> float:
         return self.read_channel_bits(channel, timeout) * self.volts_per_bit
