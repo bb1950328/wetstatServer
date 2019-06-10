@@ -8,33 +8,30 @@ import schedule
 
 from wetstat.common import logger
 from wetstat.hardware.sensors.BaseSensor import BaseSensor
+from wetstat.hardware.sensors.FakeSensor import FakeSensor
 from wetstat.hardware.sensors.OldLightSensor import OldLightSensor
+from wetstat.hardware.sensors.OldTempSensor import OldTempSensor
 from wetstat.hardware.sensors.TempSensor import TempSensor
 from wetstat.model import csvtools
-
-"""
-from wetstat.sensors.TempSensor import TempSensor
 
 SENSORS = [
     TempSensor(1),
     TempSensor(2),
-]"""
-
-# just for debugging
-from wetstat.hardware.sensors.FakeSensor import FakeSensor
+]
 
 ALL_SENSORS = [
     FakeSensor(1),
     FakeSensor(2),
     TempSensor(1),
-    TempSensor(2),
+    OldTempSensor(2),
     OldLightSensor(),
 ]
 
-SENSORS = [
-    FakeSensor(1),
-    FakeSensor(2),
-]
+
+# SENSORS = [
+#     FakeSensor(1),
+#     FakeSensor(2),
+# ]
 
 
 class SensorMaster:
