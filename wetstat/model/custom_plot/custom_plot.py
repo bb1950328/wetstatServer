@@ -1,13 +1,13 @@
 # coding=utf-8
 import os
+import random
+from datetime import datetime, timedelta
 from time import perf_counter_ns
 from typing import Optional, Dict, Union, List, Callable, Tuple
 
-from datetime import datetime, timedelta
-
+import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.image import imread, imsave
-import matplotlib.pyplot as plt
 from numpy.core.multiarray import ndarray
 
 from wetstat.common import logger
@@ -20,7 +20,7 @@ from wetstat.view.MessageContainer import MessageContainer
 class CustomPlot:
     # Type hints:
     message_container: Optional[MessageContainer]
-    plot_id: Optional[str]
+    plot_id: str
     legend_mode: int
     legends: Optional[Dict[str, str]]
     xtick_str: Optional[Union[List[str], ndarray]]
@@ -61,8 +61,11 @@ class CustomPlot:
         self.max_xticks = 24
         self.vectorized_from_ts = np.vectorize(datetime.fromtimestamp)
         self.legend_mode = 0  # 0=inside plot, 1=save in separate file, 2=no legend
-        self.plot_id = None
+        self.plot_id = hex(random.randint(0x1000000000000, 0xfffffffffffff))[2:]
         self.message_container = None
+
+    def get_plot_id(self) -> str:
+        return self.plot_id
 
     def set_legend_mode(self, legend_mode: int):
         if 0 <= legend_mode <= 2:
