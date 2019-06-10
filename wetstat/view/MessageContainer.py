@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Union
 
 class MessageContainer:
     def __init__(self):
-        self.PPS_DEFAULT_VALUE: int = 5
+        self.PPS_DEFAULT_VALUE: int = 2
         self._messages: Dict[str, List[str]] = {}
         self.messages_lock = threading.Lock()
         self.pps_lock = threading.Lock()
