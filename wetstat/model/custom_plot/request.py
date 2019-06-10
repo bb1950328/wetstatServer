@@ -1,14 +1,13 @@
 # coding=utf-8
+from datetime import datetime, timedelta
 from typing import Optional, List
 
 from django.http import QueryDict
 
+from wetstat.hardware.sensors.SensorMaster import SensorMaster
 from wetstat.model.custom_plot.custom_plot import CustomPlot
 from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
-from wetstat.sensors.SensorMaster import SensorMaster
 from wetstat.view import views
-
-from datetime import datetime, timedelta
 
 
 class CustomPlotRequest:

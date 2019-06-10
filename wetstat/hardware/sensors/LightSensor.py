@@ -1,9 +1,9 @@
 # coding=utf-8
-from wetstat.sensors.AnalogSensor import AnalogSensor
+from wetstat.hardware.sensors.AnalogSensor import AnalogSensor
 
 
 class LightSensor(AnalogSensor):
-    def __init__(self, channel=2):
+    def __init__(self, channel: int = 2) -> None:
         super().__init__()
         self.channel = channel
 

@@ -1,17 +1,16 @@
 # coding=utf-8
 import datetime
+import time
 from typing import Optional, List
 
 import numpy as np
-import time
-
 import schedule
 
-from wetstat.model import csvtools
 from wetstat.common import logger
-from wetstat.sensors.BaseSensor import BaseSensor
-from wetstat.sensors.OldLightSensor import OldLightSensor
-from wetstat.sensors.TempSensor import TempSensor
+from wetstat.hardware.sensors.BaseSensor import BaseSensor
+from wetstat.hardware.sensors.OldLightSensor import OldLightSensor
+from wetstat.hardware.sensors.TempSensor import TempSensor
+from wetstat.model import csvtools
 
 """
 from wetstat.sensors.TempSensor import TempSensor
@@ -22,7 +21,7 @@ SENSORS = [
 ]"""
 
 # just for debugging
-from wetstat.sensors.FakeSensor import FakeSensor
+from wetstat.hardware.sensors.FakeSensor import FakeSensor
 
 ALL_SENSORS = [
     FakeSensor(1),

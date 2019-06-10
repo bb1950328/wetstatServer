@@ -10,10 +10,10 @@ from django.utils.safestring import mark_safe
 
 from wetstat.common import config, logger
 from wetstat.common.config import get_date
+from wetstat.hardware.sensors.SensorMaster import SensorMaster, ALL_SENSORS
 from wetstat.model import models, csvtools, system_info
 from wetstat.model.csvtools import get_nearest_record
 from wetstat.model.custom_plot.request import CustomPlotRequest
-from wetstat.sensors.SensorMaster import SensorMaster, ALL_SENSORS
 from wetstat.view.MessageContainer import MessageContainer
 from wetstat.view.forms import CustomPlotForm
 

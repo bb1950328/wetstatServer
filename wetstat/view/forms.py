@@ -5,7 +5,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import DateTimeField, ChoiceField, Field
 
-from wetstat.sensors import SensorMaster
+from wetstat.hardware.sensors import SensorMaster
 
 sensor_choices = ["Nicht anzeigen", "Primärachse", "Sekundärachse", "MinMaxAvg Prim.", "MinMaxAvg Sek."]
 

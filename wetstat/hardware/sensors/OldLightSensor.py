@@ -1,6 +1,6 @@
 # coding=utf-8
-from wetstat.sensors.AnalogDigitalConverter import AnalogDigitalConverter
-from wetstat.sensors.BaseSensor import BaseSensor
+from wetstat.hardware.sensors.AnalogDigitalConverter import AnalogDigitalConverter
+from wetstat.hardware.sensors.BaseSensor import BaseSensor
 
 
 # noinspection PyMissingConstructor

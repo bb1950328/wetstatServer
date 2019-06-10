@@ -1,5 +1,5 @@
 # coding=utf-8
-from wetstat.sensors.AnalogSensor import AnalogSensor
+from wetstat.hardware.sensors.AnalogSensor import AnalogSensor
 
 
 class TempSensor(AnalogSensor):
@@ -10,13 +10,13 @@ class TempSensor(AnalogSensor):
         super().__init__()
         self.number = number
 
-    def get_long_name(self):
+    def get_long_name(self) -> str:
         return f"Temperatur {self.number}"
 
-    def get_short_name(self):
+    def get_short_name(self) -> str:
         return f"Temp{self.number}"
 
-    def get_display_color(self):
+    def get_display_color(self) -> str:
         blue = (self.number * 50 + 150) % 255
         n = str(hex(blue))
         n = n[2:]
@@ -24,7 +24,7 @@ class TempSensor(AnalogSensor):
             n = "0" + n
         return f"#3875{n}"
 
-    def get_unit(self):
+    def get_unit(self) -> str:
         return "°C"
 
     def measure(self) -> float:
