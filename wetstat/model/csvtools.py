@@ -40,10 +40,6 @@ def load_csv_for_range(folder: str, start: datetime.date, end: datetime.date, ig
     return container
 
 
-def get_data_folder():
-    return config.get_datafolder()
-
-
 def save_range_to_csv(folder: str, container: DataContainer):
     for daydata in container.data:
         save_daydata_to_csv(daydata, folder)

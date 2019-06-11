@@ -13,7 +13,7 @@ except ModuleNotFoundError:  # not on raspberry pi
 
 
 class AnalogDigitalConverter:
-    def __init__(self, volt_reference=3.3, num_bits=10):
+    def __init__(self, volt_reference: float = 3.3, num_bits: int = 10) -> None:
         self.spi = spidev.SpiDev()
         self.spi.open(0, 1)
         self.spi.max_speed_hz = 7800000

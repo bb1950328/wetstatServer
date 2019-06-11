@@ -10,7 +10,7 @@ class BaseSensor(ABC):
         MIN = "min"
         MAX = "max"
 
-    def get_info(self):
+    def get_info(self) -> dict:
         try:
             return {"long_name": self.get_long_name(),
                     "short_name": self.get_short_name(),

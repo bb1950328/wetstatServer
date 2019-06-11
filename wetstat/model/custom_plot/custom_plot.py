@@ -10,7 +10,7 @@ import numpy as np
 from matplotlib.image import imread, imsave
 from numpy.core.multiarray import ndarray
 
-from wetstat.common import logger
+from wetstat.common import logger, config
 from wetstat.model import csvtools
 from wetstat.model.csvtools import DataContainer
 from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
@@ -40,7 +40,7 @@ class CustomPlot:
     axes: List[Optional[list]]
     filename: Optional[str]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.filename = None
         self.legends = None
         self.linewidth = 0.75
@@ -91,7 +91,7 @@ class CustomPlot:
             raise ValueError("Start must be before end!")
         self.start = start
 
-    def get_start(self):
+    def get_start(self) -> datetime:
         return self.start
 
     def set_end(self, end: datetime):
@@ -102,10 +102,10 @@ class CustomPlot:
             raise ValueError("End must be after start!")
         self.end = end
 
-    def get_end(self):
+    def get_end(self) -> datetime:
         return self.end
 
-    def check_data_exists(self):
+    def check_data_exists(self) -> Optional[str]:
         """
         :return: filename of the first missing file, None if everything is ok
         """
@@ -117,21 +117,21 @@ class CustomPlot:
         while i < self.end:
             files.append(csvtools.get_filename_for_date(i))
             i = i + oneday
-        datafolder = csvtools.get_data_folder()
+        datafolder = config.get_datafolder()
         for file in files:
             path = os.path.join(datafolder, file)
             if not os.path.isfile(path):
                 return file
         return None
 
-    def load_data(self, ignore_missing=True):
+    def load_data(self, ignore_missing: bool = True) -> Optional[DataContainer]:
         missing = ((not ignore_missing) and self.check_data_exists())
         if missing:
             raise FileNotFoundError("Data does not exist! (at least " + missing + ") missing")
         if self.data is not None:
             # data already here
             return
-        self.data = csvtools.load_csv_for_range(csvtools.get_data_folder(),
+        self.data = csvtools.load_csv_for_range(config.get_datafolder(),
                                                 self.start, self.end,
                                                 ignore_missing=ignore_missing)
 

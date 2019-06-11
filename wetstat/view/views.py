@@ -187,7 +187,7 @@ def custom(request):
             start_view = start.strftime("%d.%m.%Y %H:%M")
             end_view = end.strftime("%d.%m.%Y %H:%M")
             try:
-                data = csvtools.load_csv_for_range(csvtools.get_data_folder(), start, end)
+                data = csvtools.load_csv_for_range(config.get_datafolder(), start, end)
             except Exception:
                 logger.log.exception("Could not load data for custom plot!")
                 return show_error(request, "Daten konnten nicht geladen werden!", "custom.html")
