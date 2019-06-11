@@ -3,7 +3,7 @@ div.sensor {
     display: inline-block;
     padding: 10px;
     margin: 15px;
-    border-radius: 10px;
+    border-radius: 10%;
     box-shadow: 10px 10px 10px 10px rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
@@ -54,7 +54,7 @@ input#id_input_title, #id_start_date, #id_end_date {
 
 /*for debug:*/
 #id_options_table > tbody > tr > td {
-    border: dashed red;
+
 }
 
 .formlabel {
@@ -64,6 +64,8 @@ input#id_input_title, #id_start_date, #id_end_date {
 }
 
 form {
+    width: border-box;
+    width: -moz-fit-content;
     width: fit-content;
 }
 

@@ -1,48 +1,26 @@
 # coding=utf-8
 import datetime
 import os
-import random
-import threading
 import time
-from typing import Dict, List, Optional
 
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
-from wetstat import csvtools, models, logger, config
-from wetstat.forms import CustomPlotForm
-from wetstat.sensors.SensorMaster import SensorMaster, ALL_SENSORS
-
-
-# Create your views here.
-class MessageContainer:
-    def __init__(self):
-        self._messages: Dict[str, List[str]] = {}
-        self.messages_lock = threading.Lock()
-        self.messages_lock_reversed = threading.Lock()
-
-    def add_message(self, plot_id: str, messge: str) -> None:
-        with self.messages_lock:
-            if plot_id not in self._messages.keys():
-                self._messages[plot_id] = []
-            self._messages[plot_id].append(messge)
-
-    def get_messages(self, plot_id: str) -> Optional[List[str]]:
-        with self.messages_lock:
-            try:
-                return self._messages[plot_id]
-            except KeyError:
-                return None
-
+from wetstat.common import config, logger
+from wetstat.common.config import get_date
+from wetstat.hardware.sensors.SensorMaster import SensorMaster, ALL_SENSORS
+from wetstat.model import models, csvtools, system_info
+from wetstat.model.csvtools import get_nearest_record
+from wetstat.model.custom_plot.custom_plot import CustomPlot
+from wetstat.model.custom_plot.fixed_time_custom_plot import FixedTimeCustomPlot
+from wetstat.model.custom_plot.request import CustomPlotRequest
+from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
+from wetstat.view.MessageContainer import MessageContainer
+from wetstat.view.forms import CustomPlotForm
+from wetstat.view.generatePlotThread import GeneratePlotThread
 
 message_container = MessageContainer()
-
-
-def get_date() -> datetime.datetime:
-    # for development
-    return datetime.datetime.now() - datetime.timedelta(days=365)
-    # noinspection PyUnreachableCode
-    return datetime.datetime.now()
 
 
 def number_maxlength(inp: float, maxlen: int) -> str:
@@ -70,7 +48,7 @@ def number_maxlength(inp: float, maxlen: int) -> str:
 
 
 # noinspection PyUnusedLocal
-def index(request):
+def index(request) -> HttpResponse:
     log_request(request)
 
     class MockDict:
@@ -78,11 +56,11 @@ def index(request):
         returns specified value when get() is called
         """
 
-        def __init__(self, value=0):
+        def __init__(self, value: object = 0):
             self.value = value
 
         # noinspection PyUnusedLocal
-        def get(self, *args):
+        def get(self, *args) -> object:
             return self.value
 
     now = MockDict()
@@ -91,20 +69,20 @@ def index(request):
     lastyear = MockDict()
     errors = []
     try:
-        now = models.get_nearest_record(get_date())
+        now = get_nearest_record(get_date())
     except ValueError or FileNotFoundError:
         logger.log.error("Data for HomePage not found! ")
         return show_error(request, "Es wurden keine Daten zum aktuellen Zeitpunkt gefunden.", "week.html")
     try:
-        yesterday = models.get_nearest_record(get_date() - datetime.timedelta(days=1))
+        yesterday = get_nearest_record(get_date() - datetime.timedelta(days=1))
     except ValueError or FileNotFoundError as e:
         errors.append(str(e))
     try:
-        lastmonth = models.get_nearest_record(get_date() - datetime.timedelta(days=30))
+        lastmonth = get_nearest_record(get_date() - datetime.timedelta(days=30))
     except ValueError or FileNotFoundError as e:
         errors.append(str(e))
     try:
-        lastyear = models.get_nearest_record(get_date() - datetime.timedelta(days=365))
+        lastyear = get_nearest_record(get_date() - datetime.timedelta(days=365))
     except ValueError or FileNotFoundError as e:
         errors.append(str(e))
     if errors:
@@ -113,7 +91,7 @@ def index(request):
     for i, name in enumerate(now.keys()):
         if name == "Time":
             continue
-        change = (now.get(name) / yesterday.get(name)) - 1
+        change = (now.get(name) / yesterday.get(name))
         if change > 1.15:
             img = "arrow_up_transparent.png"
         elif change < 0.95:
@@ -141,37 +119,50 @@ def index(request):
     return render(request, "wetstat/index.html", context)
 
 
-def week(request):
+def week(request) -> HttpResponse:
     log_request(request)
-    today = get_date()
-    before7days = today - datetime.timedelta(days=7)
-    data = csvtools.load_csv_for_range(csvtools.get_data_folder(), before7days, today)
-    path = os.path.join(config.get_staticfolder(), "plot", "week.svg")
-    models.generate_plot(data, 32, filename=path)
-    context = {"plotfile": "plot/week.svg"}
-    return render(request, "wetstat/week.html", context)
+    ftcp = FixedTimeCustomPlot(7)
+    so = CustomPlotSensorOptions(SensorMaster.get_sensor_for_info("short_name", "Temp1"))
+    so.set_minmaxavg_interval("hour")
+    ftcp.add_sensoroption(so)
+    return render_generated_plot(request, ftcp, "week")
 
 
-def month(request):
+def month(request) -> HttpResponse:
     log_request(request)
-    today = get_date()
-    before30days = today - datetime.timedelta(days=30)
-    data = csvtools.load_csv_for_range(csvtools.get_data_folder(), before30days, today)
-    path = os.path.join(config.get_staticfolder(), "plot", "month.svg")
-    models.generate_plot(data, 32, filename=path, useaxis=[1, 0, 0], make_minmaxavg=[True, False, False])
-    context = {"plotfile": "plot/month.svg"}
-    return render(request, "wetstat/month.html", context)
+    ftcp = FixedTimeCustomPlot(30)
+    so = CustomPlotSensorOptions(SensorMaster.get_sensor_for_info("short_name", "Temp1"))
+    so.set_minmaxavg_interval("hour")
+    ftcp.add_sensoroption(so)
+    return render_generated_plot(request, ftcp, "month")
 
 
-def year(request):
+def year(request) -> HttpResponse:
     log_request(request)
-    today = get_date()
-    before365days = today - datetime.timedelta(days=365)
-    data = csvtools.load_csv_for_range(csvtools.get_data_folder(), before365days, today)
-    path = os.path.join(config.get_staticfolder(), "plot", "year.svg")
-    models.generate_plot(data, 120, filename=path, useaxis=[1, 0, 0], make_minmaxavg=[True, False, False])
-    context = {"plotfile": "plot/year.svg"}
-    return render(request, "wetstat/year.html", context)
+    ftcp = FixedTimeCustomPlot(365)
+    so = CustomPlotSensorOptions(SensorMaster.get_sensor_for_info("short_name", "Temp1"))
+    so.set_minmaxavg_interval("day")
+    ftcp.add_sensoroption(so)
+    return render_generated_plot(request, ftcp, "year")
+
+
+def render_generated_plot(request, cp: CustomPlot, name: str) -> HttpResponse:
+    plot_id = cp.get_plot_id()
+    cp.message_container = message_container
+    filename = f"{name}_plot{plot_id}.svg"
+    path = os.path.join(config.get_staticfolder(), "plot", filename)
+    context = {"plotfile": "/plot/" + filename,
+               "plot_id": plot_id,
+               "active_week": "",
+               "active_month": "",
+               "active_year": "",
+               "active_custom": "",
+               f"active_{name}": " active"}
+    cp.filename = path
+    cp.set_legend_mode(1)  # separate file
+    thread = GeneratePlotThread(cp)
+    thread.start()
+    return render(request, "wetstat/show_plot.html", context)
 
 
 def log_request(request):
@@ -214,7 +205,7 @@ def custom(request):
                        "start": start_view,
                        "end": end_view
                        }
-            return render(request, "wetstat/customplot.html", context=context)
+            return render(request, "wetstat/show_plot.html", context=context)
 
     # If this is a GET (or any other method) create the default form.
     else:
@@ -229,7 +220,7 @@ def custom(request):
 
 def customplot(request):
     log_request(request)
-    return render(request, "wetstat/customplot.html")
+    return render(request, "wetstat/show_plot.html")
 
 
 def custom_v2(request):
@@ -258,32 +249,12 @@ def show_error(request, message: str, backlink: str):
 
 
 def generate_plot(request):
-    class GeneratePlotThread(threading.Thread):
-        def __init__(self, custom_plot_request: models.CustomPlotRequest):
-            super().__init__()
-            self.cpr = custom_plot_request
-
-        def run(self) -> None:
-            self.cpr.custom_plot.create_plots()
-
     log_request(request)
     print(request.GET)
-    cpr: models.CustomPlotRequest = models.CustomPlotRequest(request.GET)
+    cpr: CustomPlotRequest = CustomPlotRequest(request.GET)
     try:
         cpr.parse()
-        cpr.custom_plot.plot_id = hex(random.randint(0x1000000000000, 0xfffffffffffff))[2:]
-        cpr.custom_plot.message_container = message_container
-        filename = "plot{}.svg".format(cpr.custom_plot.plot_id)
-        path = os.path.join(config.get_staticfolder(), "plot", filename)
-        context = {"plotfile": "/plot/" + filename,
-                   "plot_id": cpr.custom_plot.plot_id,
-                   }
-        cpr.custom_plot.filename = path
-        cpr.custom_plot.set_legend_mode(1)  # separate file
-        thread = GeneratePlotThread(cpr)
-        thread.start()
-        # cpr.custom_plot.create_plots()
-        return render(request, "wetstat/customplot.html", context=context)
+        return render_generated_plot(request, cpr.custom_plot, "custom")
     except ValueError as e:
         return show_error(request, str(e), "wetstat/index.html")
 
@@ -297,10 +268,27 @@ def progress(request):
         except ValueError:
             pass
     msgs = message_container.get_messages(plot_id)
+    pps = message_container.get_percent_per_second(plot_id)
+    if pps:
+        print(pps)
+        msgs = msgs[:]
+        msgs.insert(0, f"%%pps={int(pps)}%%")
+    if "%%finished%%" in "".join(msgs):
+        save_perf(msgs)
     context = {"content": "Wrong plot id!!!" if msgs is None else "\n".join(msgs)}
     return render(request, "wetstat/dummy.html", context)
 
 
+def save_perf(msgs: list):
+    values = [m.split(":")[0].strip() for m in msgs]
+    print(values)
+    with open(os.path.join(config.get_wetstat_dir(), "perf.csv"), "a") as f:
+        f.write(";".join(values) + "\n")
+
+
 def system(request):
-    context = {}
+    infos = [{"command": (" ".join(ic.get_command())), "output": mark_safe(ic.get_output())} for ic in
+             system_info.ALL_INFO_CLASSES]
+
+    context = {"infos": infos}
     return render(request, "wetstat/system.html", context)

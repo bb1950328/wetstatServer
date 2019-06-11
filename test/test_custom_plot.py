@@ -2,37 +2,38 @@
 import datetime
 import os
 
-import wetstat.sensors.TempSensor
-from wetstat import models
+import wetstat.hardware.sensors.TempSensor
+from wetstat.model.custom_plot.custom_plot import CustomPlot
+from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
 
-cp = models.CustomPlot()
+cp = CustomPlot()
 
 cp.set_start(datetime.datetime(2018, 7, 1))
 cp.set_end(datetime.datetime(2018, 7, 31))
 
-ts = wetstat.sensors.TempSensor.TempSensor(1)
+ts = wetstat.hardware.sensors.TempSensor.TempSensor(1)
 
-so1 = models.CustomPlotSensorOptions(ts)
+so1 = CustomPlotSensorOptions(ts)
 so1.set_axis("0b")
 so1.set_minmaxavg_interval("hour")
 
-so2 = models.CustomPlotSensorOptions(ts)
+so2 = CustomPlotSensorOptions(ts)
 so2.set_axis("1a")
 so2.set_minmaxavg_interval("day")
 
-so3 = models.CustomPlotSensorOptions(ts)
+so3 = CustomPlotSensorOptions(ts)
 so3.set_axis("2b")
 so3.set_minmaxavg_interval("week")
 
-so4 = models.CustomPlotSensorOptions(ts)
+so4 = CustomPlotSensorOptions(ts)
 so4.set_axis("3a")
 so4.set_minmaxavg_interval("month")
 
-so5 = models.CustomPlotSensorOptions(ts)
+so5 = CustomPlotSensorOptions(ts)
 so5.set_axis("4b")
 so5.set_minmaxavg_interval("year")
 
-so6 = models.CustomPlotSensorOptions(ts)
+so6 = CustomPlotSensorOptions(ts)
 so6.set_axis("5a")
 
 cp.add_sensoroption(so1)

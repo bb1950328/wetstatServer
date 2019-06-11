@@ -1,11 +1,12 @@
 # coding=utf-8
 import datetime
 import os
+from dataclasses import dataclass
+from typing import Optional, Set
 
 import numpy as np
-from dataclasses import dataclass
 
-from wetstat import config
+from wetstat.common import config
 
 
 @dataclass
@@ -27,14 +28,15 @@ def load_csv_for_range(folder: str, start: datetime.date, end: datetime.date, ig
     container = DataContainer(list())
     while start <= end:
         filename = os.path.join(folder, get_filename_for_date(start))
+        start = start + datetime.timedelta(days=1)  # increase date
         if not os.path.isfile(filename):
             if ignore_missing:
                 continue
             else:
                 raise FileNotFoundError("File not found: " + filename +
                                         "You can set argument ignore_missing to True to ignore this.")
+
         container.data.append(load_csv_to_daydata(filename))
-        start = start + datetime.timedelta(days=1)  # increase date
     return container
 
 
@@ -56,6 +58,7 @@ def load_csv_to_daydata(filename: str, separator=";") -> DayData:
     :param separator:
     :return: DayData
     """
+    # logger.log.debug(f"loading file {filename} to daydata...")
     with open(filename) as file:
         d = datetime.datetime.strptime(os.path.basename(filename).split(".")[0], "day%jin%y")
         fields = list(map(str.strip, file.readline().split(separator)))
@@ -146,3 +149,54 @@ def save_values(folder: str, heads: list, data: list, timelabel: datetime.dateti
         f.write("\n")
         output = [str(n) for n in output]
         f.write(";".join(output))
+
+
+def get_nearest_record(dt: datetime) -> dict:  # (field: value)
+    try:
+        day = load_csv_to_daydata(os.path.join(config.get_datafolder(),
+                                               get_filename_for_date(dt)))
+        i = 0
+        while (len(day.array) > i) and (day.array[i][0] < dt):
+            i += 1
+        arr = day.array[i]
+        ret = {}
+        for i, name in enumerate(day.fields):
+            ret[name] = arr[i]
+        return ret
+    except FileNotFoundError as e:
+        raise ValueError("No data available for date " + dt.isoformat()) from e
+
+
+def save_datacontainer_to_single_csv(container: DataContainer,
+                                     outfile: str,
+                                     columnselection: Optional[Set] = None,
+                                     always_export_time=True):
+    heads = set()
+    for day in container.data:
+        heads.update(day.fields)
+    if columnselection is not None:
+        heads &= columnselection  # only export heads which are selected
+    heads = list(heads)
+    if always_export_time and "Time" not in heads:
+        heads.insert(0, "Time")
+    elif "Time" in heads:
+        heads.remove("Time")
+        heads.insert(0, "Time")
+    print(heads)
+    with open(outfile, "w") as file:
+        file.write(",".join(heads))
+        file.write("\n")
+        for day in container.data:
+            data = day.array
+            for dataline in data:
+                dayfields = day.fields
+                for ihe in range(len(heads)):
+                    he = heads[ihe]
+                    try:
+                        idx = dayfields.index(he)
+                        file.write(str(dataline[idx]))
+                    except ValueError:
+                        pass
+                    if ihe + 1 < len(heads):  # all except the last
+                        file.write(",")
+                file.write("\n")

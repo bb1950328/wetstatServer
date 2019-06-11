@@ -1,4 +1,4 @@
-Time;Temp1;Temp2;Light
+Time;Temp1;OldTemp2;OldLight
 00:00;0;0;7593.0
 00:10;0;0;8132.0
 00:20;0;0;9273.0
