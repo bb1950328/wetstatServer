@@ -6078,3 +6078,8 @@
 2019-06-12 19:23:55,428 [MainThread  ] [DEBUG]  measured values [21.0, 17.0]
 2019-06-12 19:23:55,439 [MainThread  ] [DEBUG]  saved values in day163in19.csv
 2019-06-12 19:23:55,445 [MainThread  ] [INFO ]  Measured and saved under label '2019-06-12T19:24:00'
+2019-06-12 19:14:16,597 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
+2019-06-12 19:14:32,848 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-11T19:14&end=2019-06-11T19:14&line=Temp1,auto,none,auto
+2019-06-12 19:14:35,795 [Thread-4    ] [INFO ]  custom plot creation finished in 2.945851221 sec.
+2019-06-12 19:21:47,290 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
+2019-06-12 19:21:47,290 [Thread-2    ] [ERROR]  Data for HomePage not found!
