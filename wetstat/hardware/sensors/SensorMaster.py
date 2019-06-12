@@ -23,10 +23,10 @@ USED_SENSORS = [
 ALL_SENSORS = [
     FakeSensor(1),
     FakeSensor(2),
-    TempSensor(1),
     OldTempSensor(2),
     OldLightSensor(),
 ]
+ALL_SENSORS.extend(USED_SENSORS)
 
 
 # USED_SENSORS = [
