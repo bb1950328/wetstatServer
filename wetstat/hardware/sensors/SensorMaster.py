@@ -1,5 +1,6 @@
 # coding=utf-8
 import datetime
+import os
 import time
 from typing import Optional, List
 
@@ -14,7 +15,7 @@ from wetstat.hardware.sensors.OldTempSensor import OldTempSensor
 from wetstat.hardware.sensors.TempSensor import TempSensor
 from wetstat.model import csvtools
 
-SENSORS = [
+USED_SENSORS = [
     TempSensor(1),
     TempSensor(2),
 ]
@@ -28,7 +29,7 @@ ALL_SENSORS = [
 ]
 
 
-# SENSORS = [
+# USED_SENSORS = [
 #     FakeSensor(1),
 #     FakeSensor(2),
 # ]
@@ -49,11 +50,11 @@ class SensorMaster:
 
     @staticmethod
     def get_sensor_short_names() -> List[str]:
-        return [s.get_short_name() for s in SENSORS]
+        return [s.get_short_name() for s in USED_SENSORS]
 
     @staticmethod
     def _measure_row(data: list, stoptime: datetime.datetime):
-        data.append([s.measure() for s in SENSORS])
+        data.append([s.measure() for s in USED_SENSORS])
         if datetime.datetime.now() > stoptime:  # should stop
             return schedule.CancelJob
 
@@ -70,15 +71,16 @@ class SensorMaster:
         data = []
         schedule.every(5).seconds.do(SensorMaster._measure_row,
                                      data=data,
-                                     stoptime=stoptime - datetime.timedelta(seconds=5)
+                                     stoptime=stoptime - datetime.timedelta(seconds=10)
                                      )
         while len(schedule.jobs):
             schedule.run_pending()
             time.sleep(1)
         means = list(np.mean(data, axis=0))
         means = [round(n) for n in means]
-        csvtools.save_values(config.get_datafolder(), heads, means, savedate)
-        logger.log.debug("measured values" + str(means))
+        logger.log.debug(f"measured values {str(means)}")
+        path = csvtools.save_values(config.get_datafolder(), heads, means, savedate)
+        logger.log.debug(f"saved values in {os.path.basename(path)}")
 
     @staticmethod
     def measure(freq: int = 600):

@@ -91,13 +91,13 @@ def get_filename_for_date(date: datetime.date) -> str:
     return date.strftime("day%jin%y.csv")
 
 
-def save_values(folder: str, heads: list, data: list, timelabel: datetime.datetime):
+def save_values(folder: str, heads: list, data: list, timelabel: datetime.datetime) -> str:
     """
     :param folder: folder of the csv's
     :param heads: list of the heads
     :param data: list of the values, same length as heads
     :param timelabel: timestamp of the values
-    :return:
+    :return: path of modified file
     """
     path = os.path.join(folder, get_filename_for_date(timelabel))
     if heads[0].lower() != "time":
@@ -145,6 +145,7 @@ def save_values(folder: str, heads: list, data: list, timelabel: datetime.dateti
         f.write("\n")
         output = [str(n) for n in output]
         f.write(";".join(output))
+        return path
 
 
 def get_nearest_record(dt: datetime) -> dict:  # (field: value)
