@@ -19,3 +19,8 @@
 2019-06-08 12:24:19,503 [Thread-4    ] [INFO ]  custom plot creation finished in 37.82131 sec.
 2019-06-08 12:30:19,816 [Thread-2    ] [INFO ]  HTTP Request from 192.168.178.27:8000 to http://192.168.178.27:8000/week
 2019-06-08 12:30:58,644 [Thread-4    ] [INFO ]  custom plot creation finished in 38.805871 sec.
+2019-06-12 19:14:16,597 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
+2019-06-12 19:14:32,848 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-11T19:14&end=2019-06-11T19:14&line=Temp1,auto,none,auto
+2019-06-12 19:14:35,795 [Thread-4    ] [INFO ]  custom plot creation finished in 2.945851221 sec.
+2019-06-12 19:21:47,290 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
+2019-06-12 19:21:47,290 [Thread-2    ] [ERROR]  Data for HomePage not found! 

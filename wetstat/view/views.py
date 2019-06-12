@@ -91,7 +91,11 @@ def index(request) -> HttpResponse:
     for i, name in enumerate(now.keys()):
         if name == "Time":
             continue
-        change = (now.get(name) / yesterday.get(name))
+        y = yesterday.get(name)
+        if y is not None:
+            change = (now.get(name) / y)
+        else:
+            change = 1
         if change > 1.15:
             img = "arrow_up_transparent.png"
         elif change < 0.95:
