@@ -17,6 +17,6 @@ def get_staticfolder() -> str:
 
 def get_date() -> datetime.datetime:
     # for development
-    return datetime.datetime.now() - datetime.timedelta(days=365)
+    # return datetime.datetime.now() - datetime.timedelta(days=365)
     # noinspection PyUnreachableCode
     return datetime.datetime.now()
