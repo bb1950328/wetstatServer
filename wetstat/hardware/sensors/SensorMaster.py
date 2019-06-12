@@ -77,7 +77,7 @@ class SensorMaster:
             schedule.run_pending()
             time.sleep(1)
         means = list(np.mean(data, axis=0))
-        means = [round(n) for n in means]
+        means = [round(n, 3) for n in means]
         logger.log.debug(f"measured values {str(means)}")
         path = csvtools.save_values(config.get_datafolder(), heads, means, savedate)
         logger.log.debug(f"saved values in {os.path.basename(path)}")

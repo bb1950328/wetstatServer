@@ -10,7 +10,7 @@ class OldLightSensor(BaseSensor):
         self.adc = None
 
     def get_long_name(self):
-        return "Licht"
+        return "Licht (Alt)"
 
     def get_short_name(self):
         return "OldLight"
@@ -30,4 +30,4 @@ class OldLightSensor(BaseSensor):
         return self.adc
 
     def measure(self):
-        return self.get_adc().read_channel(2)
+        raise NotImplementedError("Can't measure on deprecated sensors!!!")

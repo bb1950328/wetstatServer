@@ -155,6 +155,8 @@ def get_nearest_record(dt: datetime) -> dict:  # (field: value)
         i = 0
         while (len(day.array) > i) and (day.array[i][0] < dt):
             i += 1
+        if i == len(day.array):
+            i -= 1
         arr = day.array[i]
         ret = {}
         for i, name in enumerate(day.fields):
