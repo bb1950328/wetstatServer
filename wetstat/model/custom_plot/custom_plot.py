@@ -63,6 +63,8 @@ class CustomPlot:
         self.legend_mode = 0  # 0=inside plot, 1=save in separate file, 2=no legend
         self.plot_id = hex(random.randint(0x1000000000000, 0xfffffffffffff))[2:]
         self.message_container = None
+        self.PERCENTS = [0, 5.64786686, 5.650508519, 5.692775063, 5.695416722, 5.748249901, 6.020340774, 8.017434949,
+                         8.020076608, 23.36547352, 29.54695549, 30.09906221, 100, 100]
 
     def get_plot_id(self) -> str:
         return self.plot_id
@@ -141,6 +143,9 @@ class CustomPlot:
             pstr = ""
             # pstr = "(" + str(int(percent)) + "%)" if percent is not None else ""
             self.message_container.add_message(self.plot_id, pstr + str(round(timestamp, 3)) + ": " + message)
+            if percent is not None:
+                self.message_container.set_percent(self.plot_id, percent)
+                self.message_container.set_percent_per_second(self.plot_id, percent / timestamp)
 
     def set_title(self, title: str):
         self.title = title
@@ -337,35 +342,34 @@ class CustomPlot:
             imsave(filename, img)
 
     def create_plots(self):
-        percents = [0.00, 47.07, 47.07, 47.07, 47.07, 47.09, 65.86, 86.72, 86.72, 87.34, 88.38, 88.82, 95.87, 100.00]
+        # percents = [0.00, 47.07, 47.07, 47.07, 47.07, 47.09, 65.86, 86.72, 86.72, 87.34, 88.38, 88.82, 95.87, 100.00]
         ##debug:
-        percents = [0, 5.64786686, 5.650508519, 5.692775063, 5.695416722, 5.748249901, 6.020340774, 8.017434949,
-                    8.020076608, 23.36547352, 29.54695549, 30.09906221, 100, 100]
+
         self.start_ts = perf_counter_ns()  # self only for debug
-        self.add_message("Lade Daten", percents[0])
+        self.add_message("Lade Daten", self.PERCENTS[0])
         self.load_data()
         after_load_ts = perf_counter_ns()
-        pps = percents[1] / ((after_load_ts - self.start_ts) / (10 ** 9))
+        pps = self.PERCENTS[1] / ((after_load_ts - self.start_ts) / (10 ** 9))
         self.message_container.set_percent_per_second(self.plot_id, pps)
-        self.add_message("Setze Farben", percents[1])
+        self.add_message("Setze Farben", self.PERCENTS[1])
         self.set_all_linecolors()
-        self.add_message("Verteile Datenreihen", percents[2])
+        self.add_message("Verteile Datenreihen", self.PERCENTS[2])
         self.distribute_lines_to_axes()
-        self.add_message("Bereite Beschriftungen vor", percents[3])
+        self.add_message("Bereite Beschriftungen vor", self.PERCENTS[3])
         self.prepare_axis_labels()
-        self.add_message("Generiere X-Beschriftungen", percents[4])
+        self.add_message("Generiere X-Beschriftungen", self.PERCENTS[4])
         self.generate_xticks()
-        self.add_message("Teile Daten auf", percents[5])
+        self.add_message("Teile Daten auf", self.PERCENTS[5])
         self.split_data_to_lines()
-        self.add_message("Verkleinere Daten", percents[6])
+        self.add_message("Verkleinere Daten", self.PERCENTS[6])
         self.make_all_lines_minmaxavg()
-        self.add_message("Generiere Legenden", percents[7])
+        self.add_message("Generiere Legenden", self.PERCENTS[7])
         self.generate_legends()
-        self.add_message("Erzeuge Zeichenbereich", percents[8])
+        self.add_message("Erzeuge Zeichenbereich", self.PERCENTS[8])
         fig, subs = plt.subplots(nrows=len(self.axes), sharex="all", figsize=self.figsize, dpi=self.dpi)
         if len(self.axes) < 2:
             subs = [subs]
-        self.add_message("Setze X-Beschriftungen", percents[9])
+        self.add_message("Setze X-Beschriftungen", self.PERCENTS[9])
         plt.xticks(self.xtick_pos, self.xtick_str, rotation=90)
         plt.xlim(self.xtick_pos[0], self.xtick_pos[-1])
         num_lines = len(self.sensoroptions.keys())
@@ -398,7 +402,7 @@ class CustomPlot:
                     axis.plot(x, y, label=label, color=color, linewidth=self.linewidth)
         title = plt.suptitle(self.get_title(), y=1.0, size=32)
 
-        self.add_message("Speichere Graph", percents[-3])
+        self.add_message("Speichere Graph", self.PERCENTS[-3])
         bbox_extra_artists = (title,)
         if self.legend_mode == 0:  # legend inside
             lgd = fig.legend(loc="upper center", ncol=20, fancybox=True, shadow=True, bbox_to_anchor=(0.5, 0.97))

@@ -6083,3 +6083,82 @@
 2019-06-12 19:14:35,795 [Thread-4    ] [INFO ]  custom plot creation finished in 2.945851221 sec.
 2019-06-12 19:21:47,290 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
 2019-06-12 19:21:47,290 [Thread-2    ] [ERROR]  Data for HomePage not found!
+2019-06-12 20:29:16,901 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
+2019-06-12 20:29:50,943 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:29:51,405 [Thread-4    ] [INFO ]  custom plot creation finished in 0.462286808 sec.
+2019-06-12 20:29:57,623 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:29:58,048 [Thread-6    ] [INFO ]  custom plot creation finished in 0.424625224 sec.
+2019-06-12 20:30:06,156 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:30:06,639 [Thread-7    ] [INFO ]  custom plot creation finished in 0.481494701 sec.
+2019-06-12 20:30:29,446 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2017-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:30:33,105 [Thread-8    ] [INFO ]  custom plot creation finished in 3.658146971 sec.
+2019-06-12 20:30:36,567 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2017-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:30:38,125 [Thread-9    ] [INFO ]  custom plot creation finished in 1.556456607 sec.
+2019-06-12 20:30:39,701 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2017-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:30:41,229 [Thread-10   ] [INFO ]  custom plot creation finished in 1.527122676 sec.
+2019-06-12 20:30:46,093 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2017-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:30:47,685 [Thread-11   ] [INFO ]  custom plot creation finished in 1.591531879 sec.
+2019-06-12 20:36:49,749 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2017-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:39:20,355 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2017-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:42:37,654 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2017-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:44:11,036 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2017-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:44:12,714 [Thread-3    ] [INFO ]  custom plot creation finished in 1.676061326 sec.
+2019-06-12 20:44:23,682 [Thread-4    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:44:51,080 [Thread-9    ] [INFO ]  custom plot creation finished in 27.395981623 sec.
+2019-06-12 20:45:50,219 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:46:07,906 [Thread-11   ] [INFO ]  custom plot creation finished in 17.68471626 sec.
+2019-06-12 20:46:19,727 [Thread-6    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:46:38,830 [Thread-12   ] [INFO ]  custom plot creation finished in 19.101953772 sec.
+2019-06-12 20:46:50,858 [Thread-6    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:47:11,110 [Thread-13   ] [INFO ]  custom plot creation finished in 20.250016096 sec.
+2019-06-12 20:52:15,643 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:55:36,399 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:55:51,482 [Thread-4    ] [INFO ]  custom plot creation finished in 15.081375439 sec.
+2019-06-12 20:55:59,716 [Thread-6    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:56:16,942 [Thread-9    ] [INFO ]  custom plot creation finished in 17.226000417 sec.
+2019-06-12 20:58:38,543 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 20:59:38,817 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:01:17,726 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:01:48,674 [Thread-9    ] [INFO ]  custom plot creation finished in 30.936274229 sec.
+2019-06-12 21:03:58,834 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:04:14,096 [Thread-4    ] [INFO ]  custom plot creation finished in 15.261505676 sec.
+2019-06-12 21:05:12,242 [Thread-6    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:05:29,267 [Thread-9    ] [INFO ]  custom plot creation finished in 17.023993962 sec.
+2019-06-12 21:05:54,178 [Thread-5    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:06:12,109 [Thread-10   ] [INFO ]  custom plot creation finished in 17.930886995 sec.
+2019-06-12 21:06:50,329 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:07:08,513 [Thread-11   ] [INFO ]  custom plot creation finished in 18.183491192 sec.
+2019-06-12 21:07:31,947 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:07:50,008 [Thread-12   ] [INFO ]  custom plot creation finished in 18.060131557 sec.
+2019-06-12 21:08:31,527 [Thread-5    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:08:49,875 [Thread-13   ] [INFO ]  custom plot creation finished in 18.346736439 sec.
+2019-06-12 21:11:04,351 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:11:19,622 [Thread-4    ] [INFO ]  custom plot creation finished in 15.270724985 sec.
+2019-06-12 21:11:38,650 [Thread-5    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:11:55,448 [Thread-9    ] [INFO ]  custom plot creation finished in 16.7974445 sec.
+2019-06-12 21:12:40,075 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:12:55,923 [Thread-4    ] [INFO ]  custom plot creation finished in 15.847336582 sec.
+2019-06-12 21:13:56,435 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:14:11,999 [Thread-4    ] [INFO ]  custom plot creation finished in 15.56256713 sec.
+2019-06-12 21:14:18,512 [Thread-6    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:14:35,716 [Thread-9    ] [INFO ]  custom plot creation finished in 17.203169439 sec.
+2019-06-12 21:15:33,432 [Thread-5    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:15:51,758 [Thread-11   ] [INFO ]  custom plot creation finished in 18.325045451 sec.
+2019-06-12 21:15:55,927 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:16:14,194 [Thread-12   ] [INFO ]  custom plot creation finished in 18.266517853 sec.
+2019-06-12 21:16:40,526 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:16:59,212 [Thread-13   ] [INFO ]  custom plot creation finished in 18.685803108 sec.
+2019-06-12 21:17:16,439 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:17:35,627 [Thread-14   ] [INFO ]  custom plot creation finished in 19.187434915 sec.
+2019-06-12 21:17:59,586 [Thread-5    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:18:18,764 [Thread-15   ] [INFO ]  custom plot creation finished in 19.177071272 sec.
+2019-06-12 21:18:53,335 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-12 21:19:12,282 [Thread-16   ] [INFO ]  custom plot creation finished in 18.945908196 sec.
+2019-06-12 21:25:06,341 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/month
+2019-06-12 21:25:06,946 [Thread-4    ] [INFO ]  custom plot creation finished in 0.604215614 sec.
+2019-06-12 21:25:13,718 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/week
+2019-06-12 21:25:14,240 [Thread-5    ] [INFO ]  custom plot creation finished in 0.521069895 sec.
+2019-06-12 21:25:15,594 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/year
+2019-06-12 21:25:17,170 [Thread-6    ] [INFO ]  custom plot creation finished in 1.575086075 sec.
+2019-06-12 21:25:28,345 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/year
+2019-06-12 21:25:30,328 [Thread-3    ] [INFO ]  custom plot creation finished in 1.982742508 sec.

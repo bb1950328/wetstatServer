@@ -136,7 +136,7 @@ def month(request) -> HttpResponse:
     log_request(request)
     ftcp = FixedTimeCustomPlot(30)
     so = CustomPlotSensorOptions(SensorMaster.get_sensor_for_info("short_name", "Temp1"))
-    so.set_minmaxavg_interval("hour")
+    so.set_minmaxavg_interval("day")
     ftcp.add_sensoroption(so)
     return render_generated_plot(request, ftcp, "month")
 
@@ -145,7 +145,7 @@ def year(request) -> HttpResponse:
     log_request(request)
     ftcp = FixedTimeCustomPlot(365)
     so = CustomPlotSensorOptions(SensorMaster.get_sensor_for_info("short_name", "Temp1"))
-    so.set_minmaxavg_interval("day")
+    so.set_minmaxavg_interval("week")
     ftcp.add_sensoroption(so)
     return render_generated_plot(request, ftcp, "year")
 
@@ -272,11 +272,16 @@ def progress(request):
         except ValueError:
             pass
     msgs = message_container.get_messages(plot_id)
+
     pps = message_container.get_percent_per_second(plot_id)
-    if pps:
-        print(pps)
-        msgs = msgs[:]
-        msgs.insert(0, f"%%pps={int(pps)}%%")
+    if not pps:
+        pps = message_container.PPS_DEFAULT_VALUE
+    print(pps)
+    msgs = msgs[:]
+    ppx = message_container.get_percent(plot_id)
+    ppx = 0 if ppx is None else ppx
+    msgs.insert(0, f"%%pps={round(pps * 100, 3)}%%")
+    msgs.insert(1, f"%%ppx={round(ppx, 3)}%%")
     if "%%finished%%" in "".join(msgs):
         save_perf(msgs)
     context = {"content": "Wrong plot id!!!" if msgs is None else "\n".join(msgs)}

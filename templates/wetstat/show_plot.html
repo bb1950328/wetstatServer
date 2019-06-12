@@ -56,13 +56,13 @@
     let req;
     let plotfile = "{% static plotfile %}";
     let image_loaded = false;
-    let pps;
+    let pps, ppx, ppx_last;
     let intervalID = window.setInterval(function () {
         let pbar = document.getElementById("pbar");
-        let oldvalue = parseInt(pbar.getAttribute("aria-valuenow"), 10);
-        let newvalue = oldvalue + (pps / 10);
-        let new_proz = newvalue + "%";
-        pbar.setAttribute("aria-valuenow", newvalue);
+        ppx += (pps / 10);
+        let ppx_display = Math.round(ppx * 10) / 10;
+        let new_proz = ppx_display + "%";
+        pbar.setAttribute("aria-valuenow", ppx_display);
         pbar.style.width = new_proz;
         pbar.innerText = new_proz;
     }, 100);
@@ -89,28 +89,29 @@
         if (!image_loaded) {
             return;
         }
-        //console.log(window.innerWidth);
         let img = document.getElementById("graph");
         img.width = (window.innerWidth - 20);
         //TODO: make zoomable
-        {% comment %}if (img.height > (window.innerHeight - 20)) {
-            img.height = window.innerHeight - 20;
-        }{% endcomment %}
         window.onresize = set_img_width;
     }
 
     function get_progress() {
         req = new XMLHttpRequest();
         req.open("GET", "/progress?id={{ plot_id }}", false);
-        //req.timeout = 5000;
         req.send();
-        //console.log(req.response);
         let span = document.getElementById("id_message_span");
         let all_msgs = req.response;
         let msg_lines = all_msgs.split("\n");
-        pps = msg_lines[0].match(/\d+/g).map(Number)[0];
-        console.log(pps);
-        msg_lines.splice(0, 1);
+        if (msg_lines.length > 1) {
+            pps = msg_lines[0].match(/\d+/g).map(Number)[0] / 100;
+            let ppx_maybe = msg_lines[1].match(/\d+/g).map(Number)[0];
+            if (ppx_maybe !== ppx_last) {
+                ppx_last = ppx_maybe;
+                ppx = ppx_maybe;
+            }
+        }
+
+        msg_lines.splice(0, 2);
         span.innerText = msg_lines.join("\n"); // rest
         if (req.response.endsWith("%%finished%%")) {
             show_image();
@@ -120,7 +121,6 @@
     }
 
     $(document).ready(get_progress);
-    //get_progress();
     set_img_width();
 </script>
 </body>

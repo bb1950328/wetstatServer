@@ -4,12 +4,14 @@ from typing import Dict, List, Optional, Union
 
 
 class MessageContainer:
-    def __init__(self):
+    def __init__(self) -> None:
         self.PPS_DEFAULT_VALUE: int = 2
         self._messages: Dict[str, List[str]] = {}
         self.messages_lock = threading.Lock()
         self.pps_lock = threading.Lock()
         self._pps: Dict[str, Union[int, float]] = {}
+        self.ppx_lock = threading.Lock()
+        self._ppx: Dict[str, Union[int, float]] = {}
 
     def add_message(self, plot_id: str, messge: str) -> None:
         with self.messages_lock:
@@ -34,3 +36,14 @@ class MessageContainer:
                 return self._pps[plot_id]
             except KeyError:
                 return self.PPS_DEFAULT_VALUE
+
+    def set_percent(self, plot_id: str, percent: Union[int, float]) -> None:
+        with self.ppx_lock:
+            self._ppx[plot_id] = percent
+
+    def get_percent(self, plot_id: str) -> Union[None, int, float]:
+        with self.ppx_lock:
+            try:
+                return self._ppx[plot_id]
+            except KeyError:
+                return None
