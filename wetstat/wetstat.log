@@ -6162,3 +6162,10 @@
 2019-06-12 21:25:17,170 [Thread-6    ] [INFO ]  custom plot creation finished in 1.575086075 sec.
 2019-06-12 21:25:28,345 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/year
 2019-06-12 21:25:30,328 [Thread-3    ] [INFO ]  custom plot creation finished in 1.982742508 sec.
+2019-06-14 07:58:17,515 [Thread-6    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-14 07:58:45,961 [Thread-8    ] [INFO ]  custom plot creation finished in 28.441662229 sec.
+2019-06-14 07:58:50,807 [Thread-6    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-14 07:59:08,329 [Thread-10   ] [INFO ]  custom plot creation finished in 17.52156963 sec.
+2019-06-14 08:37:05,739 [MainThread  ] [INFO ]  94 plots removed because they were older than 86400 seconds
+2019-06-14 08:42:21,241 [MainThread  ] [INFO ]  0 plots (0B) removed because they were older than 86400 seconds.
+2019-06-14 08:43:40,273 [MainThread  ] [INFO ]  98 plots (16.995MB) removed because they were older than 5 seconds.
