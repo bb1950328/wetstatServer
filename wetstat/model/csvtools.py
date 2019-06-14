@@ -116,7 +116,6 @@ def save_values(folder: str, heads: list, data: list, timelabel: datetime.dateti
                 col_indexes.append(idx)
             except ValueError:  # h not in fileheads
                 col_indexes.append(-1)
-        # real_cols = heads
         if -1 in col_indexes:  # new columns
             f.seek(0)
             oldlines = f.readlines()
@@ -135,7 +134,6 @@ def save_values(folder: str, heads: list, data: list, timelabel: datetime.dateti
             oldlines[-1] = oldlines[-1].strip()  # remove newline from last line
             f.seek(0)
             f.writelines(oldlines)
-            # real_cols = oldlines[0].split(";")
         f.seek(0, 2)  # move cursor to the end
 
         output = [""] * len(fileheads)

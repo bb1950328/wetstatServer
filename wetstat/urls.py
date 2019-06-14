@@ -17,9 +17,6 @@ urlpatterns = [
     path("year", views.year),
     path("year.html", views.year),
 
-    path("custom", views.custom),
-    path("custom.html", views.custom),
-
     path("custom_v2", views.custom_v2),
     path("custom_v2.html", views.custom_v2),
 

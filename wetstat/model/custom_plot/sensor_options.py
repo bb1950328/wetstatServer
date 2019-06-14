@@ -33,9 +33,7 @@ class CustomPlotSensorOptions:
         return self.minmaxavg_interval
 
     def get_minmaxavg_interval_for_legend(self) -> str:
-        if self.minmaxavg_interval is None:
-            return ""
-        elif self.minmaxavg_interval == "hour":
+        if self.minmaxavg_interval == "hour":
             return " (Stunde)"
         elif self.minmaxavg_interval == "day":
             return " (Tag)"

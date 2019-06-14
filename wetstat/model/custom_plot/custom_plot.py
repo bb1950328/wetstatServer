@@ -141,7 +141,6 @@ class CustomPlot:
         timestamp = (perf_counter_ns() - self.start_ts) / 10 ** 9
         if self.plot_id is not None and self.message_container is not None:
             pstr = ""
-            # pstr = "(" + str(int(percent)) + "%)" if percent is not None else ""
             self.message_container.add_message(self.plot_id, pstr + str(round(timestamp, 3)) + ": " + message)
             if percent is not None:
                 self.message_container.set_percent(self.plot_id, percent)
@@ -246,10 +245,10 @@ class CustomPlot:
                     self.axislabels[axis] += (", " + label)
             else:
                 self.axislabels[axis] = label
-        for axCode in self.axislabels:
-            label = self.axislabels[axCode]
-            i = int(axCode[0])
-            a_or_b = axCode[1]
+        for ax_code in self.axislabels:
+            label = self.axislabels[ax_code]
+            i = int(ax_code[0])
+            a_or_b = ax_code[1]
 
             while len(self.axes) <= i:
                 self.axes.append(None)

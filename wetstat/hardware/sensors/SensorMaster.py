@@ -29,12 +29,6 @@ ALL_SENSORS = [
 ALL_SENSORS.extend(USED_SENSORS)
 
 
-# USED_SENSORS = [
-#     FakeSensor(1),
-#     FakeSensor(2),
-# ]
-
-
 class SensorMaster:
     def __init__(self):
         pass
@@ -43,9 +37,8 @@ class SensorMaster:
     def get_sensor_for_info(name: str, value) -> Optional[BaseSensor]:
         for sensor in ALL_SENSORS:
             info = sensor.get_info()
-            if name in info.keys():
-                if info[name] == value:
-                    return sensor
+            if name in info.keys() and info[name] == value:
+                return sensor
         return None
 
     @staticmethod
@@ -101,12 +94,10 @@ class SensorMaster:
             seconds = (dt.replace(tzinfo=None) - dt.min).seconds
             rounding = (seconds + round_to / 2) // round_to * round_to
             delta = datetime.timedelta(0, rounding - seconds, -dt.microsecond)
-            if mode < 0:
-                if delta > datetime.timedelta(seconds=0):
-                    delta -= datetime.timedelta(seconds=round_to)
-            if mode > 0:
-                if delta < datetime.timedelta(seconds=0):
-                    delta += datetime.timedelta(seconds=round_to)
+            if mode < 0 and delta > datetime.timedelta(seconds=0):
+                delta -= datetime.timedelta(seconds=round_to)
+            if mode > 0 and delta < datetime.timedelta(seconds=0):
+                delta += datetime.timedelta(seconds=round_to)
             res = dt + delta
             return res
 

@@ -10,14 +10,13 @@ from django.utils.safestring import mark_safe
 from wetstat.common import config, logger
 from wetstat.common.config import get_date
 from wetstat.hardware.sensors.SensorMaster import SensorMaster, ALL_SENSORS
-from wetstat.model import models, csvtools, system_info
+from wetstat.model import system_info
 from wetstat.model.csvtools import get_nearest_record
 from wetstat.model.custom_plot.custom_plot import CustomPlot
 from wetstat.model.custom_plot.fixed_time_custom_plot import FixedTimeCustomPlot
 from wetstat.model.custom_plot.request import CustomPlotRequest
 from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
 from wetstat.view.MessageContainer import MessageContainer
-from wetstat.view.forms import CustomPlotForm
 from wetstat.view.generatePlotThread import GeneratePlotThread
 
 message_container = MessageContainer()
@@ -171,55 +170,6 @@ def render_generated_plot(request, cp: CustomPlot, name: str) -> HttpResponse:
 
 def log_request(request):
     logger.log.info("HTTP Request from " + request.get_host() + " to " + request.get_raw_uri())
-
-
-def custom(request):
-    log_request(request)
-    # If this is a POST request then process the Form data
-    if request.method == 'POST':
-        form = CustomPlotForm(request.POST)
-        if form.is_valid():
-            # redirect to a new URL:
-            start = form.clean_start_date()
-            end = form.clean_end_date()
-            start_iso = start.isoformat()
-            end_iso = end.isoformat()
-            start_fn = start_iso
-            end_fn = end_iso
-            start_fn = start_fn.replace(":", "_")
-            end_fn = end_fn.replace(":", "_")
-            start_view = start.strftime("%d.%m.%Y %H:%M")
-            end_view = end.strftime("%d.%m.%Y %H:%M")
-            try:
-                data = csvtools.load_csv_for_range(config.get_datafolder(), start, end)
-            except Exception:
-                logger.log.exception("Could not load data for custom plot!")
-                return show_error(request, "Daten konnten nicht geladen werden!", "custom.html")
-            filename = "from" + start_fn + "to" + end_fn + ".svg"
-            logger.log.info("generating custom plot from " + start_iso + " to " + end_iso + " -> " + filename)
-            try:
-                path = os.path.join(config.get_staticfolder(), "plot", filename)
-                models.generate_plot(data, 120, filename=path, useaxis=[1, 0, 0],
-                                     make_minmaxavg=[form.clean_use_minmaxavg(), False, False])
-            except Exception:
-                logger.log.exception("Exception occurred while generating Graph")
-                return show_error(request, "Graph konnte nicht erstellt werden!", "custom.html")
-
-            context = {"plotfile": "plot/" + filename,
-                       "start": start_view,
-                       "end": end_view
-                       }
-            return render(request, "wetstat/show_plot.html", context=context)
-
-    # If this is a GET (or any other method) create the default form.
-    else:
-        default_start_date = datetime.datetime.now() - datetime.timedelta(days=1)
-        form = CustomPlotForm(initial={'start_date': default_start_date})
-
-    context = {
-        'form': form,
-    }
-    return render(request, "wetstat/custom.html", context)
 
 
 def customplot(request):
