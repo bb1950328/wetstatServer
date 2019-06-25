@@ -1,6 +1,7 @@
 # coding=utf-8
 import datetime
 import os.path
+import sys
 
 
 def get_wetstat_dir() -> str:
@@ -15,8 +16,16 @@ def get_staticfolder() -> str:
     return os.path.join(get_wetstat_dir(), "wetstat", "static")
 
 
+def get_interpreter() -> str:
+    return sys.executable
+
+
 def get_date() -> datetime.datetime:
     # for development
     # return datetime.datetime.now() - datetime.timedelta(days=365)
     # noinspection PyUnreachableCode
     return datetime.datetime.now()
+
+
+def get_database():
+    return os.path.join(get_wetstat_dir(), "db.sqlite3")

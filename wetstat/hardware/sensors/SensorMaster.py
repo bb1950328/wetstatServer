@@ -30,7 +30,7 @@ ALL_SENSORS.extend(USED_SENSORS)
 
 
 class SensorMaster:
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
     @staticmethod

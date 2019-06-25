@@ -6169,3 +6169,28 @@
 2019-06-14 08:37:05,739 [MainThread  ] [INFO ]  94 plots removed because they were older than 86400 seconds
 2019-06-14 08:42:21,241 [MainThread  ] [INFO ]  0 plots (0B) removed because they were older than 86400 seconds.
 2019-06-14 08:43:40,273 [MainThread  ] [INFO ]  98 plots (16.995MB) removed because they were older than 5 seconds.
+2019-06-16 20:02:29,938 [MainThread  ] [INFO ]  0 plots (0B) removed because they were older than 86400 seconds.
+2019-06-16 20:31:27,387 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2011-06-11T20:29&end=2018-06-12T20:29&line=Temp1,auto,none,auto
+2019-06-16 20:31:57,048 [Thread-4    ] [INFO ]  custom plot creation finished in 29.660408302 sec.
+2019-06-23 20:52:37,670 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-23 20:52:37,670 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-23 20:56:51,934 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-23 20:56:51,934 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-24 19:51:14,938 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-24 19:51:14,938 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-24 19:51:47,577 [MainThread  ] [INFO ]  Host ('127.0.0.1', 53227) sent command "info" to ServiceManager
+2019-06-24 19:51:56,468 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-24 19:51:56,468 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-24 19:59:54,907 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-24 19:59:54,907 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-24 20:00:05,911 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-24 20:00:05,911 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-24 20:01:52,544 [MainThread  ] [INFO ]  Host ('127.0.0.1', 61985) sent command "info" to ServiceManager
+2019-06-25 18:44:35,276 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-25 18:44:35,276 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-25 18:45:32,399 [MainThread  ] [INFO ]  Host ('127.0.0.1', 49203) sent command "info" to ServiceManager
+2019-06-25 18:45:40,389 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-25 18:45:40,389 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-25 18:45:48,604 [MainThread  ] [INFO ]  Host ('127.0.0.1', 49421) sent command "info" to ServiceManager
+2019-06-25 18:54:17,973 [MainThread  ] [INFO ]  Host ('127.0.0.1', 58033) sent command "list" to ServiceManager
+2019-06-25 18:54:22,199 [MainThread  ] [INFO ]  Host ('127.0.0.1', 58081) sent command "info" to ServiceManager
