@@ -281,7 +281,7 @@ class CustomPlot:
                         if short_names:
                             sensor = self.sensoroptions[hr_hash].get_sensor()
                             if sensor.get_unit() == option.get_sensor().get_unit():
-                                print(f"Distributed SO {hr_hash} to ax {i}, {n} with same unit")
+                                # print(f"Distributed SO {hr_hash} to ax {i}, {n} with same unit")
                                 self.lines_of_axes[i][n].append(hr_hash)
                                 option.set_axis(format_axis(i, n))
                                 not_found = False
@@ -291,12 +291,12 @@ class CustomPlot:
                             if not self.lines_of_axes[i][n] and not_found:
                                 self.lines_of_axes[i][n].append(hr_hash)
                                 option.set_axis(format_axis(i, n))
-                                print(f"Distributed SO {hr_hash} to empty ax {i}, {n}")
+                                # print(f"Distributed SO {hr_hash} to empty ax {i}, {n}")
                                 not_found = False
                 if not_found:
                     self.lines_of_axes.append([[hr_hash], []])
                     option.set_axis(format_axis(len(self.lines_of_axes), 0))
-                    print(f"Distributed SO {hr_hash} to new ax")
+                    # print(f"Distributed SO {hr_hash} to new ax")
                     continue
             else:
                 ax = int(option.get_axis()[0])

@@ -179,7 +179,7 @@ def save_datacontainer_to_single_csv(container: DataContainer,
     elif "Time" in heads:
         heads.remove("Time")
         heads.insert(0, "Time")
-    print(heads)
+    # print(heads)
     with open(outfile, "w") as file:
         file.write(",".join(heads))
         file.write("\n")

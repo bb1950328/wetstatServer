@@ -2,6 +2,7 @@
 import datetime
 import json
 import socket
+import threading
 import time
 from concurrent import futures
 from typing import Dict, Union, Optional
@@ -9,7 +10,7 @@ from typing import Dict, Union, Optional
 from wetstat.common import logger
 from wetstat.service_manager.service import BaseService, DjangoServerService
 
-COM_PORT = 51_111
+COM_PORT = 51_112
 COMMAND_INFO = "info"
 COMMAND_LIST = "list"
 COMMAND_START = "start"
@@ -28,6 +29,7 @@ class ServiceManager:
         self.last_crash = {}
         self.executor = futures.ThreadPoolExecutor()
         self.socket = None
+        self.submitted_lock = threading.Lock()
 
     def update_service(self, name: str, service: BaseService) -> None:
         self.services[name] = service
@@ -37,13 +39,18 @@ class ServiceManager:
         del self.services[name]
 
     def stop_service(self, name: str) -> None:
-        if self.submitted[name].cancel():
-            del self.submitted[name]
-        else:
-            raise InterruptedError(f"stopping {name} failed.")
+        with self.submitted_lock:
+            if self.services[name].stop():
+                del self.submitted[name]
+                return
+            if self.submitted[name].cancel():
+                del self.submitted[name]
+            else:
+                raise InterruptedError(f"stopping {name} failed.")
 
     def start_service(self, name: str) -> None:
-        self.submitted[name] = self.executor.submit(self.services[name].run)
+        with self.submitted_lock:
+            self.submitted[name] = self.executor.submit(self.services[name].run)
 
     def restart_service(self, name: str) -> None:
         self.stop_service(name)
@@ -57,23 +64,25 @@ class ServiceManager:
             # futures.wait(self.submitted.values(), return_when=futures.FIRST_COMPLETED)
             # print("FIRST_EXCEPTION")
             time.sleep(1)
-            for name, sub in self.submitted.items():
-                if not sub.running():
-                    logger.log.warning(f"service \"{name}\" crashed.")
-                    self.last_crash[name] = datetime.datetime.now()
-                    if self.services[name].is_restart_after_crash():
-                        logger.log.info(f"restarted service \"{name}\" after crash.")
-                        self.start_service(name)
-                    break
+            with self.submitted_lock:
+                for name, sub in self.submitted.items():
+                    if not sub.running():
+                        logger.log.warning(f"service \"{name}\" crashed.")
+                        self.last_crash[name] = datetime.datetime.now()
+                        if self.services[name].is_restart_after_crash():
+                            logger.log.info(f"restarted service \"{name}\" after crash.")
+                            self.start_service(name)
+                        break
 
     def get_info(self) -> Dict[str, Dict[str, Union[str, bool, float]]]:
         data = {}
         for sens_name, sens_obj in self.services.items():
             lc = self.last_crash.get(sens_name)
-            sens_data = {"name": sens_name,
-                         "running": sens_name in self.submitted and self.submitted[sens_name].running(),
-                         "last_crash": lc.timestamp() if lc is not None else None
-                         }
+            with self.submitted_lock:
+                sens_data = {"name": sens_name,
+                             "running": sens_name in self.submitted and self.submitted[sens_name].running(),
+                             "last_crash": lc.timestamp() if lc is not None else None
+                             }
             data[sens_name] = sens_data
         return data
 

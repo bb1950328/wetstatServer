@@ -204,7 +204,6 @@ def show_error(request, message: str, backlink: str):
 
 def generate_plot(request):
     log_request(request)
-    print(request.GET)
     cpr: CustomPlotRequest = CustomPlotRequest(request.GET)
     try:
         cpr.parse()
@@ -226,7 +225,6 @@ def progress(request):
     pps = message_container.get_percent_per_second(plot_id)
     if not pps:
         pps = message_container.PPS_DEFAULT_VALUE
-    print(pps)
     msgs = msgs[:]
     ppx = message_container.get_percent(plot_id)
     ppx = 0 if ppx is None else ppx
@@ -240,7 +238,7 @@ def progress(request):
 
 def save_perf(msgs: list):
     values = [m.split(":")[0].strip() for m in msgs]
-    print(values)
+    # print(values)
     with open(os.path.join(config.get_wetstat_dir(), "perf.csv"), "a") as f:
         f.write(";".join(values) + "\n")
 

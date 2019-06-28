@@ -6194,3 +6194,152 @@
 2019-06-25 18:45:48,604 [MainThread  ] [INFO ]  Host ('127.0.0.1', 49421) sent command "info" to ServiceManager
 2019-06-25 18:54:17,973 [MainThread  ] [INFO ]  Host ('127.0.0.1', 58033) sent command "list" to ServiceManager
 2019-06-25 18:54:22,199 [MainThread  ] [INFO ]  Host ('127.0.0.1', 58081) sent command "info" to ServiceManager
+2019-06-27 19:54:59,668 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:54:59,668 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:00,669 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:00,669 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:01,671 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:01,671 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:02,673 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:02,673 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:03,674 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:03,674 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:04,675 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:04,675 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:05,677 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:05,677 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:06,678 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:06,678 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:07,679 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:07,679 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:08,681 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:08,681 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:09,682 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:09,682 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:10,684 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:10,685 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:11,699 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:11,699 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:12,700 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:12,700 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:13,709 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:13,709 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:14,720 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:14,720 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:15,726 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:15,728 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:16,743 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:16,743 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:17,749 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:17,751 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:18,763 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:18,763 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:19,779 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:19,782 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:20,812 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:20,813 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:21,858 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:21,859 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:22,897 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:22,898 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:23,920 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:23,920 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:24,927 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:24,929 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:26,002 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:26,003 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:27,106 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:27,106 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:28,288 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:28,289 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:29,521 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:29,522 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:30,533 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:30,540 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:31,592 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:31,593 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:32,813 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:32,832 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:33,899 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:33,899 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:34,989 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:34,998 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:36,043 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:36,043 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:37,226 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:37,227 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:38,431 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:38,432 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:39,470 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:39,476 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:40,498 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:40,502 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:41,528 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:41,528 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 19:55:42,531 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 19:55:42,533 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 20:39:41,215 [MainThread  ] [INFO ]  Host ('127.0.0.1', 53742) sent command "info" to ServiceManager
+2019-06-27 20:40:08,162 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 20:40:08,167 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 20:41:15,447 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 20:41:15,447 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 20:43:21,329 [MainThread  ] [INFO ]  Host ('127.0.0.1', 53983) sent command "stop django" to ServiceManager
+2019-06-27 20:48:43,303 [MainThread  ] [INFO ]  Host ('127.0.0.1', 54340) sent command "info" to ServiceManager
+2019-06-27 20:50:32,224 [MainThread  ] [INFO ]  Host ('127.0.0.1', 54443) sent command "info" to ServiceManager
+2019-06-27 20:52:56,774 [MainThread  ] [INFO ]  Host ('127.0.0.1', 54572) sent command "info" to ServiceManager
+2019-06-27 20:53:07,865 [MainThread  ] [INFO ]  Host ('127.0.0.1', 54582) sent command "info" to ServiceManager
+2019-06-27 20:54:14,877 [MainThread  ] [INFO ]  Host ('127.0.0.1', 54649) sent command "info" to ServiceManager
+2019-06-27 20:54:45,160 [MainThread  ] [INFO ]  Host ('127.0.0.1', 54733) sent command "info" to ServiceManager
+2019-06-27 20:56:22,288 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 20:56:22,289 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-27 20:56:44,875 [MainThread  ] [INFO ]  Host ('127.0.0.1', 54774) sent command "stop django" to ServiceManager
+2019-06-27 21:00:06,717 [MainThread  ] [INFO ]  Host ('127.0.0.1', 55016) sent command "info" to ServiceManager
+2019-06-27 21:00:17,059 [MainThread  ] [INFO ]  Host ('127.0.0.1', 55024) sent command "stop django" to ServiceManager
+2019-06-27 21:00:28,310 [MainThread  ] [INFO ]  Host ('127.0.0.1', 55038) sent command "start django" to ServiceManager
+2019-06-27 21:01:18,284 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
+2019-06-27 21:01:18,285 [Thread-2    ] [ERROR]  Data for HomePage not found! 
+2019-06-27 21:01:23,051 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/week.html
+2019-06-27 21:01:25,081 [Thread-8    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/index
+2019-06-27 21:01:25,082 [Thread-8    ] [ERROR]  Data for HomePage not found! 
+2019-06-27 21:01:28,275 [Thread-8    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/week.html
+2019-06-27 21:02:02,447 [Thread-8    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-27 21:07:16,304 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-27 21:07:18,194 [Thread-9    ] [INFO ]  custom plot creation finished in 1.876479662 sec.
+2019-06-27 21:07:31,345 [MainThread  ] [INFO ]  Host ('127.0.0.1', 55394) sent command "stop django" to ServiceManager
+2019-06-27 21:07:37,308 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-27 21:07:39,089 [Thread-10   ] [INFO ]  custom plot creation finished in 1.770643995 sec.
+2019-06-27 21:11:42,881 [MainThread  ] [INFO ]  Host ('127.0.0.1', 55624) sent command "info" to ServiceManager
+2019-06-27 21:11:53,854 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-27 21:11:55,700 [Thread-9    ] [INFO ]  custom plot creation finished in 1.831227766 sec.
+2019-06-27 21:20:09,327 [MainThread  ] [INFO ]  Host ('127.0.0.1', 56213) sent command "info" to ServiceManager
+2019-06-27 21:20:14,528 [MainThread  ] [INFO ]  Host ('127.0.0.1', 56219) sent command "stop django" to ServiceManager
+2019-06-27 21:20:31,301 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-27 21:20:33,122 [Thread-9    ] [INFO ]  custom plot creation finished in 1.809322935 sec.
+2019-06-27 21:21:01,555 [MainThread  ] [INFO ]  Host ('127.0.0.1', 56268) sent command "stop django" to ServiceManager
+2019-06-27 21:21:37,603 [MainThread  ] [INFO ]  Host ('127.0.0.1', 56302) sent command "start django" to ServiceManager
+2019-06-27 21:21:44,569 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-27 21:21:46,442 [Thread-9    ] [INFO ]  custom plot creation finished in 1.859648069 sec.
+2019-06-27 21:21:58,868 [MainThread  ] [INFO ]  Host ('127.0.0.1', 56329) sent command "stop django" to ServiceManager
+2019-06-27 21:22:07,230 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-27 21:22:08,986 [Thread-10   ] [INFO ]  custom plot creation finished in 1.740157044 sec.
+2019-06-27 21:22:36,637 [ThreadPoolEx] [WARNI]  service "django" crashed.
+2019-06-27 21:22:36,639 [ThreadPoolEx] [INFO ]  restarted service "django" after crash.
+2019-06-28 19:01:17,236 [MainThread  ] [INFO ]  Host ('127.0.0.1', 56679) sent command "info" to ServiceManager
+2019-06-28 19:01:30,667 [Thread-3    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-28 19:01:31,315 [Thread-4    ] [INFO ]  custom plot creation finished in 0.647057741 sec.
+2019-06-28 19:11:15,347 [MainThread  ] [INFO ]  Host ('127.0.0.1', 58967) sent command "info" to ServiceManager
+2019-06-28 19:11:26,605 [Thread-5    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-28 19:11:27,194 [Thread-6    ] [INFO ]  custom plot creation finished in 0.588414917 sec.
+2019-06-28 19:11:35,726 [MainThread  ] [INFO ]  Host ('127.0.0.1', 58999) sent command "stop django" to ServiceManager
+2019-06-28 19:11:44,161 [Thread-5    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-28 19:11:44,688 [Thread-8    ] [INFO ]  custom plot creation finished in 0.525624491 sec.
+2019-06-28 19:11:45,469 [Thread-5    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-28 19:11:45,717 [Thread-5    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-28 19:11:45,933 [Thread-5    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-28 19:11:46,183 [Thread-5    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-28 19:11:47,149 [Thread-9    ] [INFO ]  custom plot creation finished in 1.679599844 sec.
+2019-06-28 19:11:47,962 [Thread-10   ] [INFO ]  custom plot creation finished in 2.230050168 sec.
+2019-06-28 19:11:48,307 [Thread-11   ] [INFO ]  custom plot creation finished in 2.363255058 sec.
+2019-06-28 19:11:48,312 [Thread-12   ] [INFO ]  custom plot creation finished in 2.100859771 sec.
+2019-06-28 19:11:55,907 [Thread-5    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/generate_plot?start=2018-06-26T21:01&end=2018-06-27T21:01&line=Temp1,auto,none,auto
+2019-06-28 19:11:56,389 [Thread-13   ] [INFO ]  custom plot creation finished in 0.480359054 sec.

@@ -15,7 +15,7 @@ def run_command(command: str) -> str:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect(addr)
         sock.send(command.encode())
-        return sock.recv(1024).decode()
+        return sock.recv(4096).decode()
 
 
 def get_info() -> Dict[str, Dict[str, Union[str, bool, float]]]:
