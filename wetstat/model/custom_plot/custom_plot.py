@@ -343,85 +343,88 @@ class CustomPlot:
     def create_plots(self):
         # percents = [0.00, 47.07, 47.07, 47.07, 47.07, 47.09, 65.86, 86.72, 86.72, 87.34, 88.38, 88.82, 95.87, 100.00]
         ##debug:
+        try:
+            self.start_ts = perf_counter_ns()  # self only for debug
+            self.add_message("Lade Daten", self.PERCENTS[0])
+            self.load_data()
+            after_load_ts = perf_counter_ns()
+            pps = self.PERCENTS[1] / ((after_load_ts - self.start_ts) / (10 ** 9))
+            self.message_container.set_percent_per_second(self.plot_id, pps)
+            self.add_message("Setze Farben", self.PERCENTS[1])
+            self.set_all_linecolors()
+            self.add_message("Verteile Datenreihen", self.PERCENTS[2])
+            self.distribute_lines_to_axes()
+            self.add_message("Bereite Beschriftungen vor", self.PERCENTS[3])
+            self.prepare_axis_labels()
+            self.add_message("Generiere X-Beschriftungen", self.PERCENTS[4])
+            self.generate_xticks()
+            self.add_message("Teile Daten auf", self.PERCENTS[5])
+            self.split_data_to_lines()
+            self.add_message("Verkleinere Daten", self.PERCENTS[6])
+            self.make_all_lines_minmaxavg()
+            self.add_message("Generiere Legenden", self.PERCENTS[7])
+            self.generate_legends()
+            self.add_message("Erzeuge Zeichenbereich", self.PERCENTS[8])
+            fig, subs = plt.subplots(nrows=len(self.axes), sharex="all", figsize=self.figsize, dpi=self.dpi)
+            if len(self.axes) < 2:
+                subs = [subs]
+            self.add_message("Setze X-Beschriftungen", self.PERCENTS[9])
+            plt.xticks(self.xtick_pos, self.xtick_str, rotation=90)
+            plt.xlim(self.xtick_pos[0], self.xtick_pos[-1])
+            num_lines = len(self.sensoroptions.keys())
+            num_actual_line = 0
+            for i_subplt, subplt in enumerate(subs):
+                subplt.xaxis.grid(True, linestyle="-")
+                labels = self.axes[i_subplt]
+                left_axis = subplt
+                right_axis = subplt.twinx()
+                left_axis.set_ylabel(labels[0])
+                right_axis.set_ylabel(labels[1])
+                lines = self.lines_of_axes[i_subplt]
+                all_lines = lines[0] + lines[1]
+                for hr_hash in all_lines:
+                    num_actual_line += 1
+                    self.add_message(f"Zeichne Linie {num_actual_line} von {num_lines}")
+                    axis = (left_axis if hr_hash in lines[0] else right_axis)
+                    option = self.sensoroptions[hr_hash]
+                    x, y = self.datalines[hr_hash]
+                    color = option.get_line_color()
+                    label = self.legends[hr_hash]
+                    if option.get_minmaxavg_interval() is not None:
+                        miny, maxy, avgy = y
+                        axis.plot(x, maxy, color=color, linewidth=self.linewidth * 0.7)
+                        axis.plot(x, miny, color=color, linewidth=self.linewidth * 0.7)
+                        axis.plot(x, avgy, color=color, linewidth=self.linewidth * 1.2,
+                                  label=label)
+                        axis.fill_between(x, maxy, miny, color=color, alpha=0.2)
+                    else:
+                        axis.plot(x, y, label=label, color=color, linewidth=self.linewidth)
+            title = plt.suptitle(self.get_title(), y=1.0, size=32)
 
-        self.start_ts = perf_counter_ns()  # self only for debug
-        self.add_message("Lade Daten", self.PERCENTS[0])
-        self.load_data()
-        after_load_ts = perf_counter_ns()
-        pps = self.PERCENTS[1] / ((after_load_ts - self.start_ts) / (10 ** 9))
-        self.message_container.set_percent_per_second(self.plot_id, pps)
-        self.add_message("Setze Farben", self.PERCENTS[1])
-        self.set_all_linecolors()
-        self.add_message("Verteile Datenreihen", self.PERCENTS[2])
-        self.distribute_lines_to_axes()
-        self.add_message("Bereite Beschriftungen vor", self.PERCENTS[3])
-        self.prepare_axis_labels()
-        self.add_message("Generiere X-Beschriftungen", self.PERCENTS[4])
-        self.generate_xticks()
-        self.add_message("Teile Daten auf", self.PERCENTS[5])
-        self.split_data_to_lines()
-        self.add_message("Verkleinere Daten", self.PERCENTS[6])
-        self.make_all_lines_minmaxavg()
-        self.add_message("Generiere Legenden", self.PERCENTS[7])
-        self.generate_legends()
-        self.add_message("Erzeuge Zeichenbereich", self.PERCENTS[8])
-        fig, subs = plt.subplots(nrows=len(self.axes), sharex="all", figsize=self.figsize, dpi=self.dpi)
-        if len(self.axes) < 2:
-            subs = [subs]
-        self.add_message("Setze X-Beschriftungen", self.PERCENTS[9])
-        plt.xticks(self.xtick_pos, self.xtick_str, rotation=90)
-        plt.xlim(self.xtick_pos[0], self.xtick_pos[-1])
-        num_lines = len(self.sensoroptions.keys())
-        num_actual_line = 0
-        for i_subplt, subplt in enumerate(subs):
-            subplt.xaxis.grid(True, linestyle="-")
-            labels = self.axes[i_subplt]
-            left_axis = subplt
-            right_axis = subplt.twinx()
-            left_axis.set_ylabel(labels[0])
-            right_axis.set_ylabel(labels[1])
-            lines = self.lines_of_axes[i_subplt]
-            all_lines = lines[0] + lines[1]
-            for hr_hash in all_lines:
-                num_actual_line += 1
-                self.add_message(f"Zeichne Linie {num_actual_line} von {num_lines}")
-                axis = (left_axis if hr_hash in lines[0] else right_axis)
-                option = self.sensoroptions[hr_hash]
-                x, y = self.datalines[hr_hash]
-                color = option.get_line_color()
-                label = self.legends[hr_hash]
-                if option.get_minmaxavg_interval() is not None:
-                    miny, maxy, avgy = y
-                    axis.plot(x, maxy, color=color, linewidth=self.linewidth * 0.7)
-                    axis.plot(x, miny, color=color, linewidth=self.linewidth * 0.7)
-                    axis.plot(x, avgy, color=color, linewidth=self.linewidth * 1.2,
-                              label=label)
-                    axis.fill_between(x, maxy, miny, color=color, alpha=0.2)
-                else:
-                    axis.plot(x, y, label=label, color=color, linewidth=self.linewidth)
-        title = plt.suptitle(self.get_title(), y=1.0, size=32)
+            self.add_message("Speichere Graph", self.PERCENTS[-3])
+            bbox_extra_artists = (title,)
+            if self.legend_mode == 0:  # legend inside
+                lgd = fig.legend(loc="upper center", ncol=20, fancybox=True, shadow=True, bbox_to_anchor=(0.5, 0.97))
+                bbox_extra_artists = (lgd, title)
+            if self.filename is not None:  # we have to export the plot to file
+                filename_ext = os.path.splitext(self.filename)[1]
+                if len(filename_ext) == 0:
+                    filename_ext = ".svg"
+                    self.filename += filename_ext
+                if self.legend_mode == 1:  # legend in separate file
+                    lgd = fig.legend(ncol=1, loc=5, framealpha=1, frameon=True)
+                    if self.filename is not None:
+                        self.save_legend(lgd, filename=self.filename + "_legend.png")
+                    lgd.remove()
+                plt.savefig(self.filename, bbox_extra_artists=bbox_extra_artists, bbox_inches='tight')
 
-        self.add_message("Speichere Graph", self.PERCENTS[-3])
-        bbox_extra_artists = (title,)
-        if self.legend_mode == 0:  # legend inside
-            lgd = fig.legend(loc="upper center", ncol=20, fancybox=True, shadow=True, bbox_to_anchor=(0.5, 0.97))
-            bbox_extra_artists = (lgd, title)
-        if self.filename is not None:  # we have to export the plot to file
-            filename_ext = os.path.splitext(self.filename)[1]
-            if len(filename_ext) == 0:
-                filename_ext = ".svg"
-                self.filename += filename_ext
-            if self.legend_mode == 1:  # legend in separate file
-                lgd = fig.legend(ncol=1, loc=5, framealpha=1, frameon=True)
-                if self.filename is not None:
-                    self.save_legend(lgd, filename=self.filename + "_legend.png")
-                lgd.remove()
-            plt.savefig(self.filename, bbox_extra_artists=bbox_extra_artists, bbox_inches='tight')
-
-        end_ts = perf_counter_ns()
-        time_used = (end_ts - self.start_ts) / 10 ** 9
-        logger.log.info("custom plot creation finished in {} sec.".format(time_used))
-        # fig.show()
-        self.add_message("Fertig", 100)
-        self.add_message("%%finished%%", 100)
-        return time_used
+            end_ts = perf_counter_ns()
+            time_used = (end_ts - self.start_ts) / 10 ** 9
+            logger.log.info("custom plot creation finished in {} sec.".format(time_used))
+            # fig.show()
+            self.add_message("Fertig", 100)
+            self.add_message("%%finished%%", 100)
+            return time_used
+        except Exception:
+            logger.log.exception("Exception raised while generating CustomPlot!")
+            return -1

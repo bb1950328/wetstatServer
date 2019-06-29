@@ -210,6 +210,8 @@ def generate_plot(request):
         return render_generated_plot(request, cpr.custom_plot, "custom")
     except ValueError as e:
         return show_error(request, str(e), "wetstat/index.html")
+    except Exception:
+        logger.log.exception("Exception occurred while generating plot!")
 
 
 def progress(request):
