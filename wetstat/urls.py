@@ -1,7 +1,7 @@
 # coding=utf-8
 from django.urls import path
 
-from wetstat.view import views
+from wetstat.view import views, system_info_view
 
 urlpatterns = [
     path("", views.index),
@@ -29,6 +29,15 @@ urlpatterns = [
     path("progress", views.progress),
     path("progress.html", views.progress),
 
-    path("system", views.system),
-    path("system.html", views.system),
+    path("system", system_info_view.system_info),
+    path("system/info.html", system_info_view.system_info),
+
+    path("system/services", system_info_view.system_services),
+    path("system/services.html", system_info_view.system_services),
+
+    path("system/log", system_info_view.system_log),
+    path("system/log.html", system_info_view.system_log),
+
+    path("system/download", system_info_view.system_download),
+    path("system/download.html", system_info_view.system_download),
 ]

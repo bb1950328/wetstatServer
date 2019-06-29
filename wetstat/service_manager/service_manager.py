@@ -7,8 +7,9 @@ import time
 from concurrent import futures
 from typing import Dict, Union, Optional
 
-from wetstat.common import logger
-from wetstat.service_manager.service import BaseService, DjangoServerService
+from wetstat.common import logger, config
+from wetstat.service_manager.service import BaseService, ApacheServerService, SensorService, \
+    PlotCleanupService
 
 COM_PORT = 51_112
 COMMAND_INFO = "info"
@@ -95,7 +96,6 @@ class ServiceManager:
                 com, addr = self.socket.accept()
                 data = True
                 while data:
-                    com.settimeout(5.0)
                     data = com.recv(1024).decode()
                     if data:
                         res = self.execute_command(data)
@@ -133,7 +133,14 @@ class ServiceManager:
 
 if __name__ == '__main__':
     manager = ServiceManager()
-    manager.update_service("django", DjangoServerService())
-    manager.start_service("django")
+    manager.update_service("apache", ApacheServerService())
+    manager.update_service("sensors", SensorService())
+    manager.update_service("plot_cleanup", PlotCleanupService())
+
+    if config.on_pi():
+        manager.start_service("apache")
+    manager.start_service("sensors")
+    manager.start_service("plot_cleanup")
+
     manager.watchdog()
     manager.run_server()

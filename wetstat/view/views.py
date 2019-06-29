@@ -10,7 +10,6 @@ from django.utils.safestring import mark_safe
 from wetstat.common import config, logger
 from wetstat.common.config import get_date
 from wetstat.hardware.sensors.SensorMaster import SensorMaster, ALL_SENSORS
-from wetstat.model import system_info
 from wetstat.model.csvtools import get_nearest_record
 from wetstat.model.custom_plot.custom_plot import CustomPlot
 from wetstat.model.custom_plot.fixed_time_custom_plot import FixedTimeCustomPlot
@@ -244,10 +243,3 @@ def save_perf(msgs: list):
     with open(os.path.join(config.get_wetstat_dir(), "perf.csv"), "a") as f:
         f.write(";".join(values) + "\n")
 
-
-def system(request):
-    infos = [{"command": (" ".join(ic.get_command())), "output": mark_safe(ic.get_output())} for ic in
-             system_info.ALL_INFO_CLASSES]
-
-    context = {"infos": infos}
-    return render(request, "wetstat/system.html", context)

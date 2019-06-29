@@ -15,18 +15,25 @@ from wetstat.hardware.sensors.OldTempSensor import OldTempSensor
 from wetstat.hardware.sensors.TempSensor import TempSensor
 from wetstat.model import csvtools
 
-USED_SENSORS = [
-    TempSensor(1),
-    TempSensor(2),
-]
-
-ALL_SENSORS = [
-    FakeSensor(1),
-    FakeSensor(2),
+# Old Sensors
+ALL_SENSORS: List[BaseSensor] = [
     OldTempSensor(2),
     OldLightSensor(),
 ]
+
+USED_SENSORS: List[BaseSensor] = [
+    # Used sensors on Pi
+    TempSensor(1),
+    TempSensor(2),
+] if config.on_pi() else [
+    # Used sensors on other PCs
+    FakeSensor(1),
+    FakeSensor(2),
+]
+
 ALL_SENSORS.extend(USED_SENSORS)
+
+schedule.logger.setLevel(schedule.logging.ERROR)
 
 
 class SensorMaster:

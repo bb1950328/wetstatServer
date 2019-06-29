@@ -27,5 +27,12 @@ def get_date() -> datetime.datetime:
     return datetime.datetime.now()
 
 
-def get_database():
+def get_database() -> str:
     return os.path.join(get_wetstat_dir(), "db.sqlite3")
+
+
+def on_pi() -> bool:
+    return sys.platform != "win32"
+
+
+MEASURING_FREQ_SECONDS = 600  # 10 minutes

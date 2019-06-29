@@ -131,6 +131,12 @@ table#id_sensor_table tr:nth-child(even) {
     animation: fadeIn 1s
 }
 
+li.active > a {
+    text-decoration: none;
+    color: #000;
+    link: none;
+}
+
 /* Add animation (fade in the popup) */
 @-webkit-keyframes fadeIn {
     from {
