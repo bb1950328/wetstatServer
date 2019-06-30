@@ -9,7 +9,7 @@ import psutil
 
 from wetstat.common import config
 from wetstat.hardware.sensors.SensorMaster import SensorMaster
-from wetstat.model import plot_cleanup
+from wetstat.model import plot_cleanup, log_parser
 
 
 def kill_proc_tree(pid: int, including_parent: bool = True) -> None:
@@ -94,15 +94,46 @@ class SensorService(BaseService):
         return True
 
 
-class PlotCleanupService(BaseService):
+class DailyService(BaseService):
+    @abstractmethod
+    def get_sleep_before_action(self) -> int:
+        pass
+
+    @abstractmethod
+    def daily_run(self) -> None:
+        pass
+
     def run(self) -> None:
         while True:
-            plot_cleanup.cleanup()
+            time.sleep(self.get_sleep_before_action())
+            self.daily_run()
             now = datetime.datetime.now()
             tomorrow = datetime.datetime.today().replace(
                 hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=1)
             wait = tomorrow - now
             time.sleep(wait.total_seconds())
+
+
+class PlotCleanupService(DailyService):
+
+    def get_sleep_before_action(self) -> int:
+        return 0
+
+    def daily_run(self) -> None:
+        plot_cleanup.cleanup()
+
+    @staticmethod
+    def is_restart_after_crash() -> bool:
+        return True
+
+
+class LogCleanupService(DailyService):
+
+    def get_sleep_before_action(self) -> int:
+        return 300
+
+    def daily_run(self) -> None:
+        log_parser.cleanup_log()
 
     @staticmethod
     def is_restart_after_crash() -> bool:

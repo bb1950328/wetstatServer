@@ -231,15 +231,5 @@ def progress(request):
     ppx = 0 if ppx is None else ppx
     msgs.insert(0, f"%%pps={round(pps * 100, 3)}%%")
     msgs.insert(1, f"%%ppx={round(ppx, 3)}%%")
-    if "%%finished%%" in "".join(msgs):
-        save_perf(msgs)
     context = {"content": "Wrong plot id!!!" if msgs is None else "\n".join(msgs)}
     return render(request, "wetstat/dummy.html", context)
-
-
-def save_perf(msgs: list):
-    values = [m.split(":")[0].strip() for m in msgs]
-    # print(values)
-    with open(os.path.join(config.get_wetstat_dir(), "perf.csv"), "a") as f:
-        f.write(";".join(values) + "\n")
-

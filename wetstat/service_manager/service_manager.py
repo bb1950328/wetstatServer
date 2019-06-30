@@ -8,8 +8,7 @@ from concurrent import futures
 from typing import Dict, Union, Optional
 
 from wetstat.common import logger, config
-from wetstat.service_manager.service import BaseService, ApacheServerService, SensorService, \
-    PlotCleanupService
+from wetstat.service_manager import service
 
 COM_PORT = 51_112
 COMMAND_INFO = "info"
@@ -22,7 +21,7 @@ COMMAND_STOP = "stop"
 class ServiceManager:
     socket: Optional[socket.socket]
     last_crash: Dict[str, datetime.datetime]
-    services: Dict[str, BaseService]
+    services: Dict[str, service.BaseService]
 
     def __init__(self) -> None:
         self.services = {}
@@ -32,7 +31,7 @@ class ServiceManager:
         self.socket = None
         self.submitted_lock = threading.Lock()
 
-    def update_service(self, name: str, service: BaseService) -> None:
+    def update_service(self, name: str, service: service.BaseService) -> None:
         self.services[name] = service
 
     def remove_service(self, name: str) -> None:
@@ -133,14 +132,16 @@ class ServiceManager:
 
 if __name__ == '__main__':
     manager = ServiceManager()
-    manager.update_service("apache", ApacheServerService())
-    manager.update_service("sensors", SensorService())
-    manager.update_service("plot_cleanup", PlotCleanupService())
+    manager.update_service("apache", service.ApacheServerService())
+    manager.update_service("sensors", service.SensorService())
+    manager.update_service("plot_cleanup", service.PlotCleanupService())
+    manager.update_service("log_cleanup", service.LogCleanupService())
 
     if config.on_pi():
         manager.start_service("apache")
     manager.start_service("sensors")
     manager.start_service("plot_cleanup")
+    manager.start_service("log_cleanup")
 
     manager.watchdog()
     manager.run_server()

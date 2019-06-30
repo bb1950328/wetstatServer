@@ -13,7 +13,7 @@ from wetstat.hardware.sensors.FakeSensor import FakeSensor
 from wetstat.hardware.sensors.OldLightSensor import OldLightSensor
 from wetstat.hardware.sensors.OldTempSensor import OldTempSensor
 from wetstat.hardware.sensors.TempSensor import TempSensor
-from wetstat.model import csvtools
+from wetstat.model import csvtools, util
 
 # Old Sensors
 ALL_SENSORS: List[BaseSensor] = [
@@ -90,25 +90,7 @@ class SensorMaster:
         :return: None
         """
 
-        def round_time(dt: datetime.datetime = None, round_to: int = 60, mode=0):
-            """Round a datetime object to any time lapse in seconds
-            :param dt: datetime.datetime object, default now.
-            :param round_to: Closest number of seconds to round to, default 1 minute.
-            :param mode: -1 = to past, 0 = to nearest, 1 = to future
-            """
-            if dt is None:
-                dt = datetime.datetime.now()
-            seconds = (dt.replace(tzinfo=None) - dt.min).seconds
-            rounding = (seconds + round_to / 2) // round_to * round_to
-            delta = datetime.timedelta(0, rounding - seconds, -dt.microsecond)
-            if mode < 0 and delta > datetime.timedelta(seconds=0):
-                delta -= datetime.timedelta(seconds=round_to)
-            if mode > 0 and delta < datetime.timedelta(seconds=0):
-                delta += datetime.timedelta(seconds=round_to)
-            res = dt + delta
-            return res
-
-        next_stop = round_time(round_to=freq, mode=1)
+        next_stop = util.round_time(round_to=freq, mode=1)
         while True:
             # noinspection PyBroadException
             try:
