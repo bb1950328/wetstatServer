@@ -40,4 +40,7 @@ urlpatterns = [
 
     path("system/download", system_info_view.system_download),
     path("system/download.html", system_info_view.system_download),
+
+    path("system/real_download", system_info_view.system_real_download),
+    path("system/real_download.html", system_info_view.system_real_download),
 ]

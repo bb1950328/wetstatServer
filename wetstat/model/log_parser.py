@@ -43,7 +43,7 @@ class LogLine:
             parts.pop(3)
         if parts[4] == "]":
             parts.pop(4)
-        self.time = "T".join(parts[0:2])
+        self.time = " ".join(parts[0:2])
         self.thread = parts[2].strip("[] ")
         self.level = parts[3].strip("[] ")
         if self.level not in LEVELS:

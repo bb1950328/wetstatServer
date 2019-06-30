@@ -34,16 +34,79 @@
     <li><a href="/system/log">Log</a></li>
     <li class="active"><a href="/system/download">Download</a></li>
 </ul>
-{% if connected %}
-    <h2>Services</h2>
-    {% for se in services %}
-        <h3>{{ se.name }}</h3>
-        <p>
-            {{ se.running }}
-        </p>
-    {% endfor %}
-{% else %}
-    <h2>No response from ServiceManager</h2>
-{% endif %}
+<form id="id_customplot_form">
+    <h3>Optionen:</h3>
+    <table id="id_options_table" style="background-color:#cccccc; display: table;">
+        <tr class="absolute_row">
+            <td class="formlabel">
+                Startdatum:
+            </td>
+            <td colspan="3">
+                <label for="id_start_date" style="display:none;"></label>
+                <input type="date" name="start_date" value="{{ start_date }}" required="" id="id_start_date">
+            </td>
+        </tr>
+        <tr class="absolute_row">
+            <td class="formlabel">
+                Enddatum:
+            </td>
+            <td colspan="3">
+                <label for="id_end_date" style="display:none;"></label>
+                <input type="date" name="end_date" value="{{ end_date }}" required="" id="id_end_date">
+            </td>
+        </tr>
+        <tr class="separator-row">
+        </tr>
+        <tr>
+            <td class="formlabel">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="id_check_single">
+                    <label for="id_check_single" class="form-check-label">
+                        Eine Datei
+                    </label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="formlabel">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="id_check_zip">
+                    <label for="id_check_zip" class="form-check-label">
+                        Als Zip
+                    </label>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <button type="button" onclick="update_link()">Link aktualisieren</button>
+    <br>
+    Zum Download:
+    <a id="id_result_link"></a>
+</form>
+<script>
+    function update_link() {
+        let start, end;
+        start = document.getElementById("id_start_date").value;
+        end = document.getElementById("id_end_date").value;
+        console.log(start, end);
+        let link = "/system/real_download";
+        link += "?start=" + start;
+        link += "&end=" + end;
+
+        let inp_single = document.getElementById("id_check_single");
+        if (inp_single.checked) {
+            link += "&single"
+        }
+
+        let inp_zip = document.getElementById("id_check_zip");
+        if (inp_zip.checked) {
+            link += "&zip"
+        }
+
+        let a = document.getElementById("id_result_link");
+        a.href = link;
+        a.innerText = a.href; // reading from 'a.href' because that's a absolute link now, 'link' is only relative
+    }
+</script>
 </body>
 </html>

@@ -34,16 +34,28 @@
     <li class="active"><a href="/system/log">Log</a></li>
     <li><a href="/system/download">Download</a></li>
 </ul>
-{% if connected %}
-    <h2>Services</h2>
-    {% for se in services %}
-        <h3>{{ se.name }}</h3>
-        <p>
-            {{ se.running }}
-        </p>
+<div class="levelfilter">
+    <span>Filter Level: </span>
+    {% for lvl in levels %}
+        <span class="levelfilter bg_{{ lvl }}"><a href="/system/log?level={{ lvl }}">{{ lvl }}</a></span>
     {% endfor %}
-{% else %}
-    <h2>No response from ServiceManager</h2>
-{% endif %}
+</div>
+<table class="logtable">
+    <thead>
+    <td>Time</td>
+    <td>Thread</td>
+    <td>Level</td>
+    <td>Message</td>
+    </thead>
+    {% for line in log %}
+        <tr class="fg_{{ line.level }}">
+            <td>{{ line.time }}</td>
+            <td>{{ line.thread }}</td>
+            <td>{{ line.level }}</td>
+            <td>{{ line.msg }}</td>
+        </tr>
+    {% endfor %}
+</table>
+
 </body>
 </html>

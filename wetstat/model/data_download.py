@@ -5,11 +5,8 @@ import shutil
 from datetime import datetime, timedelta
 from typing import Optional
 
-from django.http import QueryDict
-
 from wetstat.common import config
 from wetstat.model import csvtools
-from wetstat.model.custom_plot.request import CustomPlotRequest
 
 
 class DataDownload:
@@ -45,7 +42,8 @@ class DataDownload:
         :return: full path of zip
         """
         zip_path = self.get_filepath()
-        return shutil.make_archive(zip_path, "zip", root_dir=self.plotfolder, base_dir=self.file_id + ".csv")
+        shutil.make_archive(zip_path, "zip", root_dir=self.plotfolder, base_dir=self.file_id + ".csv")
+        return self.get_filepath() + ".zip"
 
     def get_filepath(self) -> str:
         """
@@ -56,12 +54,12 @@ class DataDownload:
 
     def prepare_download(self) -> str:
         """
-        :return: the file ready for download
+        :return: the file path ready for download
         """
         if self.single_file:
             self.make_single_file()
             if self.make_zip:
-                return self.make_single_file_zip()
+                self.make_single_file_zip()
         else:
             folder = self.get_filepath()
             os.mkdir(folder)
@@ -73,20 +71,6 @@ class DataDownload:
                 f = os.path.join(datafolder, csvtools.get_filename_for_date(i))
                 i += oneday
                 shutil.copy(f, folder)
-            final_file = shutil.make_archive(self.get_filepath(), "zip", folder)
+            shutil.make_archive(self.get_filepath(), "zip", folder)
             shutil.rmtree(folder)
-            return final_file
-
-
-class DataDownloadRequest(CustomPlotRequest):
-    def __init__(self, get: QueryDict) -> None:
-        self.get = get
-        self.start = None
-        self.end = None
-
-    def parse(self) -> None:
-        self.start, self.end = self.parse_start_end()
-        for key in self.get.keys():
-            if key == "onefile":
-                # TODO implemeint
-                pass
+        return self.get_filepath() + (".zip" if self.make_zip or (not self.single_file) else ".csv")
