@@ -1,5 +1,6 @@
 # coding=utf-8
 import datetime
+import os
 import time
 
 from django.core.handlers.wsgi import WSGIRequest
@@ -8,6 +9,7 @@ from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
 from wetstat.common import config, logger
+from wetstat.hardware.sensors import SensorMaster
 from wetstat.model import system_info as system_info_model, log_parser
 from wetstat.model.data_download import DataDownload
 from wetstat.service_manager import service_manager_com
@@ -46,6 +48,7 @@ def system_download(request) -> HttpResponse:
     context = {
         "start_date": last_month.strftime("%Y-%m-%d"),
         "end_date": now.strftime("%Y-%m-%d"),
+        "columns_available": [[sens.get_short_name(), sens.get_long_name()] for sens in SensorMaster.ALL_SENSORS],
     }
 
     return render(request, "wetstat/system/download.html", context)
@@ -63,11 +66,12 @@ def system_real_download(request: WSGIRequest) -> HttpResponse:
     dd.make_zip = "zip" in request.GET.keys()
     path = dd.prepare_download()
     with open(path, "rb") as out:
-        r = HttpResponse(out.read())
-    r["Content-Type"] = "csv"  # TODO correct file type
+        response = HttpResponse(out.read())
+    response["Content-Type"] = 'text/csv' if path.endswith(".csv") else "application/zip"
+    response["Content-Disposition"] = "attachment; filename=\"" + os.path.basename(path) + "\""
     end = time.perf_counter()
     days = (dd.end - dd.start).days
     logger.log.info(f"prepared data download for {dd.start.date().isoformat()} - {dd.end.date().isoformat()} "
                     f"({days} days) "
                     f"in {round(end - start, 3)} sec.")
-    return r
+    return response

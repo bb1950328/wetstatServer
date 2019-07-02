@@ -78,6 +78,14 @@
             </td>
         </tr>
     </table>
+    <h3>Spalten</h3>
+    {% for sens in columns_available %}
+        <div>
+            <input type="checkbox" checked id="{{ sens.0 }}" class="column_checks">
+            <label for="{{ sens.0 }}">{{ sens.1 }}</label>
+        </div>
+    {% endfor %}
+    <br>
     <button type="button" onclick="update_link()">Link aktualisieren</button>
     <br>
     Zum Download:

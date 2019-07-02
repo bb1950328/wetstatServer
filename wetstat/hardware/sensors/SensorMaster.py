@@ -20,6 +20,11 @@ ALL_SENSORS: List[BaseSensor] = [
     OldTempSensor(2),
     OldLightSensor(),
 ]
+if not config.on_pi():
+    ALL_SENSORS.extend([
+        TempSensor(1),
+        TempSensor(2),
+    ])
 
 USED_SENSORS: List[BaseSensor] = [
     # Used sensors on Pi
