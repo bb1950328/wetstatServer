@@ -37,7 +37,7 @@
 <div class="levelfilter">
     <span>Filter Level: </span>
     {% for lvl in levels %}
-        <span class="levelfilter bg_{{ lvl }}"><a href="/system/log?level={{ lvl }}">{{ lvl }}</a></span>
+        <div class="levelfilter bg_{{ lvl }}"><a href="/system/log?level={{ lvl }}">{{ lvl }}</a></div>
     {% endfor %}
 </div>
 <table class="logtable">

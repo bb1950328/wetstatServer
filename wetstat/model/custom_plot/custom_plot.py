@@ -14,7 +14,7 @@ from wetstat.common import logger, config
 from wetstat.model import csvtools
 from wetstat.model.csvtools import DataContainer
 from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
-from wetstat.view.MessageContainer import MessageContainer
+from wetstat.view.message_container import MessageContainer
 
 
 class CustomPlot:

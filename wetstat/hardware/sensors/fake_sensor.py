@@ -1,7 +1,7 @@
 # coding=utf-8
 import random
 
-from wetstat.hardware.sensors.BaseSensor import BaseSensor
+from wetstat.hardware.sensors.base_sensor import BaseSensor
 
 
 class FakeSensor(BaseSensor):

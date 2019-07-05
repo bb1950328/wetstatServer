@@ -9,14 +9,14 @@ from django.utils.safestring import mark_safe
 
 from wetstat.common import config, logger
 from wetstat.common.config import get_date
-from wetstat.hardware.sensors.SensorMaster import SensorMaster, ALL_SENSORS
+from wetstat.hardware.sensors.sensor_master import SensorMaster, ALL_SENSORS
 from wetstat.model.csvtools import get_nearest_record
 from wetstat.model.custom_plot.custom_plot import CustomPlot
 from wetstat.model.custom_plot.fixed_time_custom_plot import FixedTimeCustomPlot
 from wetstat.model.custom_plot.request import CustomPlotRequest
 from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
-from wetstat.view.MessageContainer import MessageContainer
-from wetstat.view.generatePlotThread import GeneratePlotThread
+from wetstat.view.generate_plot_thread import GeneratePlotThread
+from wetstat.view.message_container import MessageContainer
 
 message_container = MessageContainer()
 

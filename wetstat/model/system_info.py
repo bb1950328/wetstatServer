@@ -9,7 +9,8 @@ from wetstat.common import config
 
 
 class InfoCommand:
-    def get_output_of_command(self, command: List[str], columns=512):
+    @staticmethod
+    def get_output_of_command(command: List[str], columns=512):
         myenv = os.environ.copy()
         myenv["TERM"] = "linux"
         myenv["COLUMNS"] = str(columns)
@@ -21,7 +22,8 @@ class InfoCommand:
             err = err.decode()
         return out if len(out) > 0 else err
 
-    def get_system(self):
+    @staticmethod
+    def get_system() -> str:
         return sys.platform
 
     def get_command(self) -> List[str]:

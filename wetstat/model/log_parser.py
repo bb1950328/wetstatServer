@@ -4,7 +4,7 @@ import os
 import re
 import shutil
 import time
-from typing import List
+from typing import List, Optional
 
 from file_read_backwards import FileReadBackwards
 
@@ -79,11 +79,13 @@ class TracebackLogLine(LogLine):
         super().__init__()
 
 
-def parse(max_lines=100, level=LV_WARNING):
+def parse(max_lines: int = 100, level: str = LV_WARNING, filename: Optional[str] = None) -> List[LogLine]:
+    if filename is None:
+        filename = get_log_path()
     lines = []
     count = 0
     traceback_buffer = []
-    with FileReadBackwards(get_log_path()) as f:
+    with FileReadBackwards(filename) as f:
         for fli in f:
             ll = LogLine.parse_self(fli)
             if isinstance(ll, TracebackLogLine):
@@ -91,12 +93,15 @@ def parse(max_lines=100, level=LV_WARNING):
                 continue
             if level_compare(ll.level, level):
                 if traceback_buffer:
-                    ll.msg += config.ENDL + config.ENDL.join(traceback_buffer)
+                    ll.msg += config.ENDL + config.ENDL.join(reversed(traceback_buffer))
                     traceback_buffer.clear()
                 lines.append(ll)
                 count += 1
                 if count >= max_lines:
                     return lines
+    missing = max_lines - len(lines)
+    if missing > 0 and filename == get_log_path():
+        lines.extend(parse(max_lines=missing, level=level, filename=get_archive_log_path()))
     return lines
 
 
@@ -106,6 +111,10 @@ def level_compare(level1: str, level2: str) -> bool:  # returns level1 >= level2
 
 def get_log_path() -> str:
     return os.path.join(config.get_wetstat_dir(), "wetstat", "wetstat.log")
+
+
+def get_archive_log_path() -> str:
+    return os.path.join(config.get_wetstat_dir(), "wetstat", "wetstat_archive.log")
 
 
 def cleanup_log(level: str = LV_WARNING, min_days: float = 15) -> None:  # every line which is lower will be deleted

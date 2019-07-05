@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 
 import psutil
 
-import wetstat.hardware.sensors.SensorMaster as SensorMaster
+import wetstat.hardware.sensors.sensor_master as SensorMaster
 from wetstat.common import config
 from wetstat.model import plot_cleanup, log_parser
 

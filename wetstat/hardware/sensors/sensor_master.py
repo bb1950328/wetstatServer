@@ -9,11 +9,11 @@ import numpy as np
 import schedule
 
 from wetstat.common import logger, config
-from wetstat.hardware.sensors.BaseSensor import BaseSensor
-from wetstat.hardware.sensors.FakeSensor import FakeSensor
-from wetstat.hardware.sensors.OldLightSensor import OldLightSensor
-from wetstat.hardware.sensors.OldTempSensor import OldTempSensor
-from wetstat.hardware.sensors.TempSensor import TempSensor
+from wetstat.hardware.sensors.base_sensor import BaseSensor
+from wetstat.hardware.sensors.fake_sensor import FakeSensor
+from wetstat.hardware.sensors.old_light_sensor import OldLightSensor
+from wetstat.hardware.sensors.old_temp_sensor import OldTempSensor
+from wetstat.hardware.sensors.temp_sensor import TempSensor
 from wetstat.model import csvtools, util
 
 # Old Sensors

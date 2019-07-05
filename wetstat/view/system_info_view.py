@@ -6,10 +6,11 @@ import time
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 from wetstat.common import config, logger
-from wetstat.hardware.sensors import SensorMaster
+from wetstat.hardware.sensors import sensor_master
 from wetstat.model import system_info as system_info_model, log_parser
 from wetstat.model.data_download import DataDownload
 from wetstat.service_manager import service_manager_com
@@ -31,14 +32,19 @@ def system_services(request) -> HttpResponse:
     return render(request, "wetstat/system/services.html", context)
 
 
-def system_log(request) -> HttpResponse:
+def system_log(request: WSGIRequest) -> HttpResponse:
     lvl = request.GET.get("level")
     if not lvl:
         lvl = log_parser.LV_DEBUG
 
-    parsed = log_parser.parse(level=lvl)
+    try:
+        limit = int(request.GET.get("limit"))
+    except (ValueError, TypeError):
+        limit = 100
+    parsed = log_parser.parse(level=lvl, max_lines=limit)
     for p in parsed:
         if config.ENDL in p.msg:
+            p.msg = escape(p.msg)
             p.msg = mark_safe(p.msg.replace(config.ENDL, "<br>"))
 
     context = {"log": parsed,
@@ -52,7 +58,7 @@ def system_download(request) -> HttpResponse:
     context = {
         "start_date": last_month.strftime("%Y-%m-%d"),
         "end_date": now.strftime("%Y-%m-%d"),
-        "columns_available": [[sens.get_short_name(), sens.get_long_name()] for sens in SensorMaster.ALL_SENSORS],
+        "columns_available": [[sens.get_short_name(), sens.get_long_name()] for sens in sensor_master.ALL_SENSORS],
     }
 
     return render(request, "wetstat/system/download.html", context)

@@ -137,20 +137,26 @@ li.active > a {
     link: none;
 }
 
-span.levelfilter {
+.levelfilter {
     padding: 10px;
     margin: 15px 15px 15px 0;
     border-radius: 10px;
     box-sizing: border-box;
+    display: inline-block;
 }
 
-span.levelfilter > a {
+.levelfilter > a {
+    color: #fff;
+}
+
+.levelfilter > a:hover {
     color: #fff;
 }
 
 div.levelfilter {
     margin: 0.2cm 0.2cm 0.2cm 0;
     padding: 0.2cm;
+
 }
 
 .logtable {
