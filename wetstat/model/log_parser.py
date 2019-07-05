@@ -1,6 +1,7 @@
 # coding=utf-8
 import datetime
 import os
+import re
 import shutil
 import time
 from typing import List
@@ -35,7 +36,13 @@ class LogLine:
         self.level = None
         self.msg = None
 
-    def parse_self(self, inp: str):
+    @staticmethod
+    def parse_self(inp: str):
+        if not re.match(r"[\d]{4}-[\d]{2}-[\d]{2} [\d]{2}:[\d]{2}:[\d]{2},.+", inp):  # part of stacktrace
+            self = TracebackLogLine()
+            self.msg = inp
+            return self
+        self = LogLine()
         parts = inp.split(" ")
         # noinspection PyTypeChecker
         parts: List[str] = list(filter(bool, parts))
@@ -67,13 +74,25 @@ class LogLine:
         return self.time_dt
 
 
+class TracebackLogLine(LogLine):
+    def __init__(self) -> None:
+        super().__init__()
+
+
 def parse(max_lines=100, level=LV_WARNING):
     lines = []
     count = 0
+    traceback_buffer = []
     with FileReadBackwards(get_log_path()) as f:
         for fli in f:
-            ll = LogLine().parse_self(fli)
+            ll = LogLine.parse_self(fli)
+            if isinstance(ll, TracebackLogLine):
+                traceback_buffer.append(ll.msg)
+                continue
             if level_compare(ll.level, level):
+                if traceback_buffer:
+                    ll.msg += config.ENDL + config.ENDL.join(traceback_buffer)
+                    traceback_buffer.clear()
                 lines.append(ll)
                 count += 1
                 if count >= max_lines:
@@ -98,18 +117,29 @@ def cleanup_log(level: str = LV_WARNING, min_days: float = 15) -> None:  # every
 
     lines_processed = 0
     lines_moved = 0
+    last_written = 0  # 1=out, 2=arch
 
     with open(log_file) as log:
         with open(log_out_file, "w") as out:
             with open(log_archive_file, "a") as arch:
                 for in_line in log.readlines():
-                    parsed = LogLine().parse_self(in_line)
-                    lines_processed += 1
-                    if parsed.get_time_dt() > threshold:  # from last xx days
-                        out.writelines((in_line,))
-                    elif level_compare(parsed.level, level):  # older than xx days, but important
-                        lines_moved += 1
-                        arch.writelines((in_line,))
+                    parsed = LogLine.parse_self(in_line)
+                    if isinstance(parsed, TracebackLogLine):  # line of previous traceback
+                        if last_written == 1:
+                            out.writelines((in_line,))
+                        elif last_written == 2:
+                            arch.writelines((in_line,))
+                    else:  # normal line
+                        lines_processed += 1
+                        if parsed.get_time_dt() > threshold:  # from last xx days
+                            out.writelines((in_line,))
+                            last_written = 1
+                        elif level_compare(parsed.level, level):  # older than xx days, but important
+                            lines_moved += 1
+                            arch.writelines((in_line,))
+                            last_written = 2
+                        else:
+                            last_written = 0
     shutil.move(log_out_file, log_file)
     end = time.perf_counter()
     time_used = round(end - start, 3)

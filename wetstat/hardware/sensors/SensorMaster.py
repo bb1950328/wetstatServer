@@ -1,6 +1,7 @@
 # coding=utf-8
 import datetime
 import os
+import threading
 import time
 from typing import Optional, List
 
@@ -39,6 +40,15 @@ USED_SENSORS: List[BaseSensor] = [
 ALL_SENSORS.extend(USED_SENSORS)
 
 schedule.logger.setLevel(schedule.logging.ERROR)
+
+measuring_allowed = True
+measuring_allowed_lock = threading.Lock()
+
+
+def stop_measuring() -> None:
+    with measuring_allowed_lock:
+        global measuring_allowed
+        measuring_allowed = False
 
 
 class SensorMaster:
@@ -80,6 +90,9 @@ class SensorMaster:
                                      )
         while len(schedule.jobs):
             schedule.run_pending()
+            with measuring_allowed_lock:
+                if not measuring_allowed:
+                    return
             time.sleep(1)
         means = list(np.mean(data, axis=0))
         means = [round(n, 3) for n in means]
@@ -95,13 +108,21 @@ class SensorMaster:
         :return: None
         """
 
-        next_stop = util.round_time(round_to=freq, mode=1)
+        next_stop = util.round_time(round_to=120, mode=1)  # next even minute
         while True:
             # noinspection PyBroadException
             try:
                 SensorMaster.measure_now(next_stop, next_stop)
                 logger.log.info("Measured and saved under label '" + next_stop.isoformat() + "'")
+                with measuring_allowed_lock:
+                    if not measuring_allowed:
+                        logger.log.info("Measuring stopped.")
+                        return
                 next_stop += datetime.timedelta(seconds=freq)
+                now = datetime.datetime.now()
+                if next_stop < now:
+                    logger.log.warning(f"Time jump from {next_stop.isoformat()} to {now.isoformat()}")
+                    next_stop = util.round_time(round_to=120, mode=1)
 
             except Exception:
                 logger.log.exception("Exception occurred in SensorMaster.measure")

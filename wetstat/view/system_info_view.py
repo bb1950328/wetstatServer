@@ -35,7 +35,11 @@ def system_log(request) -> HttpResponse:
     lvl = request.GET.get("level")
     if not lvl:
         lvl = log_parser.LV_DEBUG
+
     parsed = log_parser.parse(level=lvl)
+    for p in parsed:
+        if config.ENDL in p.msg:
+            p.msg = mark_safe(p.msg.replace(config.ENDL, "<br>"))
 
     context = {"log": parsed,
                "levels": log_parser.LEVELS}

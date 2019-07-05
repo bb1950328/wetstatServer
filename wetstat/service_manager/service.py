@@ -7,8 +7,8 @@ from abc import ABC, abstractmethod
 
 import psutil
 
+import wetstat.hardware.sensors.SensorMaster as SensorMaster
 from wetstat.common import config
-from wetstat.hardware.sensors.SensorMaster import SensorMaster
 from wetstat.model import plot_cleanup, log_parser
 
 
@@ -86,8 +86,13 @@ class ApacheServerService(BaseService):
 class SensorService(BaseService):
 
     def run(self) -> None:
-        sm = SensorMaster()
+        sm = SensorMaster.SensorMaster()
         sm.measure(config.MEASURING_FREQ_SECONDS)
+
+    def stop(self) -> bool:
+        SensorMaster.stop_measuring()
+        time.sleep(1.5)
+        return True
 
     @staticmethod
     def is_restart_after_crash() -> bool:

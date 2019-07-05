@@ -36,3 +36,5 @@ def on_pi() -> bool:
 
 
 MEASURING_FREQ_SECONDS = 600  # 10 minutes
+
+ENDL = "\n" if on_pi() else "\r\n"
