@@ -47,4 +47,4 @@ def swap_bytes(inp: int):
 
 
 def get_time_ms() -> float:
-    time.perf_counter_ns() / 1000
+    return time.perf_counter_ns() / 1000
