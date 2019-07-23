@@ -1,5 +1,6 @@
 # coding=utf-8
 import datetime
+import time
 
 
 def human_readable_size(size_bytes: int, round_digits: int = 3) -> str:
@@ -37,3 +38,13 @@ def round_time(dt: datetime.datetime = None, round_to: int = 60, mode=0):
         delta += datetime.timedelta(seconds=round_to)
     res = dt + delta
     return res
+
+
+def swap_bytes(inp: int):
+    if inp < 0 or inp > 0xffff:
+        raise ValueError("parameter is negative or bigger than 2 bytes!!!")
+    return inp >> 8 | (inp & 0xff) << 8
+
+
+def get_time_ms() -> float:
+    time.perf_counter_ns() / 1000
