@@ -20,4 +20,4 @@ class BME280Base(BaseSensor, ABC):
         self.calibration = bme280.load_calibration_params(self.bus)
 
     def get_sample(self) -> bme280.compensated_readings:
-        return bme280.sample(self.bus, compensation_params=self.calibration, sampling=bme280.x16)
+        return bme280.sample(self.bus, compensation_params=self.calibration, sampling=bme280.oversampling.x16)
