@@ -79,12 +79,14 @@
         </tr>
     </table>
     <h3>Spalten</h3>
-    {% for sens in columns_available %}
-        <div>
-            <input type="checkbox" checked id="{{ sens.0 }}" class="column_checks">
-            <label for="{{ sens.0 }}">{{ sens.1 }}</label>
-        </div>
-    {% endfor %}
+    <div id="column_selections">
+        {% for sens in columns_available %}
+            <div>
+                <input type="checkbox" checked id="{{ sens.0 }}" class="column_checks">
+                <label for="{{ sens.0 }}">{{ sens.1 }}</label>
+            </div>
+        {% endfor %}
+    </div>
     <br>
     <button type="button" onclick="update_link()">Link aktualisieren</button>
     <br>
@@ -92,11 +94,15 @@
     <a id="id_result_link"></a>
 </form>
 <script>
+
+    {% comment %}function update_selection_enabling() {
+        let
+    }{% endcomment %}
+
     function update_link() {
         let start, end;
         start = document.getElementById("id_start_date").value;
         end = document.getElementById("id_end_date").value;
-        console.log(start, end);
         let link = "/system/real_download";
         link += "?start=" + start;
         link += "&end=" + end;
@@ -111,9 +117,36 @@
             link += "&zip"
         }
 
+        link += build_columns_list();
+
         let a = document.getElementById("id_result_link");
         a.href = link;
         a.innerText = a.href; // reading from 'a.href' because that's a absolute link now, 'link' is only relative
+    }
+
+    function build_columns_list() {
+        let link = "&heads=";
+        let cs = document.getElementById("column_selections");
+        let count = cs.children.length;
+        let not_first = false;
+        let at_least_one_unselected = false;
+        for (let i_child_div = 0; i_child_div < count; i_child_div++) {
+            let child_div = cs.children[i_child_div];
+            let child_input = child_div.getElementsByTagName("input")[0];
+            if (child_input.checked) {
+                if (not_first) {
+                    link += ",";
+                }
+                not_first = true;
+                link += child_input.id;
+            } else {
+                at_least_one_unselected = true;
+            }
+        }
+        if (!at_least_one_unselected) { // all columns selected, so we can omit that part of the url
+            return ""
+        }
+        return link
     }
 </script>
 </body>

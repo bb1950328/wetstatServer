@@ -10,6 +10,7 @@ from wetstat.model import csvtools
 
 
 class DataDownload:
+    col_selection: Optional[set]
     start: Optional[datetime]
     end: Optional[datetime]
     single_file: bool = True
@@ -21,6 +22,10 @@ class DataDownload:
         self.file_id = hex(random.randint(0x1000000000000, 0xfffffffffffff))[2:]
         self.start = None
         self.end = None
+        self.col_selection = None
+
+    def set_col_selection(self, selection: set):
+        self.col_selection = selection
 
     def set_start(self, start: datetime):
         self.start = start
@@ -34,7 +39,9 @@ class DataDownload:
             csvtools.load_csv_for_range(config.get_datafolder(),
                                         self.start,
                                         self.end),
-            csv_path)
+            csv_path,
+            self.col_selection,
+        )
         return csv_path
 
     def make_single_file_zip(self) -> str:

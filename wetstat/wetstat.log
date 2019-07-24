@@ -2128,3 +2128,137 @@ ValueError: dkjasodsfe
 2019-07-05 19:57:51,019 [ThreadPoolEx] [DEBUG]  measured values [-11.294, 83.24]
 2019-07-05 19:57:51,020 [ThreadPoolEx] [DEBUG]  saved values in day186in19.csv
 2019-07-05 19:57:51,020 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-05T19:58:00'
+2019-07-05 20:07:52,249 [ThreadPoolEx] [DEBUG]  measured values [21.031, 87.779]
+2019-07-05 20:07:52,251 [ThreadPoolEx] [DEBUG]  saved values in day186in19.csv
+2019-07-05 20:07:52,251 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-05T20:08:00'
+2019-07-05 20:17:53,498 [ThreadPoolEx] [DEBUG]  measured values [2.872, 33.712]
+2019-07-05 20:17:53,500 [ThreadPoolEx] [DEBUG]  saved values in day186in19.csv
+2019-07-05 20:17:53,500 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-05T20:18:00'
+2019-07-05 20:27:54,786 [ThreadPoolEx] [DEBUG]  measured values [-6.585, 68.392]
+2019-07-05 20:27:54,787 [ThreadPoolEx] [DEBUG]  saved values in day186in19.csv
+2019-07-05 20:27:54,787 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-05T20:28:00'
+2019-07-21 14:13:31,155 [ThreadPoolEx] [DEBUG]  measured values [55.533, 126.859]
+2019-07-21 14:13:31,159 [ThreadPoolEx] [DEBUG]  saved values in day186in19.csv
+2019-07-21 14:13:31,160 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-05T20:38:00'
+2019-07-21 14:13:31,160 [ThreadPoolEx] [WARNI]  Time jump from 2019-07-05T20:48:00 to 2019-07-21T14:13:31.160169
+2019-07-21 14:13:52,410 [ThreadPoolEx] [DEBUG]  measured values [74.5, 129.375]
+2019-07-21 14:13:52,510 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-21 14:13:52,510 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T14:14:00'
+2019-07-21 14:23:54,299 [ThreadPoolEx] [DEBUG]  measured values [60.482, 141.567]
+2019-07-21 14:23:54,300 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-21 14:23:54,300 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T14:24:00'
+2019-07-21 14:33:55,778 [ThreadPoolEx] [DEBUG]  measured values [73.983, 196.342]
+2019-07-21 14:33:55,831 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-21 14:33:55,831 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T14:34:00'
+2019-07-21 14:43:53,639 [ThreadPoolEx] [DEBUG]  measured values [65.614, 211.556]
+2019-07-21 14:43:53,707 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-21 14:43:53,707 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T14:44:00'
+2019-07-21 14:53:55,609 [ThreadPoolEx] [DEBUG]  measured values [70.328, 207.952]
+2019-07-21 14:53:55,855 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-21 14:53:55,855 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T14:54:00'
+2019-07-21 15:03:52,375 [ThreadPoolEx] [DEBUG]  measured values [55.353, 179.572]
+2019-07-21 15:03:52,377 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-21 15:03:52,377 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T15:04:00'
+2019-07-21 15:13:54,105 [ThreadPoolEx] [DEBUG]  measured values [77.11, 124.462]
+2019-07-21 15:13:54,106 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-21 15:13:54,107 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T15:14:00'
+2019-07-21 15:23:51,163 [ThreadPoolEx] [DEBUG]  measured values [103.159, 128.127]
+2019-07-21 15:23:51,193 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-21 15:23:51,195 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T15:24:00'
+2019-07-21 15:33:52,960 [ThreadPoolEx] [DEBUG]  measured values [75.389, 141.103]
+2019-07-21 15:33:52,962 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-21 15:33:52,962 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T15:34:00'
+2019-07-21 15:43:54,453 [ThreadPoolEx] [DEBUG]  measured values [73.881, 158.168]
+2019-07-21 15:43:54,454 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-21 15:43:54,455 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T15:44:00'
+2019-07-21 15:53:55,849 [ThreadPoolEx] [DEBUG]  measured values [67.182, 179.833]
+2019-07-21 15:53:55,850 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-21 15:53:55,850 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T15:54:00'
+2019-07-21 16:03:52,692 [ThreadPoolEx] [DEBUG]  measured values [54.638, 169.781]
+2019-07-21 16:03:52,693 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-21 16:03:52,693 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T16:04:00'
+2019-07-21 16:13:54,128 [ThreadPoolEx] [DEBUG]  measured values [47.596, 203.459]
+2019-07-21 16:13:54,129 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-21 16:13:54,130 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T16:14:00'
+2019-07-21 16:23:55,517 [ThreadPoolEx] [DEBUG]  measured values [43.561, 228.804]
+2019-07-21 16:23:55,518 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-21 16:23:55,518 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T16:24:00'
+2019-07-22 13:45:24,501 [ThreadPoolEx] [DEBUG]  measured values [51.493, 224.086]
+2019-07-22 13:45:24,504 [ThreadPoolEx] [DEBUG]  saved values in day202in19.csv
+2019-07-22 13:45:24,504 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-21T16:34:00'
+2019-07-22 13:45:24,504 [ThreadPoolEx] [WARNI]  Time jump from 2019-07-21T16:44:00 to 2019-07-22T13:45:24.504449
+2019-07-22 13:45:51,155 [ThreadPoolEx] [DEBUG]  measured values [28.68, 245.06]
+2019-07-22 13:45:51,166 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 13:45:51,167 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T13:46:00'
+2019-07-22 13:55:53,284 [ThreadPoolEx] [DEBUG]  measured values [7.428, 252.868]
+2019-07-22 13:55:53,285 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 13:55:53,285 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T13:56:00'
+2019-07-22 14:05:54,946 [ThreadPoolEx] [DEBUG]  measured values [1.468, 297.409]
+2019-07-22 14:05:54,947 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 14:05:54,947 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T14:06:00'
+2019-07-22 14:15:51,411 [ThreadPoolEx] [DEBUG]  measured values [4.545, 290.399]
+2019-07-22 14:15:51,412 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 14:15:51,412 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T14:16:00'
+2019-07-22 14:25:52,925 [ThreadPoolEx] [DEBUG]  measured values [3.068, 288.447]
+2019-07-22 14:25:52,939 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 14:25:52,942 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T14:26:00'
+2019-07-22 14:35:54,361 [ThreadPoolEx] [DEBUG]  measured values [-25.303, 312.453]
+2019-07-22 14:35:54,362 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 14:35:54,362 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T14:36:00'
+2019-07-22 14:45:55,628 [ThreadPoolEx] [DEBUG]  measured values [-111.138, 321.873]
+2019-07-22 14:45:55,629 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 14:45:55,629 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T14:46:00'
+2019-07-22 14:55:51,897 [ThreadPoolEx] [DEBUG]  measured values [-158.243, 354.85]
+2019-07-22 14:55:51,898 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 14:55:51,898 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T14:56:00'
+2019-07-22 15:05:53,166 [ThreadPoolEx] [DEBUG]  measured values [-133.584, 324.772]
+2019-07-22 15:05:53,168 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 15:05:53,168 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T15:06:00'
+2019-07-22 15:15:54,424 [ThreadPoolEx] [DEBUG]  measured values [-116.518, 281.737]
+2019-07-22 15:15:54,425 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 15:15:54,426 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T15:16:00'
+2019-07-22 15:25:55,647 [ThreadPoolEx] [DEBUG]  measured values [-142.503, 328.413]
+2019-07-22 15:25:55,648 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 15:25:55,648 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T15:26:00'
+2019-07-22 15:35:51,921 [ThreadPoolEx] [DEBUG]  measured values [-127.771, 313.36]
+2019-07-22 15:35:51,922 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 15:35:51,922 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T15:36:00'
+2019-07-22 15:45:53,128 [ThreadPoolEx] [DEBUG]  measured values [-142.282, 282.838]
+2019-07-22 15:45:53,129 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 15:45:53,130 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T15:46:00'
+2019-07-22 15:55:54,572 [ThreadPoolEx] [DEBUG]  measured values [-170.104, 265.142]
+2019-07-22 15:55:54,573 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 15:55:54,573 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T15:56:00'
+2019-07-22 16:05:55,863 [ThreadPoolEx] [DEBUG]  measured values [-165.002, 255.978]
+2019-07-22 16:05:55,864 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 16:05:55,865 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T16:06:00'
+2019-07-22 16:15:52,188 [ThreadPoolEx] [DEBUG]  measured values [-185.258, 284.558]
+2019-07-22 16:15:52,192 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 16:15:52,198 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T16:16:00'
+2019-07-22 16:25:53,690 [ThreadPoolEx] [DEBUG]  measured values [-211.404, 282.524]
+2019-07-22 16:25:53,692 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 16:25:53,692 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T16:26:00'
+2019-07-22 16:35:54,958 [ThreadPoolEx] [DEBUG]  measured values [-182.427, 279.376]
+2019-07-22 16:35:54,960 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 16:35:54,960 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T16:36:00'
+2019-07-22 16:45:51,284 [ThreadPoolEx] [DEBUG]  measured values [-169.542, 270.547]
+2019-07-22 16:45:51,286 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 16:45:51,286 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T16:46:00'
+2019-07-22 16:55:52,688 [ThreadPoolEx] [DEBUG]  measured values [-185.972, 263.454]
+2019-07-22 16:55:52,690 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 16:55:52,690 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T16:56:00'
+2019-07-22 17:05:54,467 [ThreadPoolEx] [DEBUG]  measured values [-182.503, 243.998]
+2019-07-22 17:05:54,469 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 17:05:54,470 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T17:06:00'
+2019-07-22 17:15:55,702 [ThreadPoolEx] [DEBUG]  measured values [-182.306, 252.497]
+2019-07-22 17:15:55,704 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 17:15:55,704 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T17:16:00'
+2019-07-22 17:25:51,942 [ThreadPoolEx] [DEBUG]  measured values [-164.12, 284.924]
+2019-07-22 17:25:51,944 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 17:25:51,944 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T17:26:00'
+2019-07-22 17:35:53,152 [ThreadPoolEx] [DEBUG]  measured values [-186.841, 280.869]
+2019-07-22 17:35:53,153 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 17:35:53,153 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T17:36:00'
+2019-07-22 17:45:54,359 [ThreadPoolEx] [DEBUG]  measured values [-186.396, 268.842]
+2019-07-22 17:45:54,362 [ThreadPoolEx] [DEBUG]  saved values in day203in19.csv
+2019-07-22 17:45:54,362 [ThreadPoolEx] [INFO ]  Measured and saved under label '2019-07-22T17:46:00'
