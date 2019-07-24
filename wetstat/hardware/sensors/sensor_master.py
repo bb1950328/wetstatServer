@@ -10,34 +10,40 @@ import schedule
 
 from wetstat.common import logger, config
 from wetstat.hardware.sensors.base_sensor import BaseSensor
+from wetstat.hardware.sensors.digital_temp_sensor import DigitalTempSensor
 from wetstat.hardware.sensors.fake_sensor import FakeSensor
+from wetstat.hardware.sensors.humidity_sensor import HumiditySensor
+from wetstat.hardware.sensors.light_sensor import LightSensor
 from wetstat.hardware.sensors.old_light_sensor import OldLightSensor
 from wetstat.hardware.sensors.old_temp_sensor import OldTempSensor
+from wetstat.hardware.sensors.pressure_sensor import PressureSensor
 from wetstat.hardware.sensors.temp_sensor import TempSensor
 from wetstat.model import csvtools, util
 
 # Old Sensors
 ALL_SENSORS: List[BaseSensor] = [
+    # deprecated sensors here
     OldTempSensor(2),
     OldLightSensor(),
 ]
-if not config.on_pi():
-    ALL_SENSORS.extend([
-        TempSensor(1),
-        TempSensor(2),
-    ])
 
 USED_SENSORS: List[BaseSensor] = [
-    # Used sensors on Pi
+    # Used sensors on Pi here
     TempSensor(1),
     TempSensor(2),
-] if config.on_pi() else [
-    # Used sensors on other PCs
-    FakeSensor(1),
-    FakeSensor(2),
-]
+    LightSensor(),
+    DigitalTempSensor(),
+    PressureSensor(),
+    HumiditySensor(),
+] if config.on_pi() else []
 
 ALL_SENSORS.extend(USED_SENSORS)
+
+if not config.on_pi():
+    USED_SENSORS.extend([
+        FakeSensor(1),
+        FakeSensor(2),
+    ])
 
 schedule.logger.setLevel(schedule.logging.ERROR)
 
