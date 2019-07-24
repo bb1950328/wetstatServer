@@ -15,9 +15,17 @@ class Const:
 class BME280Base(BaseSensor, ABC):
 
     def __init__(self) -> None:
-        self.bus = smbus2.SMBus(Const.BUS_NR)
-        bme280.DEFAULT_PORT = Const.ADDRESS
-        self.calibration = bme280.load_calibration_params(self.bus)
+        try:
+            self.bus = smbus2.SMBus(Const.BUS_NR)
+            self.calibration = bme280.load_calibration_params(self.bus)
+            self.dry_mode = False
+        except PermissionError:
+            self.dry_mode = True
 
     def get_sample(self) -> bme280.compensated_readings:
-        return bme280.sample(self.bus, compensation_params=self.calibration, sampling=bme280.oversampling.x16)
+        if self.dry_mode:
+            raise ConnectionError("Can't get sample because of a permission problem while opening I2C bus")
+        return bme280.sample(self.bus,
+                             address=Const.ADDRESS,
+                             compensation_params=self.calibration,
+                             sampling=bme280.oversampling.x16)

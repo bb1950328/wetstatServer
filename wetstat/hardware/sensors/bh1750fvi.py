@@ -67,17 +67,26 @@ class Const:
 class BH1750FVI:
     # datasheet: http://www.elechouse.com/elechouse/images/product/Digital%20light%20Sensor/bh1750fvi-e.pdf
     def __init__(self) -> None:
-        self.bus = smbus2.SMBus(Const.BUS_NR)
-        self.mode = Const.Opecode.POWER_OFF
-        self.first_valid = util.get_time_ms()
-        self.mtreg = Const.MTreg.MT_DEFAULT
+        try:
+            self.bus = smbus2.SMBus(Const.BUS_NR)
+            self.mode = Const.Opecode.POWER_OFF
+            self.first_valid = util.get_time_ms()
+            self.mtreg = Const.MTreg.MT_DEFAULT
+            self.dry_mode = False
+        except PermissionError:
+            self.dry_mode = True
 
     def wait_until_valid(self) -> None:
         diff = self.first_valid - util.get_time_ms()
         if diff > 0:
             time.sleep(diff / 1000)
 
+    def check_not_dry_mode(self) -> None:
+        if self.dry_mode:
+            raise ConnectionError("This instance is in dry mode because of an permission problem while opening I2C bus")
+
     def set_mode(self, opecode: int) -> None:
+        self.check_not_dry_mode()
         if opecode not in Const.Opecode.ALL:
             raise ValueError("opecode not valid!!!")
         if opecode == self.mode and opecode in Const.Opecode.Continious.ALL:
@@ -87,6 +96,7 @@ class BH1750FVI:
         self.first_valid = util.get_time_ms() + Const.MeasureTime.get_for_opecode(opecode)
 
     def set_mtreg(self, new: int) -> None:
+        self.check_not_dry_mode()
         if not (Const.MTreg.MT_MIN <= new <= Const.MTreg.MT_MAX):
             raise ValueError(f"mtreg must be between {Const.MTreg.MT_MIN} and {Const.MTreg.MT_MAX} !!!")
         com_high = Const.MTreg.CHANGE_HIGH | (new >> 5)
@@ -97,6 +107,7 @@ class BH1750FVI:
         self.first_valid = util.get_time_ms() + Const.MeasureTime.get_for_opecode(self.mode) * 2
 
     def get_result(self) -> float:
+        self.check_not_dry_mode()
         if self.mode not in Const.Opecode.Continious.ALL and self.mode not in Const.Opecode.OneTime.ALL:
             raise ValueError("Not measuring in any mode!!!")
         self.wait_until_valid()
@@ -107,10 +118,13 @@ class BH1750FVI:
         return data / 1.2 * (Const.MTreg.MT_DEFAULT / self.mtreg)
 
     def power_off(self) -> None:
+        self.check_not_dry_mode()
         self.set_mode(Const.Opecode.POWER_OFF)
 
     def power_on(self) -> None:
+        self.check_not_dry_mode()
         self.set_mode(Const.Opecode.POWER_ON)
 
     def reset(self) -> None:
+        self.check_not_dry_mode()
         self.set_mode(Const.Opecode.RESET)
