@@ -42,6 +42,7 @@ class LightSensor(BaseSensor):
                 self.bh1750.set_mtreg(Const.MTreg.MT_DEFAULT)
             else:  # new_mode == LIGHT
                 self.bh1750.set_mtreg(Const.MTreg.MT_MIN)
+        self.mode = new_mode
 
     def measure(self, check_mode=True) -> float:
         value = self.bh1750.get_result()
