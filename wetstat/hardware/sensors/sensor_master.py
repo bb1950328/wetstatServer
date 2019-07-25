@@ -116,7 +116,7 @@ class SensorMaster:
         :return: None
         """
 
-        next_stop = util.round_time(round_to=120, mode=1)  # next even minute
+        next_stop = util.round_time(round_to=freq, mode=1)  # to future
         while True:
             # noinspection PyBroadException
             try:
