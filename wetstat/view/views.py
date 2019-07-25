@@ -90,7 +90,7 @@ def index(request) -> HttpResponse:
         if name == "Time":
             continue
         y = yesterday.get(name)
-        if y is not None:
+        if y:
             change = (now.get(name) / y)
         else:
             change = 1

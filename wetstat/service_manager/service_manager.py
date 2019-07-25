@@ -144,4 +144,7 @@ if __name__ == '__main__':
     manager.start_service("log_cleanup")
 
     manager.watchdog()
-    manager.run_server()
+    try:
+        manager.run_server()
+    except:
+        logger.log.exception("Exception while starting server")
