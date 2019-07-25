@@ -75,6 +75,7 @@ class SensorMaster:
 
     @staticmethod
     def _measure_row(data: list, stoptime: datetime.datetime):
+        logger.log.debug(f"SensorMaster._measure_row(len(data)={len(data)}, stoptime={stoptime.isoformat()})")
         data.append([s.measure() for s in USED_SENSORS])
         if datetime.datetime.now() > stoptime:  # should stop
             return schedule.CancelJob
@@ -98,6 +99,7 @@ class SensorMaster:
             schedule.run_pending()
             with measuring_allowed_lock:
                 if not measuring_allowed:
+                    logger.log.info("Measuring stopped in measure_row()")
                     return
             time.sleep(1)
         means = list(np.mean(data, axis=0))
