@@ -48,3 +48,30 @@ def swap_bytes(inp: int):
 
 def get_time_ms() -> float:
     return time.perf_counter_ns() / 1000
+
+
+def number_maxlength(inp: float, maxlen: int) -> str:
+    si = str(inp)
+    si2 = str(int(inp))
+    if len(si) < maxlen:
+        return si
+    elif len(si2) <= maxlen:
+        return si2
+    mult = 0
+    while "e" not in si:
+        inp *= 10
+        si = str(inp)
+        mult += 1
+    if len(si) > maxlen:
+        a, b = si.split("e")
+        vz = b[0]  # + or -
+        new_exp = int(b[1:])
+        if vz == "-":
+            new_exp *= -1
+        new_exp -= mult
+        to_del = len(si) - maxlen - 1
+        if new_exp > 0:
+            to_del -= 1
+        a = a[:-to_del]
+        si = a + "e" + str(new_exp)
+    return si

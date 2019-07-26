@@ -35,15 +35,15 @@ USED_SENSORS: List[BaseSensor] = [
     DigitalTempSensor(),
     PressureSensor(),
     HumiditySensor(),
-] if config.on_pi() else []
+]  # if config.on_pi() else []
 
 ALL_SENSORS.extend(USED_SENSORS)
 
 if not config.on_pi():
-    USED_SENSORS.extend([
+    USED_SENSORS = [
         FakeSensor(1),
         FakeSensor(2),
-    ])
+    ]
 
 schedule.logger.setLevel(schedule.logging.ERROR)
 

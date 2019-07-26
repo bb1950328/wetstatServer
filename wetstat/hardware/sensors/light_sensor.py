@@ -14,7 +14,8 @@ class LightSensor(BaseSensor):
     def __init__(self) -> None:
         super().__init__()
         self.bh1750 = BH1750FVI()
-        self.bh1750.set_mode(Const.Opecode.Continious.H_RES)
+        if not self.bh1750.dry_mode:
+            self.bh1750.set_mode(Const.Opecode.Continious.H_RES)
         self.mode = NORMAL
 
     def get_long_name(self) -> str:
