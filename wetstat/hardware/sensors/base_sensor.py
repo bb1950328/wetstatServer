@@ -3,12 +3,14 @@ from abc import ABC, abstractmethod
 from enum import Enum
 
 
+class CompressionFunction(Enum):
+    MINMAXAVG = "minmaxavg"
+    SUM = "sum"
+    MIN = "min"
+    MAX = "max"
+
+
 class BaseSensor(ABC):
-    class CompressionFunction(Enum):
-        MINMAXAVG = "minmaxavg"
-        SUM = "sum"
-        MIN = "min"
-        MAX = "max"
 
     def get_info(self) -> dict:
         try:

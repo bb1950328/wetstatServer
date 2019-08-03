@@ -25,7 +25,7 @@ class LightSensor(BaseSensor):
         return "Light"
 
     def get_display_color(self) -> str:
-        return "#f9d607"
+        return "#228b22"
 
     def get_unit(self) -> str:
         return "Lux"
