@@ -134,12 +134,14 @@ if __name__ == '__main__':
     manager = ServiceManager()
     manager.update_service("apache", service.ApacheServerService())
     manager.update_service("sensors", service.SensorService())
+    manager.update_service("rain_counter", service.RainCounterService())
     manager.update_service("plot_cleanup", service.PlotCleanupService())
     manager.update_service("log_cleanup", service.LogCleanupService())
 
     if config.on_pi():
         manager.start_service("apache")
     manager.start_service("sensors")
+    manager.start_service("rain_counter")
     manager.start_service("plot_cleanup")
     manager.start_service("log_cleanup")
 

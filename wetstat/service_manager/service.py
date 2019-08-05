@@ -9,6 +9,7 @@ import psutil
 
 import wetstat.hardware.sensors.sensor_master as SensorMaster
 from wetstat.common import config
+from wetstat.hardware.sensors import counter_service, rain_sensor
 from wetstat.model import plot_cleanup, log_parser
 
 
@@ -93,6 +94,20 @@ class SensorService(BaseService):
         SensorMaster.stop_measuring()
         time.sleep(1.5)
         return True
+
+    @staticmethod
+    def is_restart_after_crash() -> bool:
+        return True
+
+
+class RainCounterService(BaseService):
+
+    def run(self) -> None:
+        counter_service.start(rain_sensor.PIN, rain_sensor.PORT)
+        counter_service.server(rain_sensor.PORT)
+
+    def stop(self) -> bool:
+        return False
 
     @staticmethod
     def is_restart_after_crash() -> bool:
