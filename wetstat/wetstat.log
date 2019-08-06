@@ -6975,22 +6975,3 @@ FileNotFoundError: [Errno 2] No such file or directory: '/home/pi/wetstatServer/
 2019-07-25 20:06:39,614 [ThreadPoolEx] [DEBUG]  SensorMaster._measure_row(len(data)=48, stoptime=2019-07-25T20:11:50)
 2019-07-25 20:06:45,335 [ThreadPoolEx] [DEBUG]  SensorMaster._measure_row(len(data)=49, stoptime=2019-07-25T20:11:50)
 2019-07-25 20:06:51,050 [ThreadPoolEx] [DEBUG]  SensorMaster._measure_row(len(data)=50, stoptime=2019-07-25T20:11:50)
-2019-07-26 20:07:24,115 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:07:24,136 [Thread-2    ] [ERROR]  Data for Home Page not found!['No data available for date 2019-06-26T20:07:24.125131']
-2019-07-26 20:09:00,804 [Thread-2    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:10:12,626 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:13:35,098 [Thread-8    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:13:36,524 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:16:41,841 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:17:04,952 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:18:18,681 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:21:57,803 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:22:08,172 [Thread-10   ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:23:16,989 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:23:47,540 [Thread-10   ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:23:48,872 [Thread-8    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:23:49,800 [Thread-10   ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:24:04,840 [Thread-7    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:24:10,666 [Thread-8    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:24:18,602 [Thread-13   ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
-2019-07-26 20:24:44,643 [Thread-9    ] [INFO ]  HTTP Request from 127.0.0.1:8000 to http://127.0.0.1:8000/
