@@ -9,7 +9,7 @@ import psutil
 
 import wetstat.hardware.sensors.sensor_master as SensorMaster
 from wetstat.common import config
-from wetstat.hardware.sensors import counter_service, rain_sensor
+from wetstat.hardware.sensors import counter_service
 from wetstat.model import plot_cleanup, log_parser
 
 
@@ -100,11 +100,11 @@ class SensorService(BaseService):
         return True
 
 
-class RainCounterService(BaseService):
+class CounterService(BaseService):
 
     def run(self) -> None:
-        counter_service.start(rain_sensor.PIN, rain_sensor.PORT)
-        counter_service.server(rain_sensor.PORT)
+        server = counter_service.CounterServiceServer()
+        server.run_server()
 
     def stop(self) -> bool:
         return False

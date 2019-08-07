@@ -3,127 +3,135 @@ import random
 import socket
 import threading
 import time
-from concurrent import futures
 from typing import Dict
+
+import gpiozero
 
 from wetstat.common import config
 
-if config.on_pi():
-    import RPi.GPIO as gpio
-
-    gpio.setmode(gpio.BOARD)
+COM_PORT: int = 54321
+RES_PORT: int = 54322
 
 
-class CounterManager(object):
+class CounterServiceServer(object):
+    ERROR: str = "ERROR"
+
     def __init__(self) -> None:
-        self.list_lock = threading.Lock()
-        self.counters: Dict[int, int] = {}
-        self.counter_locks: Dict[int, threading.Lock] = {}
+        self.counters = self.CounterManager()
 
-    def add_counter(self, pin) -> None:
-        with self.list_lock:
-            self.counters[pin] = 0
-            self.counter_locks[pin] = threading.Lock()
+    class Counter(object):
+        def __init__(self, pin: int):
+            def callback_wrap() -> None:
+                self._callback()
 
-    def remove_counter(self, pin: int) -> None:
-        with self.list_lock:
-            del self.counters[pin]
-            del self.counter_locks[pin]
+            self.pin: int = pin
+            self.button = gpiozero.Button(pin, pull_up=None, bounce_time=0.1)
+            self.button.when_activated = callback_wrap
+            self.value: int = 0
+            self.lock: threading.Lock = threading.Lock()
 
-    def count(self, pin: int, amount=1) -> None:
-        with self.counter_locks[pin]:
-            self.counters[pin] += amount
+        def _callback(self) -> None:
+            with self.lock:
+                self.value += 1
 
-    def get_and_reset(self, pin: int) -> int:
-        return self.get(pin, reset=True)
+        def get(self, reset=False) -> int:
+            with self.lock:
+                val = self.value
+                if reset:
+                    self.value = 0
+                return val
 
-    def get(self, pin: int, reset: bool = False) -> int:
-        with self.counter_locks[pin]:
-            value = self.counters[pin]
-            if reset:
-                self.counters[pin] = 0
-        return value
+        def get_and_reset(self) -> int:
+            return self.get(reset=True)
 
+        def destroy(self) -> None:
+            self.lock.acquire()
+            self.button.close()
+            del self.pin, self.button, self.value, self.lock
 
-counters = CounterManager()
+    class FakeCounter(Counter):
+        AVERAGE_SECONDS_PER_COUNT = 10
 
+        def __init__(self, pin) -> None:
+            self.value: int = 0
+            self.last_access: float = time.time()
+            self.lock: threading.Lock = threading.Lock()
 
-def start(pin: int, mode=gpio.RISING) -> None:
-    if not config.on_pi():
-        return start_fake(pin)
-    counters.add_counter(pin)
-    gpio.setup(pin, gpio.IN)
-    gpio.add_event_detect(pin, mode)
-    gpio.add_event_callback(pin, build_detector(pin))
+        def get(self, reset=False) -> int:
+            with self.lock:
+                now = time.time()
+                since_last = now - self.last_access
+                pulses = int(random.gauss(1, 0.5) * (since_last / self.AVERAGE_SECONDS_PER_COUNT))
+                self.value += pulses
+                val = self.value
+                if reset:
+                    self.value = 0
+                return val
 
+    class CounterManager(object):
+        def __init__(self) -> None:
+            self.list_lock = threading.Lock()
+            self.counters: Dict[int, CounterServiceServer.Counter] = {}
 
-def start_fake(pin: int) -> None:
-    counters.add_counter(pin)
-    func = build_detector(pin)
+        def add_counter(self, pin, is_fake=False) -> None:
+            with self.list_lock:
+                counter_type = CounterServiceServer.FakeCounter if is_fake else CounterServiceServer.Counter
+                self.counters[pin] = counter_type(pin)
 
-    def fake_callback() -> None:
-        while True:
-            time.sleep(random.randint(100, 1000))
-            func()
+        def remove_counter(self, pin: int) -> None:
+            with self.list_lock:
+                self.counters[pin].destroy()
+                del self.counters[pin]
 
-    ex = futures.ThreadPoolExecutor()
-    ex.submit(fake_callback)
+        def get_counter(self, pin: int):
+            return self.counters[pin]
 
+    def start(self, pin: int) -> None:
+        self.counters.add_counter(pin, is_fake=not config.on_pi())
 
-def build_detector(pin: int) -> callable:
-    def pulse_detected() -> None:
-        counters.count(pin)
+    def run_server(self) -> None:
+        """
+        :return: None
+        listens on UDP port and sends back on UDP port+1
+        """
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.bind(("", COM_PORT))
+            while True:
+                data, (ip, port) = s.recvfrom(1 << 10)
+                data = data.decode(errors="replace")
+                res = self.handle_command(data)
 
-    return pulse_detected
+                s.sendto(res.encode(), (ip, RES_PORT))
 
+        finally:
+            s.close()
 
-def server(port: int) -> None:
-    """
-    :param port: port number, should be between 1 and 65536
-    :return: None
-    listens on UDP port and sends back on UDP port+1
-    """
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        s.bind(("", port))
-        while True:
-            data, (ip, port) = s.recvfrom(1 << 10)
-            data = data.decode(errors="replace")
-            res = handle_command(data)
+    def handle_command(self, data: str) -> str:
+        # noinspection PyBroadException
+        try:
+            res = "OK"
+            pin = int(data.split(" ")[1])
 
-            s.sendto(res.encode(), (ip, port + 1))
-
-    finally:
-        s.close()
-
-
-def handle_command(data: str) -> str:
-    # noinspection PyBroadException
-    try:
-        res = "OK"
-        pin = int(data.split(" ")[1])
-
-        if data == "get":
-            res = str(counters.get_and_reset(pin)).encode()
-        elif data.startswith("stop"):
-            gpio.remove_event_detect(pin)
-            counters.remove_counter(pin)
-        elif data.startswith("start"):
-            start(pin)
-
-        return res
-    except Exception:
-        return "ERROR"
+            if data.startswith("get"):
+                value = self.counters.get_counter(pin).get_and_reset()
+                res = str(value)
+            elif data.startswith("stop"):
+                self.counters.remove_counter(pin)
+            elif data.startswith("start"):
+                self.start(pin)
+            return res
+        except Exception as e:
+            return self.ERROR
 
 
 req_socket = None
 result_socket = None
 
 
-def send_command(port: int, command: str) -> int:
+def send_command(command: str) -> str:
     """
     :param command: look in wetstat.hardware.sensors.counter_service.handle_command for available commands
-    :param port: port number, should be between 1 and 65536
     :return: int, -1 on error
     makes request on port, returns received answer from port+1
     """
@@ -132,11 +140,11 @@ def send_command(port: int, command: str) -> int:
         req_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     if not result_socket:
         result_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        result_socket.bind(("", port + 1))
+        result_socket.bind(("", RES_PORT))
     # noinspection PyBroadException
     try:
-        req_socket.sendto(command.encode(), ("localhost", port))
+        req_socket.sendto(command.encode(), ("localhost", COM_PORT))
         response = result_socket.recv(1 << 10)
-        return int(response.decode())
-    except Exception:
-        return -1
+        return response.decode()
+    except Exception as e:
+        return "ERROR in send_command"

@@ -17,8 +17,7 @@ from wetstat.hardware.sensors.base_sensor import BaseSensor, CompressionFunction
 # so the calculation is correct
 
 MM_PER_BUCKET = (1_000_000 / 430) / 5757.5
-PIN = 26  # physical
-PORT = 56789
+PIN = 4  # bcm number
 
 
 class RainSensor(BaseSensor):
@@ -38,4 +37,8 @@ class RainSensor(BaseSensor):
         return "Rain"
 
     def measure(self) -> float:
-        return counter_service.send_command(PORT, f"get {PIN}") * MM_PER_BUCKET
+        ret = counter_service.send_command(f"get {PIN}")
+        if ret == counter_service.CounterServiceServer.ERROR:
+            counter_service.send_command(f"start {PIN}")
+            ret = 0  # it doesn't make sense to get the value right after starting the counter
+        return int(ret) * MM_PER_BUCKET
