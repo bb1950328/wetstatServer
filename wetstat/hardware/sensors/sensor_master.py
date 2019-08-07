@@ -9,7 +9,7 @@ import numpy as np
 import schedule
 
 from wetstat.common import logger, config
-from wetstat.hardware.sensors.base_sensor import BaseSensor
+from wetstat.hardware.sensors.base_sensor import BaseSensor, CompressionFunction
 from wetstat.hardware.sensors.digital_temp_sensor import DigitalTempSensor
 from wetstat.hardware.sensors.fake_sensor import FakeSensor
 from wetstat.hardware.sensors.humidity_sensor import HumiditySensor
@@ -35,15 +35,15 @@ USED_SENSORS: List[BaseSensor] = [
     DigitalTempSensor(),
     PressureSensor(),
     HumiditySensor(),
-] if config.on_pi() else []
+]  # if config.on_pi() else []
 
 ALL_SENSORS.extend(USED_SENSORS)
 
 if not config.on_pi():
-    USED_SENSORS.extend([
+    USED_SENSORS = [
         FakeSensor(1),
         FakeSensor(2),
-    ])
+    ]
 
 schedule.logger.setLevel(schedule.logging.ERROR)
 
@@ -76,7 +76,13 @@ class SensorMaster:
     @staticmethod
     def _measure_row(data: list, stoptime: datetime.datetime):
         logger.log.debug(f"SensorMaster._measure_row(len(data)={len(data)}, stoptime={stoptime.isoformat()})")
-        data.append([s.measure() for s in USED_SENSORS])
+        # data.append([s.measure() for s in USED_SENSORS])
+        row = []
+        for s in USED_SENSORS:
+            if s.get_compression_function() == CompressionFunction.SUM:
+                row.append(None)  # don't call measure because it would change internal counters
+            else:
+                row.append(s.measure)
         if datetime.datetime.now() > stoptime:  # should stop
             return schedule.CancelJob
 
@@ -102,10 +108,26 @@ class SensorMaster:
                     logger.log.info("Measuring stopped in measure_row()")
                     return
             time.sleep(1)
-        means = list(np.mean(data, axis=0))
-        means = [round(n, 3) for n in means]
-        logger.log.debug(f"measured values {str(means)}")
-        path = csvtools.save_values(config.get_datafolder(), heads, means, savedate)
+
+        values = []
+        data_rows = list(zip(*data))
+        for isens, sens in enumerate(USED_SENSORS):
+            cf = sens.get_compression_function()
+            svals = data_rows[isens]
+            if cf == CompressionFunction.MINMAXAVG:
+                val = np.mean(svals)
+            elif cf == CompressionFunction.MIN:
+                val = min(svals)
+            elif cf == CompressionFunction.MAX:
+                val = max(svals)
+            elif cf == CompressionFunction.SUM:
+                val = sens.measure()
+            else:
+                val = 0
+            values.append(round(val, 3))
+
+        logger.log.debug(f"measured values {str(values)}")
+        path = csvtools.save_values(config.get_datafolder(), heads, values, savedate)
         logger.log.debug(f"saved values in {os.path.basename(path)}")
 
     @staticmethod

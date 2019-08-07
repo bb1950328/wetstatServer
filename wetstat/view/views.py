@@ -10,6 +10,7 @@ from django.utils.safestring import mark_safe
 from wetstat.common import config, logger
 from wetstat.common.config import get_date
 from wetstat.hardware.sensors.sensor_master import SensorMaster, ALL_SENSORS
+from wetstat.model import util
 from wetstat.model.csvtools import get_nearest_record
 from wetstat.model.custom_plot.custom_plot import CustomPlot
 from wetstat.model.custom_plot.fixed_time_custom_plot import FixedTimeCustomPlot
@@ -19,30 +20,6 @@ from wetstat.view.generate_plot_thread import GeneratePlotThread
 from wetstat.view.message_container import MessageContainer
 
 message_container = MessageContainer()
-
-
-def number_maxlength(inp: float, maxlen: int) -> str:
-    si = str(inp)
-    if len(si) < maxlen:
-        return si
-    mult = 0
-    while "e" not in si:
-        inp *= 10
-        si = str(inp)
-        mult += 1
-    if len(si) > maxlen:
-        a, b = si.split("e")
-        vz = b[0]  # + or -
-        new_exp = int(b[1:])
-        if vz == "-":
-            new_exp *= -1
-        new_exp -= mult
-        to_del = len(si) - maxlen - 1
-        if new_exp > 0:
-            to_del -= 1
-        a = a[:-to_del]
-        si = a + "e" + str(new_exp)
-    return si
 
 
 # noinspection PyUnusedLocal
@@ -103,8 +80,9 @@ def index(request) -> HttpResponse:
         val = now.get(name)
         sensor = SensorMaster.get_sensor_for_info("short_name", name)
         unit = sensor.get_unit()
-        if len(str(val)) + len(unit) > 7:  # too long to display
-            val = number_maxlength(val, 7 - len(unit))
+        max_value_width = 12
+        if len(str(val)) + len(unit) > max_value_width:  # too long to display
+            val = util.number_maxlength(val, max_value_width - len(unit))
         sarr.append(
             {
                 "name": sensor.get_long_name(),

@@ -1,8 +1,11 @@
 # coding=utf-8
 from abc import ABC
 
-import bme280
-import smbus2
+try:
+    import bme280
+    import smbus2
+except:
+    pass
 
 from wetstat.hardware.sensors.base_sensor import BaseSensor
 
@@ -19,7 +22,7 @@ class BME280Base(BaseSensor, ABC):
             self.bus = smbus2.SMBus(Const.BUS_NR)
             self.calibration = bme280.load_calibration_params(self.bus)
             self.dry_mode = False
-        except PermissionError:
+        except (PermissionError, NameError):
             self.dry_mode = True
 
     def get_sample(self) -> bme280.compensated_readings:

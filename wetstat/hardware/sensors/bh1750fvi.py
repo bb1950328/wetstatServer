@@ -1,7 +1,10 @@
 # coding=utf-8
 import time
 
-import smbus2
+try:
+    import smbus2
+except:
+    pass
 
 from wetstat.model import util
 
@@ -73,7 +76,7 @@ class BH1750FVI:
             self.first_valid = util.get_time_ms()
             self.mtreg = Const.MTreg.MT_DEFAULT
             self.dry_mode = False
-        except PermissionError:
+        except (PermissionError, NameError):
             self.dry_mode = True
 
     def wait_until_valid(self) -> None:
