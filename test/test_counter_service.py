@@ -47,5 +47,6 @@ print(" done")
 time.sleep(0.25)
 while True:
     refresh_value()
+    mm = value * rain_sensor.MM_PER_BUCKET
     print(f"\rCount of pin {PIN}: {value}", end="")
     time.sleep(1)
