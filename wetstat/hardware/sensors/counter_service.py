@@ -26,7 +26,7 @@ class CounterServiceServer(object):
                 self._callback()
 
             self.pin: int = pin
-            self.button = gpiozero.Button(pin, pull_up=None, bounce_time=0.1)
+            self.button = gpiozero.Button(pin, pull_up=None, bounce_time=0.1, active_state=True)
             self.button.when_activated = callback_wrap
             self.value: int = 0
             self.lock: threading.Lock = threading.Lock()
