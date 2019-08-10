@@ -5,7 +5,7 @@ from wetstat.hardware.sensors.analog_sensor import AnalogSensor
 class TempSensor(AnalogSensor):
 
     def __init__(self, number: int):
-        if not (1 <= number <= 2):
+        if not 1 <= number <= 2:
             raise ValueError("number must be 1 or 2!!!")
         super().__init__()
         self.number = number

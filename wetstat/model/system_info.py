@@ -8,7 +8,7 @@ from typing import List
 from wetstat.common import config
 
 
-class InfoCommand:
+class InfoCommand(object):
     @staticmethod
     def get_output_of_command(command: List[str], columns=512):
         myenv = os.environ.copy()

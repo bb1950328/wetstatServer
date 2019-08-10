@@ -8,7 +8,7 @@ from wetstat.common import config
 conn = sqlite3.connect(config.get_database())
 
 
-class CustomPlotDbRow:
+class CustomPlotDbRow(object):
     id: str
     path: str
     created: datetime.datetime

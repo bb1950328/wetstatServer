@@ -26,7 +26,7 @@ message_container = MessageContainer()
 def index(request) -> HttpResponse:
     log_request(request)
 
-    class MockDict:
+    class MockDict(object):
         """
         returns specified value when get() is called
         """

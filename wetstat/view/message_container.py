@@ -3,7 +3,7 @@ import threading
 from typing import Dict, List, Optional, Union
 
 
-class MessageContainer:
+class MessageContainer(object):
     def __init__(self) -> None:
         self.PPS_DEFAULT_VALUE: int = 2
         self._messages: Dict[str, List[str]] = {}

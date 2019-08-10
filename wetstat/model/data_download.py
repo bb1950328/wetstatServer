@@ -9,7 +9,7 @@ from wetstat.common import config
 from wetstat.model import csvtools
 
 
-class DataDownload:
+class DataDownload(object):
     col_selection: Optional[set]
     start: Optional[datetime]
     end: Optional[datetime]

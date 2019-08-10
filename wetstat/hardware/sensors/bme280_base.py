@@ -10,7 +10,7 @@ except:
 from wetstat.hardware.sensors.base_sensor import BaseSensor
 
 
-class Const:
+class Const(object):
     BUS_NR = 1
     ADDRESS = 0x76
 

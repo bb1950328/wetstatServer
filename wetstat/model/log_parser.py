@@ -28,7 +28,7 @@ LEVELS = [
 ]
 
 
-class LogLine:
+class LogLine(object):
     def __init__(self) -> None:
         self.time = None
         self.time_dt = None

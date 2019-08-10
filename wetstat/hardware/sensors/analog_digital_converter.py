@@ -12,7 +12,7 @@ except ModuleNotFoundError:  # not on raspberry pi
     ON_PI = False
 
 
-class AnalogDigitalConverter:
+class AnalogDigitalConverter(object):
     def __init__(self, volt_reference: float = 3.3, num_bits: int = 10) -> None:
         self.spi = spidev.SpiDev()
         self.spi.open(0, 1)
@@ -23,15 +23,16 @@ class AnalogDigitalConverter:
         if not ON_PI:
             logger.log.warning("Someone tried to read values from ADC but not on Raspberry Pi")
             return 0
-        if not (0 <= channel <= 7):
+        if not 0 <= channel <= 7:
             raise ValueError("channel is not between 0 and 7")
         start_time = time.perf_counter()
         command = [1, 128 + channel * 16, 8]
         answer = self.spi.xfer(command)
         value = None
-        while (value is None) and ((time.perf_counter() - start_time) < timeout):
+        while value is None and (time.perf_counter() - start_time) < timeout:
             if 0 <= answer[1] <= 3:
-                return (answer[1] * 256) + answer[2]
+                bits = (answer[1] * 256) + answer[2]
+                return bits
         return None
 
     def read_channel_volt(self, channel: int, timeout: float = 1) -> float:

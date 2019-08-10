@@ -17,7 +17,7 @@ from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
 from wetstat.view.message_container import MessageContainer
 
 
-class CustomPlot:
+class CustomPlot(object):
     # Type hints:
     message_container: Optional[MessageContainer]
     plot_id: str

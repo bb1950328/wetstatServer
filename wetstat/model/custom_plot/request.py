@@ -10,7 +10,7 @@ from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
 from wetstat.view import views
 
 
-class CustomPlotRequest:
+class CustomPlotRequest(object):
 
     def __init__(self, get: QueryDict):
         self.get: QueryDict = get

@@ -4,7 +4,7 @@ from typing import Optional
 from wetstat.hardware.sensors.base_sensor import BaseSensor
 
 
-class CustomPlotSensorOptions:
+class CustomPlotSensorOptions(object):
     axis: Optional[str]
     line_color: Optional[str]
     minmaxavg_interval: Optional[str]

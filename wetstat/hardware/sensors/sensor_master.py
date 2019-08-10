@@ -57,7 +57,7 @@ def stop_measuring() -> None:
         measuring_allowed = False
 
 
-class SensorMaster:
+class SensorMaster(object):
     def __init__(self) -> None:
         pass
 

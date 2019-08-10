@@ -10,14 +10,14 @@ from wetstat.common import config
 
 
 @dataclass
-class DayData:
+class DayData(object):
     date: datetime.date
     array: np.array
     fields: list
 
 
 @dataclass
-class DataContainer:
+class DataContainer(object):
     data: list
 
 
