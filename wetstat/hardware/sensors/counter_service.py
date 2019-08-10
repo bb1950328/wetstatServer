@@ -9,12 +9,13 @@ import gpiozero
 
 from wetstat.common import config
 
-COM_PORT: int = 54321
-RES_PORT: int = 54322
+COM_PORT: int = 34321
+RES_PORT: int = 34322
+
+ERROR: str = "ERROR"
 
 
 class CounterServiceServer(object):
-    ERROR: str = "ERROR"
 
     def __init__(self) -> None:
         self.counters = self.CounterManager()
@@ -61,7 +62,7 @@ class CounterServiceServer(object):
             with self.lock:
                 now = time.time()
                 since_last = now - self.last_access
-                pulses = int(random.gauss(1, 0.5) * (since_last / self.AVERAGE_SECONDS_PER_COUNT))
+                pulses = int(random.gauss(1, 0.3) * (since_last / self.AVERAGE_SECONDS_PER_COUNT))
                 self.value += pulses
                 val = self.value
                 if reset:
@@ -122,7 +123,7 @@ class CounterServiceServer(object):
                 self.start(pin)
             return res
         except Exception as e:
-            return self.ERROR
+            return ERROR + ": (" + str(e) + ")"
 
 
 req_socket = None
@@ -141,10 +142,19 @@ def send_command(command: str) -> str:
     if not result_socket:
         result_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         result_socket.bind(("", RES_PORT))
+        result_socket.settimeout(0.5)
     # noinspection PyBroadException
     try:
         req_socket.sendto(command.encode(), ("localhost", COM_PORT))
         response = result_socket.recv(1 << 10)
         return response.decode()
+    except KeyboardInterrupt as e:
+        req_socket.close()
+        result_socket.close()
+        req_socket = None
+        result_socket = None
+        return ""
+    except socket.timeout:
+        return ERROR + ": no response from server!"
     except Exception as e:
-        return "ERROR in send_command"
+        return ERROR + f" in send_command ({str(e)})"

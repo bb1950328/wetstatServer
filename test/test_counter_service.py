@@ -1,8 +1,15 @@
 # coding=utf-8
+import datetime
+import random
 import time
 from concurrent import futures
 
 from wetstat.hardware.sensors import counter_service
+
+counter_service.COM_PORT = random.randint(30_000, 65_000)
+counter_service.RES_PORT = counter_service.COM_PORT + 1
+print("Command port: ", counter_service.COM_PORT)
+print("Response port:", counter_service.RES_PORT)
 
 PIN = 7  # BCM
 
@@ -16,13 +23,18 @@ def run_counter_server() -> None:
 
 
 def initialize_counter() -> None:
-    print("response=", counter_service.send_command(f"start {PIN}"), end="")
+    response = counter_service.send_command(f"start {PIN}")
+    print("[response='", response, "]", sep="", end="")
 
 
 def refresh_value() -> None:
     global value
+    command = f"get {PIN}"
     response = counter_service.send_command(f"get {PIN}")
-    value += int(response)
+    if not response.isnumeric():
+        print("\r[" + datetime.datetime.now().isoformat() + "]", command, "->", response)
+    else:
+        value += int(response)
 
 
 print("Starting counter server...", end="")

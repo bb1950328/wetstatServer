@@ -38,7 +38,7 @@ class RainSensor(BaseSensor):
 
     def measure(self) -> float:
         ret = counter_service.send_command(f"get {PIN}")
-        if ret == counter_service.CounterServiceServer.ERROR:
+        if ret.startswith(counter_service.ERROR):
             counter_service.send_command(f"start {PIN}")
             ret = 0  # it doesn't make sense to get the value right after starting the counter
         return int(ret) * MM_PER_BUCKET
