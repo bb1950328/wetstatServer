@@ -11,7 +11,7 @@ counter_service.RES_PORT = counter_service.COM_PORT + 1
 print("Command port: ", counter_service.COM_PORT)
 print("Response port:", counter_service.RES_PORT)
 
-PIN = 7  # BCM
+PIN = 4  # BCM
 
 value = 0
 
