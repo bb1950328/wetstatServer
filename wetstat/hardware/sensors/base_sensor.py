@@ -38,7 +38,7 @@ class BaseSensor(ABC):
         pass
 
     def get_compression_function(self) -> CompressionFunction:
-        return self.CompressionFunction.MINMAXAVG
+        return CompressionFunction.MINMAXAVG
 
     @abstractmethod
     def measure(self) -> float:
