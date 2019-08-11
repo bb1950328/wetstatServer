@@ -1,6 +1,7 @@
 # coding=utf-8
-from wetstat.hardware.sensors import counter_service
-from wetstat.hardware.sensors.base_sensor import BaseSensor, CompressionFunction
+
+from wetstat.hardware.sensors.base_sensor import CompressionFunction
+from wetstat.hardware.sensors.counting_sensor import CountingSensor
 
 # mm per bucket calculation for rain gauges like this: https://www.aliexpress.com/item/1000001838878.html
 # area of the collecting cone: 5757.5mm^2
@@ -20,7 +21,10 @@ MM_PER_BUCKET = (1_000_000 / 430) / 5757.5
 PIN = 4  # bcm number
 
 
-class RainSensor(BaseSensor):
+class RainSensor(CountingSensor):
+    def measure(self) -> float:
+        return self.get_count(PIN) * MM_PER_BUCKET
+
     def get_compression_function(self) -> CompressionFunction:
         return CompressionFunction.SUM
 
@@ -35,10 +39,3 @@ class RainSensor(BaseSensor):
 
     def get_short_name(self) -> str:
         return "Rain"
-
-    def measure(self) -> float:
-        ret = counter_service.send_command(f"get {PIN}")
-        if ret.startswith(counter_service.ERROR):
-            counter_service.send_command(f"start {PIN}")
-            ret = 0  # it doesn't make sense to get the value right after starting the counter
-        return int(ret) * MM_PER_BUCKET

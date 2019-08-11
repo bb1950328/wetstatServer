@@ -5,10 +5,11 @@ import subprocess
 import time
 from abc import ABC, abstractmethod
 
+import gpiozero
 import psutil
 
 import wetstat.hardware.sensors.sensor_master as SensorMaster
-from wetstat.common import config
+from wetstat.common import config, logger
 from wetstat.hardware.sensors import counter_service
 from wetstat.model import plot_cleanup, log_parser
 
@@ -154,6 +155,35 @@ class LogCleanupService(DailyService):
 
     def daily_run(self) -> None:
         log_parser.cleanup_log()
+
+    @staticmethod
+    def is_restart_after_crash() -> bool:
+        return True
+
+
+class ShutdownButtonService(BaseService):
+    pin: int = 21  # BCM
+    demo_mode = True
+
+    def run(self) -> None:
+        if config.on_pi():
+            def run(command: str):
+                if self.demo_mode:
+                    logger.log.info(f"Would run command '{command} now, but demo_mode is on")
+                else:
+                    os.system(command)
+
+            def halt() -> None:
+                run("sudo halt")
+
+            def reboot() -> None:
+                run("sudo reboot")
+
+            button = gpiozero.Button(self.pin, pull_up=None, active_state=True, hold_time=2)
+            button.when_activated = halt
+            button.when_held = reboot
+        while True:
+            time.sleep(10)
 
     @staticmethod
     def is_restart_after_crash() -> bool:
