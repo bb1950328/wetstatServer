@@ -17,6 +17,7 @@ from wetstat.hardware.sensors.light_sensor import LightSensor
 from wetstat.hardware.sensors.old_light_sensor import OldLightSensor
 from wetstat.hardware.sensors.old_temp_sensor import OldTempSensor
 from wetstat.hardware.sensors.pressure_sensor import PressureSensor
+from wetstat.hardware.sensors.rain_sensor import RainSensor
 from wetstat.hardware.sensors.temp_sensor import TempSensor
 from wetstat.model import csvtools, util
 
@@ -35,6 +36,7 @@ USED_SENSORS: List[BaseSensor] = [
     DigitalTempSensor(),
     PressureSensor(),
     HumiditySensor(),
+    RainSensor(),
 ]  # if config.on_pi() else []
 
 ALL_SENSORS.extend(USED_SENSORS)
