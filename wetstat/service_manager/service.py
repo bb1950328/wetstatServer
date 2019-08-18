@@ -171,9 +171,6 @@ class ShutdownButtonService(BaseService):
                 if self.demo_mode:
                     msg = f"Would run command '{command} now, but demo_mode is on"
                     logger.log.info(msg)
-                    with open("/home/pi/tmp.txt", "a") as f:
-                        f.write(msg + "\n")
-                    
                 else:
                     os.system(command)
 
