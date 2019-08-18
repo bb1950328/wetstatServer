@@ -7,7 +7,7 @@ from typing import Dict
 
 import gpiozero
 
-from wetstat.common import config
+from wetstat.common import config, logger
 
 COM_PORT: int = 34321
 RES_PORT: int = 34322
@@ -30,10 +30,12 @@ class CounterServiceServer(object):
             self.button.when_activated = callback_wrap
             self.value: int = 0
             self.lock: threading.Lock = threading.Lock()
+            logger.log.info(f"Initialized counter on BCM pin {self.pin}")
 
         def _callback(self) -> None:
             with self.lock:
                 self.value += 1
+                logger.log.debug(f"Counter of pin {self.pin} is now {self.value}")
 
         def get(self, reset=False) -> int:
             with self.lock:
