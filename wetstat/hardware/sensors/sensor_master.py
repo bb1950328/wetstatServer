@@ -84,8 +84,7 @@ class SensorMaster(object):
             if s.get_compression_function() == CompressionFunction.SUM:
                 row.append(None)  # don't call measure because it would change internal counters
             else:
-                row.append(s.measure())
-        data.append(row)
+                row.append(s.measure)
         if datetime.datetime.now() > stoptime:  # should stop
             return schedule.CancelJob
 
