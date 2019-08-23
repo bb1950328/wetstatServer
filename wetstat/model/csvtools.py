@@ -10,14 +10,14 @@ from wetstat.common import config
 
 
 @dataclass
-class DayData:
+class DayData(object):
     date: datetime.date
     array: np.array
     fields: list
 
 
 @dataclass
-class DataContainer:
+class DataContainer(object):
     data: list
 
 
@@ -38,10 +38,6 @@ def load_csv_for_range(folder: str, start: datetime.date, end: datetime.date, ig
 
         container.data.append(load_csv_to_daydata(filename))
     return container
-
-
-def get_data_folder():
-    return config.get_datafolder()
 
 
 def save_range_to_csv(folder: str, container: DataContainer):
@@ -95,13 +91,13 @@ def get_filename_for_date(date: datetime.date) -> str:
     return date.strftime("day%jin%y.csv")
 
 
-def save_values(folder: str, heads: list, data: list, timelabel: datetime.datetime):
+def save_values(folder: str, heads: list, data: list, timelabel: datetime.datetime) -> str:
     """
     :param folder: folder of the csv's
     :param heads: list of the heads
     :param data: list of the values, same length as heads
     :param timelabel: timestamp of the values
-    :return:
+    :return: path of modified file
     """
     path = os.path.join(folder, get_filename_for_date(timelabel))
     if heads[0].lower() != "time":
@@ -120,7 +116,6 @@ def save_values(folder: str, heads: list, data: list, timelabel: datetime.dateti
                 col_indexes.append(idx)
             except ValueError:  # h not in fileheads
                 col_indexes.append(-1)
-        # real_cols = heads
         if -1 in col_indexes:  # new columns
             f.seek(0)
             oldlines = f.readlines()
@@ -139,7 +134,6 @@ def save_values(folder: str, heads: list, data: list, timelabel: datetime.dateti
             oldlines[-1] = oldlines[-1].strip()  # remove newline from last line
             f.seek(0)
             f.writelines(oldlines)
-            # real_cols = oldlines[0].split(";")
         f.seek(0, 2)  # move cursor to the end
 
         output = [""] * len(fileheads)
@@ -149,6 +143,7 @@ def save_values(folder: str, heads: list, data: list, timelabel: datetime.dateti
         f.write("\n")
         output = [str(n) for n in output]
         f.write(";".join(output))
+        return path
 
 
 def get_nearest_record(dt: datetime) -> dict:  # (field: value)
@@ -158,6 +153,8 @@ def get_nearest_record(dt: datetime) -> dict:  # (field: value)
         i = 0
         while (len(day.array) > i) and (day.array[i][0] < dt):
             i += 1
+        if i == len(day.array):
+            i -= 1
         arr = day.array[i]
         ret = {}
         for i, name in enumerate(day.fields):
@@ -182,7 +179,7 @@ def save_datacontainer_to_single_csv(container: DataContainer,
     elif "Time" in heads:
         heads.remove("Time")
         heads.insert(0, "Time")
-    print(heads)
+    # print(heads)
     with open(outfile, "w") as file:
         file.write(",".join(heads))
         file.write("\n")

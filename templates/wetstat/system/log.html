@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Systeminfo</title>
+</head>
+<body>
+{% load static %}
+<link rel="stylesheet" href="{% static "css/fontawesome.css" %}">
+<link rel="stylesheet" href="{% static "css/style.css" %}">
+<link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}" crossorigin="anonymous">
+<script src="{% static "js/jquery-3.3.1.slim.min.js" %}" crossorigin="anonymous"></script>
+<script src="{% static "js/popper.min.js" %}" crossorigin="anonymous"></script>
+<script src="{% static "js/bootstrap.min.js" %}" crossorigin="anonymous"></script>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/index">Home</a>
+            <a class="nav-item nav-link" href="/week">Woche</a>
+            <a class="nav-item nav-link" href="/month">Monat</a>
+            <a class="nav-item nav-link" href="/year">Jahr</a>
+            <a class="nav-item nav-link" href="/custom_v2">Bereich</a>
+        </div>
+    </div>
+</nav>
+<ul>
+    <li><a href="/system">Info</a></li>
+    <li><a href="/system/services">Services</a></li>
+    <li class="active"><a href="/system/log">Log</a></li>
+    <li><a href="/system/download">Download</a></li>
+</ul>
+<div class="levelfilter">
+    <span>Filter Level: </span>
+    {% for lvl in levels %}
+        <div class="levelfilter bg_{{ lvl }}"><a href="/system/log?level={{ lvl }}">{{ lvl }}</a></div>
+    {% endfor %}
+</div>
+<table class="logtable">
+    <thead>
+    <td>Time</td>
+    <td>Thread</td>
+    <td>Level</td>
+    <td>Message</td>
+    </thead>
+    {% for line in log %}
+        <tr class="fg_{{ line.level }}">
+            <td>{{ line.time }}</td>
+            <td>{{ line.thread }}</td>
+            <td>{{ line.level }}</td>
+            <td>{{ line.msg }}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

@@ -1,1 +1,9 @@
 /venv
+*.pyc
+/wetstat/wetstat.log
+/wetstat/wetstat_archive.log
+/test/test_custom_plot.py.svg
+/test/test_custom_plot.py.svg_legend.png
+/test/test_save_datacontainer_to_single_csv.py_out.csv
+/.idea/*
+/wetstat/static/plot/*

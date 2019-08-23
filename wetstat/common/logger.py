@@ -4,7 +4,8 @@ import os
 
 LEVEL = logging.DEBUG
 
-logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+log_format = "%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s [in file %(module)s ]"
+logFormatter = logging.Formatter(log_format)
 logging.basicConfig(level=LEVEL, filemode="a")
 log = logging.getLogger("wetstat")
 

@@ -7,7 +7,7 @@ import RPi.GPIO as gpio
 gpio.setmode(gpio.BOARD)
 
 
-class LED:
+class LED(object):
     pin: int
     _state: bool
 

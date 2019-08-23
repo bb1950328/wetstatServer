@@ -49,6 +49,7 @@
     </div>
 {% endfor %}
 <script>
+    let MIN_WIDTH = 280;
     function topnavResponsive() {
         let x = document.getElementById("myTopnav");
         if (x.className === "topnav") {
@@ -64,20 +65,20 @@
         let allImgs = document.getElementsByClassName("trendimg");
         let allValues = document.getElementsByClassName("sensorvalue");
         let allBefores = document.getElementsByClassName("before");
-        let width = window.innerWidth / 4;
-        if (width < 240) {
-            width = 240
+        let width = window.innerWidth / 3.33;
+        if (width < MIN_WIDTH) {
+            width = MIN_WIDTH
         }
         for (let i = 0; i < allDivs.length; i++) {
             allDivs[i].style.width = width + "px";
-            allDivs[i].style.height = width * 3 / 4 + "px";
+            allDivs[i].style.height = width * 3 / 5 + "px";
             allTitles[i].style.fontSize = (width / 12) + "px";
-            allImgs[i].style.width = (width / 6) + "px";
-            allImgs[i].style.height = (width / 6) + "px";
-            allValues[i].style.fontSize = (width / 6) + "px";
+            allImgs[i].style.width = (width / 8) + "px";
+            allImgs[i].style.height = (width / 8) + "px";
+            allValues[i].style.fontSize = (width / 8) + "px";
         }
-        for (let i = 0; i < allBefores.length; i++) { // need own for because they are more
-            allBefores[i].style.fontSize = (width / 15) + "px";
+        for (let i = 0; i < allBefores.length; i++) { // need own foreach because they are more
+            allBefores[i].style.fontSize = (width / 20) + "px";
         }
     }
 

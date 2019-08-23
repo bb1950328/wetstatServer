@@ -3,7 +3,7 @@ div.sensor {
     display: inline-block;
     padding: 10px;
     margin: 15px;
-    border-radius: 10%;
+    border-radius: 1cm;
     box-shadow: 10px 10px 10px 10px rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 
@@ -129,6 +129,91 @@ table#id_sensor_table tr:nth-child(even) {
     visibility: visible;
     -webkit-animation: fadeIn 1s;
     animation: fadeIn 1s
+}
+
+li.active > a {
+    text-decoration: none;
+    color: #000;
+    link: none;
+}
+
+.levelfilter {
+    padding: 10px;
+    margin: 15px 15px 15px 0;
+    border-radius: 10px;
+    box-sizing: border-box;
+    display: inline-block;
+}
+
+.levelfilter > a {
+    color: #fff;
+}
+
+.levelfilter > a:hover {
+    color: #fff;
+}
+
+div.levelfilter {
+    margin: 0.2cm 0.2cm 0.2cm 0;
+    padding: 0.2cm;
+
+}
+
+.logtable {
+    margin: 0.3cm;
+}
+
+.logtable td {
+    padding: 0.1cm;
+    border-top: 1px solid black;
+}
+
+.bg_DEBUG {
+    background-color: #000000;
+}
+
+.bg_INFO {
+    background-color: green;
+}
+
+.bg_WARNING {
+    background-color: orange;
+}
+
+.bg_ERROR {
+    background-color: red;
+}
+
+.bg_CRITICAL {
+    background-color: darkred;
+}
+
+.bg_UNKNOWN {
+    background-color: purple;
+}
+
+.fg_DEBUG {
+    color: #000000;
+}
+
+.fg_INFO {
+    color: green;
+}
+
+.fg_WARNING {
+    color: orange;
+}
+
+.fg_ERROR {
+    color: red;
+}
+
+.fg_CRITICAL {
+    color: darkred;
+}
+
+.fg_UNKNOWN {
+    color: purple;
 }
 
 /* Add animation (fade in the popup) */

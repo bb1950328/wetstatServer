@@ -9,49 +9,24 @@ from django.utils.safestring import mark_safe
 
 from wetstat.common import config, logger
 from wetstat.common.config import get_date
-from wetstat.hardware.sensors.SensorMaster import SensorMaster, ALL_SENSORS
-from wetstat.model import models, csvtools, system_info
+from wetstat.hardware.sensors.sensor_master import SensorMaster, ALL_SENSORS
+from wetstat.model import util
 from wetstat.model.csvtools import get_nearest_record
 from wetstat.model.custom_plot.custom_plot import CustomPlot
 from wetstat.model.custom_plot.fixed_time_custom_plot import FixedTimeCustomPlot
 from wetstat.model.custom_plot.request import CustomPlotRequest
 from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
-from wetstat.view.MessageContainer import MessageContainer
-from wetstat.view.forms import CustomPlotForm
-from wetstat.view.generatePlotThread import GeneratePlotThread
+from wetstat.view.generate_plot_thread import GeneratePlotThread
+from wetstat.view.message_container import MessageContainer
 
 message_container = MessageContainer()
-
-
-def number_maxlength(inp: float, maxlen: int) -> str:
-    si = str(inp)
-    if len(si) < maxlen:
-        return si
-    mult = 0
-    while "e" not in si:
-        inp *= 10
-        si = str(inp)
-        mult += 1
-    if len(si) > maxlen:
-        a, b = si.split("e")
-        vz = b[0]  # + or -
-        new_exp = int(b[1:])
-        if vz == "-":
-            new_exp *= -1
-        new_exp -= mult
-        to_del = len(si) - maxlen - 1
-        if new_exp > 0:
-            to_del -= 1
-        a = a[:-to_del]
-        si = a + "e" + str(new_exp)
-    return si
 
 
 # noinspection PyUnusedLocal
 def index(request) -> HttpResponse:
     log_request(request)
 
-    class MockDict:
+    class MockDict(object):
         """
         returns specified value when get() is called
         """
@@ -91,7 +66,11 @@ def index(request) -> HttpResponse:
     for i, name in enumerate(now.keys()):
         if name == "Time":
             continue
-        change = (now.get(name) / yesterday.get(name))
+        y = yesterday.get(name)
+        if y:
+            change = (now.get(name) / y)
+        else:
+            change = 1
         if change > 1.15:
             img = "arrow_up_transparent.png"
         elif change < 0.95:
@@ -101,8 +80,9 @@ def index(request) -> HttpResponse:
         val = now.get(name)
         sensor = SensorMaster.get_sensor_for_info("short_name", name)
         unit = sensor.get_unit()
-        if len(str(val)) + len(unit) > 7:  # too long to display
-            val = number_maxlength(val, 7 - len(unit))
+        max_value_width = 12
+        if len(str(val)) + len(unit) > max_value_width:  # too long to display
+            val = util.number_maxlength(val, max_value_width - len(unit))
         sarr.append(
             {
                 "name": sensor.get_long_name(),
@@ -132,7 +112,7 @@ def month(request) -> HttpResponse:
     log_request(request)
     ftcp = FixedTimeCustomPlot(30)
     so = CustomPlotSensorOptions(SensorMaster.get_sensor_for_info("short_name", "Temp1"))
-    so.set_minmaxavg_interval("hour")
+    so.set_minmaxavg_interval("day")
     ftcp.add_sensoroption(so)
     return render_generated_plot(request, ftcp, "month")
 
@@ -141,7 +121,7 @@ def year(request) -> HttpResponse:
     log_request(request)
     ftcp = FixedTimeCustomPlot(365)
     so = CustomPlotSensorOptions(SensorMaster.get_sensor_for_info("short_name", "Temp1"))
-    so.set_minmaxavg_interval("day")
+    so.set_minmaxavg_interval("week")
     ftcp.add_sensoroption(so)
     return render_generated_plot(request, ftcp, "year")
 
@@ -167,55 +147,6 @@ def render_generated_plot(request, cp: CustomPlot, name: str) -> HttpResponse:
 
 def log_request(request):
     logger.log.info("HTTP Request from " + request.get_host() + " to " + request.get_raw_uri())
-
-
-def custom(request):
-    log_request(request)
-    # If this is a POST request then process the Form data
-    if request.method == 'POST':
-        form = CustomPlotForm(request.POST)
-        if form.is_valid():
-            # redirect to a new URL:
-            start = form.clean_start_date()
-            end = form.clean_end_date()
-            start_iso = start.isoformat()
-            end_iso = end.isoformat()
-            start_fn = start_iso
-            end_fn = end_iso
-            start_fn = start_fn.replace(":", "_")
-            end_fn = end_fn.replace(":", "_")
-            start_view = start.strftime("%d.%m.%Y %H:%M")
-            end_view = end.strftime("%d.%m.%Y %H:%M")
-            try:
-                data = csvtools.load_csv_for_range(csvtools.get_data_folder(), start, end)
-            except Exception:
-                logger.log.exception("Could not load data for custom plot!")
-                return show_error(request, "Daten konnten nicht geladen werden!", "custom.html")
-            filename = "from" + start_fn + "to" + end_fn + ".svg"
-            logger.log.info("generating custom plot from " + start_iso + " to " + end_iso + " -> " + filename)
-            try:
-                path = os.path.join(config.get_staticfolder(), "plot", filename)
-                models.generate_plot(data, 120, filename=path, useaxis=[1, 0, 0],
-                                     make_minmaxavg=[form.clean_use_minmaxavg(), False, False])
-            except Exception:
-                logger.log.exception("Exception occurred while generating Graph")
-                return show_error(request, "Graph konnte nicht erstellt werden!", "custom.html")
-
-            context = {"plotfile": "plot/" + filename,
-                       "start": start_view,
-                       "end": end_view
-                       }
-            return render(request, "wetstat/show_plot.html", context=context)
-
-    # If this is a GET (or any other method) create the default form.
-    else:
-        default_start_date = datetime.datetime.now() - datetime.timedelta(days=1)
-        form = CustomPlotForm(initial={'start_date': default_start_date})
-
-    context = {
-        'form': form,
-    }
-    return render(request, "wetstat/custom.html", context)
 
 
 def customplot(request):
@@ -250,13 +181,14 @@ def show_error(request, message: str, backlink: str):
 
 def generate_plot(request):
     log_request(request)
-    print(request.GET)
     cpr: CustomPlotRequest = CustomPlotRequest(request.GET)
     try:
         cpr.parse()
         return render_generated_plot(request, cpr.custom_plot, "custom")
     except ValueError as e:
         return show_error(request, str(e), "wetstat/index.html")
+    except Exception:
+        logger.log.exception("Exception occurred while generating plot!")
 
 
 def progress(request):
@@ -268,27 +200,14 @@ def progress(request):
         except ValueError:
             pass
     msgs = message_container.get_messages(plot_id)
+
     pps = message_container.get_percent_per_second(plot_id)
-    if pps:
-        print(pps)
-        msgs = msgs[:]
-        msgs.insert(0, f"%%pps={int(pps)}%%")
-    if "%%finished%%" in "".join(msgs):
-        save_perf(msgs)
+    if not pps:
+        pps = message_container.PPS_DEFAULT_VALUE
+    msgs = msgs[:]
+    ppx = message_container.get_percent(plot_id)
+    ppx = 0 if ppx is None else ppx
+    msgs.insert(0, f"%%pps={round(pps * 100, 3)}%%")
+    msgs.insert(1, f"%%ppx={round(ppx, 3)}%%")
     context = {"content": "Wrong plot id!!!" if msgs is None else "\n".join(msgs)}
     return render(request, "wetstat/dummy.html", context)
-
-
-def save_perf(msgs: list):
-    values = [m.split(":")[0].strip() for m in msgs]
-    print(values)
-    with open(os.path.join(config.get_wetstat_dir(), "perf.csv"), "a") as f:
-        f.write(";".join(values) + "\n")
-
-
-def system(request):
-    infos = [{"command": (" ".join(ic.get_command())), "output": mark_safe(ic.get_output())} for ic in
-             system_info.ALL_INFO_CLASSES]
-
-    context = {"infos": infos}
-    return render(request, "wetstat/system.html", context)

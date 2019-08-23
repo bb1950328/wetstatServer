@@ -1,10 +1,10 @@
 # coding=utf-8
 from typing import Optional
 
-from wetstat.hardware.sensors.BaseSensor import BaseSensor
+from wetstat.hardware.sensors.base_sensor import BaseSensor
 
 
-class CustomPlotSensorOptions:
+class CustomPlotSensorOptions(object):
     axis: Optional[str]
     line_color: Optional[str]
     minmaxavg_interval: Optional[str]
@@ -33,9 +33,7 @@ class CustomPlotSensorOptions:
         return self.minmaxavg_interval
 
     def get_minmaxavg_interval_for_legend(self) -> str:
-        if self.minmaxavg_interval is None:
-            return ""
-        elif self.minmaxavg_interval == "hour":
+        if self.minmaxavg_interval == "hour":
             return " (Stunde)"
         elif self.minmaxavg_interval == "day":
             return " (Tag)"
