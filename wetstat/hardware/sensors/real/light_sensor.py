@@ -1,6 +1,6 @@
 # coding=utf-8
-from wetstat.hardware.sensors.base_sensor import BaseSensor
-from wetstat.hardware.sensors.bh1750fvi import BH1750FVI, Const
+from wetstat.hardware.sensors.abstract.base_sensor import BaseSensor
+from wetstat.hardware.sensors.abstract.bh1750fvi import BH1750FVI, Const
 
 DARK_THRESHOLD = 100
 LIGHT_THRESHOLD = 40_000

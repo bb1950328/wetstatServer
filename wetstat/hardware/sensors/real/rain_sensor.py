@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from wetstat.hardware.sensors.base_sensor import CompressionFunction
+from wetstat.hardware.sensors.abstract.base_sensor import CompressionFunction
 from wetstat.hardware.sensors.counting_sensor import CountingSensor
 
 # mm per bucket calculation for rain gauges like this: https://www.aliexpress.com/item/1000001838878.html
