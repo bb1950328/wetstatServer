@@ -9,16 +9,16 @@ import numpy as np
 import schedule
 
 from wetstat.common import logger, config
-from wetstat.hardware.sensors.base_sensor import BaseSensor, CompressionFunction
-from wetstat.hardware.sensors.digital_temp_sensor import DigitalTempSensor
-from wetstat.hardware.sensors.fake_sensor import FakeSensor
-from wetstat.hardware.sensors.humidity_sensor import HumiditySensor
-from wetstat.hardware.sensors.light_sensor import LightSensor
-from wetstat.hardware.sensors.old_light_sensor import OldLightSensor
-from wetstat.hardware.sensors.old_temp_sensor import OldTempSensor
-from wetstat.hardware.sensors.pressure_sensor import PressureSensor
-from wetstat.hardware.sensors.rain_sensor import RainSensor
-from wetstat.hardware.sensors.temp_sensor import TempSensor
+from wetstat.hardware.sensors.abstract.base_sensor import BaseSensor, CompressionFunction
+from wetstat.hardware.sensors.real.digital_temp_sensor import DigitalTempSensor
+from wetstat.hardware.sensors.real.fake_sensor import FakeSensor
+from wetstat.hardware.sensors.real.humidity_sensor import HumiditySensor
+from wetstat.hardware.sensors.real.light_sensor import LightSensor
+from wetstat.hardware.sensors.real.old.old_light_sensor import OldLightSensor
+from wetstat.hardware.sensors.real.old.old_temp_sensor import OldTempSensor
+from wetstat.hardware.sensors.real.pressure_sensor import PressureSensor
+from wetstat.hardware.sensors.real.rain_sensor import RainSensor
+from wetstat.hardware.sensors.real.temp_sensor import TempSensor
 from wetstat.model import csvtools, util
 
 # Old Sensors

@@ -2,7 +2,7 @@
 import datetime
 import os
 
-import wetstat.hardware.sensors.temp_sensor
+import wetstat.hardware.sensors.real.temp_sensor
 from wetstat.model.custom_plot.custom_plot import CustomPlot
 from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
 
@@ -11,7 +11,7 @@ cp = CustomPlot()
 cp.set_start(datetime.datetime(2018, 7, 1))
 cp.set_end(datetime.datetime(2018, 7, 31))
 
-ts = wetstat.hardware.sensors.temp_sensor.TempSensor(1)
+ts = wetstat.hardware.sensors.real.temp_sensor.TempSensor(1)
 
 so1 = CustomPlotSensorOptions(ts)
 so1.set_axis("0b")

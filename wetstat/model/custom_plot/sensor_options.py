@@ -1,7 +1,7 @@
 # coding=utf-8
 from typing import Optional
 
-from wetstat.hardware.sensors.base_sensor import BaseSensor
+from wetstat.hardware.sensors.abstract.base_sensor import BaseSensor
 
 
 class CustomPlotSensorOptions(object):
