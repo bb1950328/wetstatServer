@@ -2,11 +2,13 @@
 import datetime
 import os
 from dataclasses import dataclass
-from typing import Optional, Set
+from typing import Optional, Set, Dict
 
 import numpy as np
 
 from wetstat.common import config
+from wetstat.sensors.abstract.base_sensor import CompressionFunction
+from wetstat.sensors.sensor_master import SensorMaster
 
 
 @dataclass
@@ -162,6 +164,54 @@ def get_nearest_record(dt: datetime) -> dict:  # (field: value)
         return ret
     except FileNotFoundError as e:
         raise ValueError("No data available for date " + dt.isoformat()) from e
+
+
+def get_value_sums(*,
+                   start: datetime.datetime = None,
+                   end: datetime.datetime = None,
+                   duration: datetime.timedelta = None) -> Dict[str, float]:
+    if not start and end and duration:
+        start = end - duration
+    elif start and not end and duration:
+        end = start + duration
+    elif start and end and not duration:
+        duration = end - start
+    else:
+        raise ValueError("At least two of the three parameters must be passed!!")
+    used_files = []
+    oneday = datetime.timedelta(days=1)
+    i = start
+    datafolder = config.get_datafolder()
+    while i < end:
+        used_files.append(os.path.join(datafolder, get_filename_for_date(i)))
+        i += oneday
+    values = {}
+
+    def should_add(columnname: str) -> bool:
+        if columnname == "Time":
+            return False
+        if columnname in values.keys():
+            return True
+        sens = SensorMaster.get_sensor_for_info("short_name", columnname)
+        return sens.get_compression_function() == CompressionFunction.SUM
+
+    for filename in used_files:
+        daydata = load_csv_to_daydata(filename)
+        if start.date() == daydata.date or end.date() == daydata.date:
+            for x in range(len(daydata.array)):
+                dd = daydata.array[x, 0]
+                if dd < start or dd > end:
+                    daydata.array = np.delete(daydata.array, x, 0)
+        for i, col in enumerate(daydata.fields):
+            if should_add(col):
+                values[col] = 0
+            if col not in values:
+                daydata.array[:, i] = 0  # can't delete because indicies would change
+        sums = daydata.array.sum(axis=0)
+        for i, col in enumerate(daydata.fields):
+            if col in values.keys():
+                values[col] += sums[i]
+    return values
 
 
 def save_datacontainer_to_single_csv(container: DataContainer,

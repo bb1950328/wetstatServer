@@ -9,13 +9,15 @@ from django.utils.safestring import mark_safe
 
 from wetstat.common import config, logger
 from wetstat.common.config import get_date
-from wetstat.hardware.sensors.sensor_master import SensorMaster, ALL_SENSORS
-from wetstat.model import util
+from wetstat.model import util, csvtools
 from wetstat.model.csvtools import get_nearest_record
 from wetstat.model.custom_plot.custom_plot import CustomPlot
 from wetstat.model.custom_plot.fixed_time_custom_plot import FixedTimeCustomPlot
 from wetstat.model.custom_plot.request import CustomPlotRequest
 from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
+from wetstat.model.util import MockDict
+from wetstat.sensors.abstract.base_sensor import CompressionFunction
+from wetstat.sensors.sensor_master import SensorMaster, ALL_SENSORS
 from wetstat.view.generate_plot_thread import GeneratePlotThread
 from wetstat.view.message_container import MessageContainer
 
@@ -25,18 +27,6 @@ message_container = MessageContainer()
 # noinspection PyUnusedLocal
 def index(request) -> HttpResponse:
     log_request(request)
-
-    class MockDict(object):
-        """
-        returns specified value when get() is called
-        """
-
-        def __init__(self, value: object = 0):
-            self.value = value
-
-        # noinspection PyUnusedLocal
-        def get(self, *args) -> object:
-            return self.value
 
     now = MockDict()
     yesterday = MockDict()
@@ -63,9 +53,33 @@ def index(request) -> HttpResponse:
     if errors:
         logger.log.error("Data for Home Page not found!" + str(errors))
     sarr = []
+    sums_now = None
+    sums_yesterday = None
+    sums_lastmonth = None
+    sums_lastyear = None
+
+    def load_sums() -> None:
+        global sums_now, sums_yesterday, sums_lastmonth, sums_lastyear
+        if sums_now is None:
+            now_date = get_date()
+            oneday = datetime.timedelta(days=1)
+            onemonth = datetime.timedelta(days=30)
+            oneyear = datetime.timedelta(days=365)
+            sums_now = csvtools.get_value_sums(end=now_date, duration=oneday)
+            sums_yesterday = csvtools.get_value_sums(end=now_date - oneday, duration=oneday)
+            sums_lastmonth = csvtools.get_value_sums(end=now_date - onemonth, duration=oneday)
+            sums_lastyear = csvtools.get_value_sums(end=now_date - oneyear, duration=oneday)
+
     for i, name in enumerate(now.keys()):
         if name == "Time":
             continue
+        sensor = SensorMaster.get_sensor_for_info("short_name", name)
+        if sensor.get_compression_function() == CompressionFunction.SUM:
+            load_sums()
+            now[name] = sums_now[name]
+            yesterday[name] = sums_yesterday[name]
+            lastmonth[name] = sums_lastmonth[name]
+            lastyear[name] = sums_lastyear[name]
         y = yesterday.get(name)
         if y:
             change = (now.get(name) / y)
@@ -78,7 +92,6 @@ def index(request) -> HttpResponse:
         else:
             img = "arrow_neutral_transparent.png"
         val = now.get(name)
-        sensor = SensorMaster.get_sensor_for_info("short_name", name)
         unit = sensor.get_unit()
         max_value_width = 12
         if len(str(val)) + len(unit) > max_value_width:  # too long to display
@@ -94,36 +107,35 @@ def index(request) -> HttpResponse:
                 "color": sensor.get_display_color(),
             }
         )
-    sensors = {"array": sarr}
-    context = {"sensors": sensors}
+    context = {"sensors": {"array": sarr}}
     return render(request, "wetstat/index.html", context)
 
 
 def week(request) -> HttpResponse:
-    log_request(request)
-    ftcp = FixedTimeCustomPlot(7)
-    so = CustomPlotSensorOptions(SensorMaster.get_sensor_for_info("short_name", "Temp1"))
-    so.set_minmaxavg_interval("hour")
-    ftcp.add_sensoroption(so)
-    return render_generated_plot(request, ftcp, "week")
+    return requested_fixed_time_plot(request, 7, "week", "hour", ["Temp1"])
 
 
 def month(request) -> HttpResponse:
-    log_request(request)
-    ftcp = FixedTimeCustomPlot(30)
-    so = CustomPlotSensorOptions(SensorMaster.get_sensor_for_info("short_name", "Temp1"))
-    so.set_minmaxavg_interval("day")
-    ftcp.add_sensoroption(so)
-    return render_generated_plot(request, ftcp, "month")
+    return requested_fixed_time_plot(request, 30, "month", "day", ["Temp1"])
 
 
 def year(request) -> HttpResponse:
+    return requested_fixed_time_plot(request, 365, "year", "week", ["Temp1"])
+
+
+def requested_fixed_time_plot(request, num_days: int, name: str, minmaxavg_interval: str,
+                              sensors=None) -> HttpResponse:
+    if sensors is None:
+        sensors = ["Temp1"]
     log_request(request)
-    ftcp = FixedTimeCustomPlot(365)
-    so = CustomPlotSensorOptions(SensorMaster.get_sensor_for_info("short_name", "Temp1"))
-    so.set_minmaxavg_interval("week")
-    ftcp.add_sensoroption(so)
-    return render_generated_plot(request, ftcp, "year")
+    ftcp = FixedTimeCustomPlot(num_days)
+    for sens in sensors:
+        if isinstance(sens, str):
+            sens = SensorMaster.get_sensor_for_info("short_name", sens)
+            so = CustomPlotSensorOptions(sens)
+            so.set_minmaxavg_interval(minmaxavg_interval)
+            ftcp.add_sensoroption(so)
+    return render_generated_plot(request, ftcp, name)
 
 
 def render_generated_plot(request, cp: CustomPlot, name: str) -> HttpResponse:

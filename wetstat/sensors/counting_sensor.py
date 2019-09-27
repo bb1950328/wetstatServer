@@ -2,8 +2,8 @@
 from abc import ABC
 
 from wetstat.common import logger
-from wetstat.hardware.sensors import counter_service
-from wetstat.hardware.sensors.abstract.base_sensor import BaseSensor
+from wetstat.sensors import counter_service
+from wetstat.sensors.abstract.base_sensor import BaseSensor
 
 
 class CountingSensor(BaseSensor, ABC):

@@ -7,7 +7,7 @@ try:
 except:
     pass
 
-from wetstat.hardware.sensors.abstract.base_sensor import BaseSensor
+from wetstat.sensors.abstract.base_sensor import BaseSensor
 
 
 class Const(object):

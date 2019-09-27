@@ -1,8 +1,8 @@
 # coding=utf-8
 from abc import ABC
 
-from wetstat.hardware.sensors.abstract.analog_digital_converter import AnalogDigitalConverter
-from wetstat.hardware.sensors.abstract.base_sensor import BaseSensor
+from wetstat.sensors.abstract.analog_digital_converter import AnalogDigitalConverter
+from wetstat.sensors.abstract.base_sensor import BaseSensor
 
 
 class AnalogSensor(BaseSensor, ABC):

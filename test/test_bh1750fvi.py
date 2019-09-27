@@ -1,7 +1,7 @@
 # coding=utf-8
 import time
 
-from wetstat.hardware.sensors.real.light_sensor import LightSensor
+from wetstat.sensors.real.light_sensor import LightSensor
 
 ls = LightSensor()
 

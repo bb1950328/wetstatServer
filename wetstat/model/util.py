@@ -75,3 +75,16 @@ def number_maxlength(inp: float, maxlen: int) -> str:
         a = a[:-to_del]
         si = a + "e" + str(new_exp)
     return si
+
+
+class MockDict(object):
+    """
+    returns specified value when get() is called
+    """
+
+    def __init__(self, value: object = 0):
+        self.value = value
+
+    # noinspection PyUnusedLocal
+    def get(self, *args) -> object:
+        return self.value

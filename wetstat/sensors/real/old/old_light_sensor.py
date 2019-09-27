@@ -1,13 +1,12 @@
 # coding=utf-8
-from wetstat.hardware.sensors.abstract.analog_digital_converter import AnalogDigitalConverter
-from wetstat.hardware.sensors.abstract.base_sensor import BaseSensor
+from wetstat.sensors.abstract.base_sensor import BaseSensor
 
 
 # noinspection PyMissingConstructor
 class OldLightSensor(BaseSensor):
 
     def __init__(self):
-        self.adc = None
+        pass
 
     def get_long_name(self):
         return "Licht (Alt)"
@@ -20,14 +19,6 @@ class OldLightSensor(BaseSensor):
 
     def get_unit(self):
         return "V"
-
-    def set_adc(self, adc):
-        self.adc = adc
-
-    def get_adc(self):
-        if self.adc is None:
-            self.adc = AnalogDigitalConverter()
-        return self.adc
 
     def measure(self):
         raise NotImplementedError("Can't measure on deprecated sensors!!!")

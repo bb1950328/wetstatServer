@@ -8,20 +8,19 @@ from typing import Optional, List
 import numpy as np
 import schedule
 
-from wetstat.common import logger, config
-from wetstat.hardware.sensors.abstract.base_sensor import BaseSensor, CompressionFunction
-from wetstat.hardware.sensors.real.digital_temp_sensor import DigitalTempSensor
-from wetstat.hardware.sensors.real.fake_sensor import FakeSensor
-from wetstat.hardware.sensors.real.humidity_sensor import HumiditySensor
-from wetstat.hardware.sensors.real.light_sensor import LightSensor
-from wetstat.hardware.sensors.real.old.old_light_sensor import OldLightSensor
-from wetstat.hardware.sensors.real.old.old_temp_sensor import OldTempSensor
-from wetstat.hardware.sensors.real.pressure_sensor import PressureSensor
-from wetstat.hardware.sensors.real.rain_sensor import RainSensor
-from wetstat.hardware.sensors.real.temp_sensor import TempSensor
+from wetstat.common import config, logger
 from wetstat.model import csvtools, util
+from wetstat.sensors.abstract.base_sensor import BaseSensor, CompressionFunction
+from wetstat.sensors.real.digital_temp_sensor import DigitalTempSensor
+from wetstat.sensors.real.fake_sensor import FakeSensor
+from wetstat.sensors.real.humidity_sensor import HumiditySensor
+from wetstat.sensors.real.light_sensor import LightSensor
+from wetstat.sensors.real.old.old_light_sensor import OldLightSensor
+from wetstat.sensors.real.old.old_temp_sensor import OldTempSensor
+from wetstat.sensors.real.pressure_sensor import PressureSensor
+from wetstat.sensors.real.rain_sensor import RainSensor
+from wetstat.sensors.real.temp_sensor import TempSensor
 
-# Old Sensors
 ALL_SENSORS: List[BaseSensor] = [
     # deprecated sensors here
     OldTempSensor(2),

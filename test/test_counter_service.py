@@ -4,7 +4,7 @@ import random
 import time
 from concurrent import futures
 
-from wetstat.hardware.sensors import counter_service
+from wetstat.sensors import counter_service
 
 counter_service.COM_PORT = random.randint(30_000, 65_000)
 counter_service.RES_PORT = counter_service.COM_PORT + 1

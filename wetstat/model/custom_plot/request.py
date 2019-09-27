@@ -4,9 +4,9 @@ from typing import Optional, List
 
 from django.http import QueryDict
 
-from wetstat.hardware.sensors.sensor_master import SensorMaster
 from wetstat.model.custom_plot.custom_plot import CustomPlot
 from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
+from wetstat.sensors.sensor_master import SensorMaster
 from wetstat.view import views
 
 

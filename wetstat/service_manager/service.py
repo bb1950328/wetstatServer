@@ -8,10 +8,10 @@ from abc import ABC, abstractmethod
 import gpiozero
 import psutil
 
-import wetstat.hardware.sensors.sensor_master as SensorMaster
+import wetstat.sensors.sensor_master as SensorMaster
 from wetstat.common import config, logger
-from wetstat.hardware.sensors import counter_service
 from wetstat.model import plot_cleanup, log_parser
+from wetstat.sensors import counter_service
 
 
 def kill_proc_tree(pid: int, including_parent: bool = True) -> None:

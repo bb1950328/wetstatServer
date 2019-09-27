@@ -1,6 +1,5 @@
 # coding=utf-8
-
-from wetstat.hardware.sensors.abstract.bme280_base import BME280Base
+from wetstat.sensors.abstract.bme280_base import BME280Base
 
 
 class DigitalTempSensor(BME280Base):

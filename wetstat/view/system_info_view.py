@@ -10,9 +10,9 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 from wetstat.common import config, logger
-from wetstat.hardware.sensors import sensor_master
 from wetstat.model import system_info as system_info_model, log_parser
 from wetstat.model.data_download import DataDownload
+from wetstat.sensors import sensor_master
 from wetstat.service_manager import service_manager_com
 from wetstat.view import views
 

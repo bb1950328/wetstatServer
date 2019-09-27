@@ -1,5 +1,5 @@
 # coding=utf-8
-from wetstat.hardware.sensors.real.temp_sensor import TempSensor
+from wetstat.sensors.real.temp_sensor import TempSensor
 
 
 class OldTempSensor(TempSensor):
