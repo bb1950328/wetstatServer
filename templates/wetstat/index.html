@@ -35,8 +35,8 @@
         <p class="sensorname">{{ sensor.name }}</p>
         <img src="{% static 'img/' %}{{ sensor.img }}" alt="trend icon" width="40" height="40" class="trendimg">
         <span class="sensorvalue">{{ sensor.value }} {{ sensor.unit }}</span>
-        <p class="before">Vor 1 Monat: {{ sensor.before_month }}</p>
-        <p class="before">Vor 1 Jahr: {{ sensor.before_year }}</p>
+        <p class="before">Vor 1 Monat: {{ sensor.before_month }} {{ sensor.unit }}</p>
+        <p class="before">Vor 1 Jahr: {{ sensor.before_year }} {{ sensor.unit }}</p>
     </div>
 {% endfor %}
 <script>
