@@ -8,10 +8,9 @@ from abc import ABC, abstractmethod
 import gpiozero
 import psutil
 
-import wetstat.sensors.sensor_master as SensorMaster
 from wetstat.common import config, logger
 from wetstat.model import plot_cleanup, log_parser
-from wetstat.sensors import counter_service
+from wetstat.sensors import counter_service, sensor_master
 
 
 def kill_proc_tree(pid: int, including_parent: bool = True) -> None:
@@ -88,11 +87,11 @@ class ApacheServerService(BaseService):
 class SensorService(BaseService):
 
     def run(self) -> None:
-        sm = SensorMaster.SensorMaster()
+        sm = sensor_master.SensorMaster()
         sm.measure(config.MEASURING_FREQ_SECONDS)
 
     def stop(self) -> bool:
-        SensorMaster.stop_measuring()
+        sensor_master.stop_measuring()
         time.sleep(1.5)
         return True
 
