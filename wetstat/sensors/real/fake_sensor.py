@@ -7,7 +7,7 @@ from wetstat.sensors.abstract.base_sensor import BaseSensor
 class FakeSensor(BaseSensor):
 
     # noinspection PyMissingConstructor
-    def __init__(self, number):
+    def __init__(self, number: int) -> None:
         self.number = number
         self.last = random.randint(-500, 500) / 10
 

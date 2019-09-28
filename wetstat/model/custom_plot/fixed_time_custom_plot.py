@@ -12,7 +12,7 @@ class FixedTimeCustomPlot(CustomPlot):
         """
         super().__init__()
         today = get_date()
-        before7days = today - datetime.timedelta(days=length)
-        self.set_start(before7days)
+        before_n_days = today - datetime.timedelta(days=length)
+        self.set_start(before_n_days)
         self.set_end(today)
         self.set_title(f"Letzte {length} Tage")

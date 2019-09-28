@@ -5,7 +5,7 @@ from typing import Tuple
 
 from wetstat.common import config
 
-conn = sqlite3.connect(config.get_database())
+conn = sqlite3.connect(config.get_sqlite_database())
 
 
 class CustomPlotDbRow(object):

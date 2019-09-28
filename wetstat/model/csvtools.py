@@ -7,8 +7,8 @@ from typing import Optional, Set, Dict
 import numpy as np
 
 from wetstat.common import config
+from wetstat.sensors import sensor_master
 from wetstat.sensors.abstract.base_sensor import CompressionFunction
-from wetstat.sensors.sensor_master import SensorMaster
 
 
 @dataclass
@@ -153,7 +153,7 @@ def get_nearest_record(dt: datetime) -> dict:  # (field: value)
         day = load_csv_to_daydata(os.path.join(config.get_datafolder(),
                                                get_filename_for_date(dt)))
         i = 0
-        while (len(day.array) > i) and (day.array[i][0] < dt):
+        while len(day.array) > i and day.array[i][0] < dt:
             i += 1
         if i == len(day.array):
             i -= 1
@@ -192,7 +192,7 @@ def get_value_sums(*,
             return False
         if columnname in values.keys():
             return True
-        sens = SensorMaster.get_sensor_for_info("short_name", columnname)
+        sens = sensor_master.SensorMaster.get_sensor_for_info("short_name", columnname)
         return sens.get_compression_function() == CompressionFunction.SUM
 
     for filename in used_files:

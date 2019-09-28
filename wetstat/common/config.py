@@ -1,5 +1,6 @@
 # coding=utf-8
 import datetime
+import io
 import os.path
 import sys
 
@@ -27,12 +28,26 @@ def get_date() -> datetime.datetime:
     return datetime.datetime.now()
 
 
-def get_database() -> str:
+def get_sqlite_database() -> str:
     return os.path.join(get_wetstat_dir(), "db.sqlite3")
 
 
 def on_pi() -> bool:
-    return sys.platform != "win32"
+    cpus = ('BCM2708',
+            'BCM2709',
+            'BCM2835',
+            'BCM2836')
+    try:
+        with io.open('/proc/cpuinfo') as cpuinfo:
+            found = False
+            info = cpuinfo.read()
+            for cpu in cpus:
+                if cpu in info:
+                    return True
+    except IOError:
+        return False
+
+    return False
 
 
 MEASURING_FREQ_SECONDS = 600  # 10 minutes

@@ -1,5 +1,6 @@
 # coding=utf-8
 import datetime
+import re
 import time
 
 
@@ -90,3 +91,7 @@ class MockDict(dict):
         if default:
             return default
         return self.value
+
+
+def is_valid_sql_name(to_test: str) -> bool:
+    return bool(re.match(r"[\w]+", to_test))

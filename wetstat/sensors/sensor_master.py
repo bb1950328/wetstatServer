@@ -21,30 +21,28 @@ from wetstat.sensors.real.pressure_sensor import PressureSensor
 from wetstat.sensors.real.rain_sensor import RainSensor
 from wetstat.sensors.real.temp_sensor import TempSensor
 
-ALL_SENSORS: List[BaseSensor] = [
-    # deprecated sensors here
+OLD_SENSORS: List[BaseSensor] = [
     OldTempSensor(2),
     OldLightSensor(),
 ]
 
-USED_SENSORS: List[BaseSensor] = [
-    # Used sensors on Pi here
-    TempSensor(1),
-    TempSensor(2),
-    LightSensor(),
-    DigitalTempSensor(),
-    PressureSensor(),
-    HumiditySensor(),
-    RainSensor(),
-]  # if config.on_pi() else []
-
-ALL_SENSORS.extend(USED_SENSORS)
-
-if not config.on_pi():
-    USED_SENSORS = [
+if config.on_pi():
+    USED_SENSORS: List[BaseSensor] = [
+        TempSensor(1),
+        TempSensor(2),
+        LightSensor(),
+        DigitalTempSensor(),
+        PressureSensor(),
+        HumiditySensor(),
+        RainSensor(),
+    ]
+else:
+    USED_SENSORS: List[BaseSensor] = [
         FakeSensor(1),
         FakeSensor(2),
     ]
+
+ALL_SENSORS: List[BaseSensor] = [*USED_SENSORS, *OLD_SENSORS]
 
 schedule.logger.setLevel(schedule.logging.ERROR)
 
@@ -71,8 +69,12 @@ class SensorMaster(object):
         return None
 
     @staticmethod
-    def get_sensor_short_names() -> List[str]:
+    def get_used_sensor_short_names() -> List[str]:
         return [s.get_short_name() for s in USED_SENSORS]
+
+    @staticmethod
+    def get_all_sensor_short_names() -> List[str]:
+        return [s.get_short_name() for s in ALL_SENSORS]
 
     @staticmethod
     def _measure_row(data: list, stoptime: datetime.datetime):
@@ -96,7 +98,7 @@ class SensorMaster(object):
         :param savedate: under which date the values are saved
         :return: None
         """
-        heads = SensorMaster.get_sensor_short_names()
+        heads = SensorMaster.get_used_sensor_short_names()
 
         data = []
         schedule.every(5).seconds.do(SensorMaster._measure_row,
