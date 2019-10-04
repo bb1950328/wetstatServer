@@ -96,7 +96,7 @@ class MockDict(dict):
 
 
 def is_valid_sql_name(to_test: str) -> bool:
-    return bool(re.match(r"[\w]+", to_test))
+    return bool(re.match(r"\A[\w]+\Z", to_test))
 
 
 def validate_start_end(start: datetime.datetime, end: datetime.datetime) -> None:
