@@ -1,6 +1,7 @@
 # coding=utf-8
 import collections
 import datetime
+import time
 from concurrent import futures
 from dataclasses import dataclass
 from typing import List, Tuple, Union, Iterable
@@ -148,12 +149,10 @@ def insert_datacontainer(container: DataContainer, use_threads=False, add_missin
 
 
 def load_data_for_date_range(start: datetime.datetime, end: datetime.datetime) -> DbData:
-    util.validate_start_end(start, end)
     cur = None
     try:
         cur = conn.cursor()
-        params = start.strftime(db_const.DATETIME_FORMAT), end.strftime(db_const.DATETIME_FORMAT)
-        cur.execute(f"SELECT * FROM {db_const.DATA_DB_NAME} WHERE {db_const.COL_NAME_TIME} BETWEEN %s AND %s", params)
+        execute_select_range(start, end, cur)
         db_data = fetch_to_db_data(cur)
         return db_data
     finally:
@@ -161,9 +160,19 @@ def load_data_for_date_range(start: datetime.datetime, end: datetime.datetime) -
             cur.close()
 
 
-def insert_record(timestamp: datetime.datetime, **values):
+def execute_select_range(start, end, cursor) -> None:
     """
-    example call: insert_record(time, Temp1=3, Light=5)
+    Executes the select statement on the given cursor.
+    :return: None
+    """
+    util.validate_start_end(start, end)
+    params = start.strftime(db_const.DATETIME_FORMAT), end.strftime(db_const.DATETIME_FORMAT)
+    cursor.execute(f"SELECT * FROM {db_const.DATA_DB_NAME} WHERE {db_const.COL_NAME_TIME} BETWEEN %s AND %s", params)
+
+
+def insert_record(timestamp: datetime.datetime, update_if_exists=False, **values):
+    """
+    example call: insert_record(time, Temp1=3, Light=5, update_if_exists=True)
     """
     cur = None
     try:
@@ -172,7 +181,7 @@ def insert_record(timestamp: datetime.datetime, **values):
         cols.append(db_const.COL_NAME_TIME)
         vals = list(values.values())
         vals.append(to_sql_str(timestamp))
-        do_insert(conn, cur, cols, vals)
+        do_insert(conn, cur, cols, vals, update_if_exists)
     finally:
         if cur:
             cur.close()
@@ -180,6 +189,66 @@ def insert_record(timestamp: datetime.datetime, **values):
 
 def fetch_to_db_data(cursor: MySQLCursor) -> DbData:
     return DbData(cursor.fetchall(), cursor.column_names)
+
+
+def export_to_csv(start: datetime.datetime, end: datetime.datetime, path: str,
+                  columns=None, delimiter=";", none_value: str = ""):
+    start_ts = time.perf_counter()
+    cur = None
+    out = None
+    try:
+        cur = conn.cursor()
+        execute_select_range(start, end, cur)
+        if columns is None:
+            columns = cur.column_names
+            col_nums = range(len(columns))
+        else:
+            col_nums = []
+            for df_col in columns:
+                try:
+                    col_nums.append(cur.column_names.index(df_col))
+                except ValueError:
+                    pass
+        out = open(path, "w")
+        out.write(delimiter.join([cur.column_names[n] for n in col_nums]) + "\n")
+
+        def to_str(value: object) -> str:
+            if value is None:
+                return none_value
+            if isinstance(value, datetime.datetime):
+                return value.strftime(db_const.EXPORT_DATETIME_FORMAT)
+            elif isinstance(value, float):
+                return str(round(value, 3))
+            else:
+                return str(value)
+
+        while True:
+            db_row = cur.fetchone()
+            if not db_row:
+                break
+            db_row = list(db_row)
+            try:
+                time_index = cur.column_names.index(db_const.COL_NAME_TIME)
+                db_row[time_index] = db_row[time_index].isoformat()
+            except ValueError:
+                pass
+            out.write(delimiter.join([to_str(db_row[n]) for n in col_nums]) + "\n")
+
+        end = time.perf_counter()
+        size = out.tell()
+        secs = end - start_ts
+        by_per_sec = size / secs
+        logger.log.info(f"Exported {util.human_readable_size(size)} in {round(secs, 5)} seconds to '{path}'"
+                        f"({util.human_readable_size(by_per_sec)}/s)")
+    finally:
+        if cur:
+            cur.close()
+        if out:
+            out.close()
+
+
+def find_nearest_timestamp(timestamp: datetime.datetime):
+    pass  # TODO
 
 
 def cleanup() -> None:

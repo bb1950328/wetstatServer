@@ -1,5 +1,7 @@
 # coding=utf-8
 import datetime
+import os
+import tempfile
 import time
 
 from wetstat.common import config
@@ -31,13 +33,21 @@ def insert1() -> None:
     vs = {"Temp1": 123,
           "Light": 54321,
           }
-    db_model.insert_record(dt, **vs)
+    db_model.insert_record(dt, **vs, update_if_exists=True)
+
+
+def test_export() -> None:
+    start = datetime.datetime(2010, 1, 1)
+    end = datetime.datetime(2018, 12, 31)
+    path = os.path.join(tempfile.gettempdir(), "test_db_model.csv")
+    db_model.export_to_csv(start, end, path)
 
 
 if __name__ == "__main__":
     try:
         # insert_all_data()
         # load1()
-        insert1()
+        # insert1()
+        test_export()
     finally:
         db_model.cleanup()
