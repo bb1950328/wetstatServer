@@ -4,7 +4,7 @@ import datetime
 import time
 from concurrent import futures
 from dataclasses import dataclass
-from typing import List, Tuple, Union, Iterable
+from typing import List, Tuple, Union, Iterable, Dict
 
 from mysql import connector
 from mysql.connector import MySQLConnection, IntegrityError
@@ -249,6 +249,33 @@ def export_to_csv(start: datetime.datetime, end: datetime.datetime, path: str,
 
 def find_nearest_timestamp(timestamp: datetime.datetime):
     pass  # TODO
+
+
+def get_value_sums(columns,
+                   *,
+                   start: datetime.datetime = None,
+                   end: datetime.datetime = None,
+                   duration: datetime.timedelta = None) -> Dict[str, float]:
+    if not start and end and duration:
+        start = end - duration
+    elif start and not end and duration:
+        end = start + duration
+    elif start and end and not duration:
+        duration = end - start
+    else:
+        raise ValueError("At least two of the three parameters must be passed!!")
+    if not all(map(util.is_valid_sql_name, columns)):
+        raise ValueError("At least one of the given column names is invalid!!!")
+    sums = (f"SUM({sn}) AS {sn}" for sn in columns)
+    cur = None
+    try:
+        cur = conn.cursor()
+        cur.execute(f"SELECT {', '.join(sums)} FROM {db_const.DATA_DB_NAME};")
+        res = cur.fetchone()
+        return {col: value for col, value in zip(cur.column_names, res)}
+    finally:
+        if cur:
+            cur.close()
 
 
 def cleanup() -> None:

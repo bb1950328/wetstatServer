@@ -12,7 +12,6 @@ from wetstat.common import config, logger
 from wetstat.model import csvtools, util
 from wetstat.sensors.abstract.base_sensor import BaseSensor, CompressionFunction
 from wetstat.sensors.real.digital_temp_sensor import DigitalTempSensor
-from wetstat.sensors.real.fake_sensor import FakeSensor
 from wetstat.sensors.real.humidity_sensor import HumiditySensor
 from wetstat.sensors.real.light_sensor import LightSensor
 from wetstat.sensors.real.old.old_light_sensor import OldLightSensor
@@ -26,23 +25,19 @@ OLD_SENSORS: List[BaseSensor] = [
     OldLightSensor(),
 ]
 
-if config.on_pi():
-    USED_SENSORS: List[BaseSensor] = [
-        TempSensor(1),
-        TempSensor(2),
-        LightSensor(),
-        DigitalTempSensor(),
-        PressureSensor(),
-        HumiditySensor(),
-        RainSensor(),
-    ]
-else:
-    USED_SENSORS: List[BaseSensor] = [
-        FakeSensor(1),
-        FakeSensor(2),
-    ]
+USED_SENSORS: List[BaseSensor] = [
+    TempSensor(1),
+    TempSensor(2),
+    LightSensor(),
+    DigitalTempSensor(),
+    PressureSensor(),
+    HumiditySensor(),
+    RainSensor(),
+]
 
 ALL_SENSORS: List[BaseSensor] = [*USED_SENSORS, *OLD_SENSORS]
+
+SUM_SENSORS = [sens for sens in ALL_SENSORS if sens.get_compression_function() == CompressionFunction.SUM]
 
 schedule.logger.setLevel(schedule.logging.ERROR)
 
@@ -75,6 +70,10 @@ class SensorMaster(object):
     @staticmethod
     def get_all_sensor_short_names() -> List[str]:
         return [s.get_short_name() for s in ALL_SENSORS]
+
+    @staticmethod
+    def get_sum_sensor_short_names() -> List[str]:
+        return [s.get_short_name() for s in SUM_SENSORS]
 
     @staticmethod
     def _measure_row(data: list, stoptime: datetime.datetime):

@@ -43,11 +43,19 @@ def test_export() -> None:
     db_model.export_to_csv(start, end, path)
 
 
+def test_get_sums() -> None:
+    start = datetime.datetime(2010, 1, 1)
+    end = datetime.datetime(2018, 12, 31)
+    result = db_model.get_value_sums(["Temp1", "Light"], start=start, end=end)
+    print(result)
+
+
 if __name__ == "__main__":
     try:
         # insert_all_data()
         # load1()
         # insert1()
-        test_export()
+        # test_export()
+        test_get_sums()
     finally:
         db_model.cleanup()
