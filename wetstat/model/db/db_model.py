@@ -160,14 +160,19 @@ def load_data_for_date_range(start: datetime.datetime, end: datetime.datetime) -
             cur.close()
 
 
-def execute_select_range(start, end, cursor) -> None:
+def execute_select_range(start, end, cursor, columns=None) -> None:
     """
     Executes the select statement on the given cursor.
     :return: None
     """
+    if columns is None:
+        column_list = "*"
+    else:
+        column_list = ", ".join(columns)
     util.validate_start_end(start, end)
     params = start.strftime(db_const.DATETIME_FORMAT), end.strftime(db_const.DATETIME_FORMAT)
-    cursor.execute(f"SELECT * FROM {db_const.DATA_DB_NAME} WHERE {db_const.COL_NAME_TIME} BETWEEN %s AND %s", params)
+    cursor.execute(f"SELECT {column_list} FROM {db_const.DATA_DB_NAME} WHERE"
+                   f" {db_const.COL_NAME_TIME} BETWEEN %s AND %s", params)
 
 
 def insert_record(timestamp: datetime.datetime, update_if_exists=False, **values):
@@ -266,13 +271,13 @@ def get_value_sums(columns,
         raise ValueError("At least two of the three parameters must be passed!!")
     if not all(map(util.is_valid_sql_name, columns)):
         raise ValueError("At least one of the given column names is invalid!!!")
-    sums = (f"SUM({sn}) AS {sn}" for sn in columns)
+    col_list = (f"SUM({sn}) AS {sn}" for sn in columns)
     cur = None
     try:
         cur = conn.cursor()
-        cur.execute(f"SELECT {', '.join(sums)} FROM {db_const.DATA_DB_NAME};")
+        execute_select_range(start, end, cur, col_list)
         res = cur.fetchone()
-        return {col: value for col, value in zip(cur.column_names, res)}
+        return {col: value if value else 0 for col, value in zip(cur.column_names, res)}
     finally:
         if cur:
             cur.close()

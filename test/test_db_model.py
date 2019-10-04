@@ -45,7 +45,7 @@ def test_export() -> None:
 
 def test_get_sums() -> None:
     start = datetime.datetime(2010, 1, 1)
-    end = datetime.datetime(2018, 12, 31)
+    end = datetime.datetime(2010, 12, 31)
     result = db_model.get_value_sums(["Temp1", "Light"], start=start, end=end)
     print(result)
 
