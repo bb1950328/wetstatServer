@@ -19,8 +19,25 @@ def insert_all_data() -> None:
     print(f"inserting finished in {end - start} seconds.")
 
 
+def load1() -> None:
+    start = datetime.datetime(2015, 1, 1)
+    end = datetime.datetime(2015, 1, 2)
+    data = db_model.load_data_for_date_range(start, end)
+    print("finished")
+
+
+def insert1() -> None:
+    dt = datetime.datetime(2020, 1, 1)
+    vs = {"Temp1": 123,
+          "Light": 54321,
+          }
+    db_model.insert_record(dt, **vs)
+
+
 if __name__ == "__main__":
     try:
-        insert_all_data()
+        # insert_all_data()
+        # load1()
+        insert1()
     finally:
         db_model.cleanup()

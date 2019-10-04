@@ -95,3 +95,12 @@ class MockDict(dict):
 
 def is_valid_sql_name(to_test: str) -> bool:
     return bool(re.match(r"[\w]+", to_test))
+
+
+def validate_start_end(start: datetime.datetime, end: datetime.datetime) -> None:
+    if start is None:
+        raise ValueError("start must not be None!!!")
+    elif end is None:
+        raise ValueError("end must not be None!!!")
+    elif start > end:
+        raise ValueError("end must be after start!!!")
