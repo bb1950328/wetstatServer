@@ -261,14 +261,7 @@ def get_value_sums(columns,
                    start: datetime.datetime = None,
                    end: datetime.datetime = None,
                    duration: datetime.timedelta = None) -> Dict[str, float]:
-    if not start and end and duration:
-        start = end - duration
-    elif start and not end and duration:
-        end = start + duration
-    elif start and end and not duration:
-        duration = end - start
-    else:
-        raise ValueError("At least two of the three parameters must be passed!!")
+    start, end, duration = util.calculate_missing_start_end_duration(end, start, duration)
     if not all(map(util.is_valid_sql_name, columns)):
         raise ValueError("At least one of the given column names is invalid!!!")
     col_list = (f"SUM({sn}) AS {sn}" for sn in columns)

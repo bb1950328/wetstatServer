@@ -2,7 +2,7 @@
 import datetime
 import re
 import time
-from typing import Union
+from typing import Union, Optional
 
 
 def human_readable_size(size_bytes: Union[int, float], round_digits: int = 3, unit: str = "B") -> str:
@@ -106,3 +106,17 @@ def validate_start_end(start: datetime.datetime, end: datetime.datetime) -> None
         raise ValueError("end must not be None!!!")
     elif start > end:
         raise ValueError("end must be after start!!!")
+
+
+def calculate_missing_start_end_duration(start: Optional[datetime.datetime],
+                                         end: Optional[datetime.datetime],
+                                         duration: Optional[datetime.timedelta]):
+    if not start and end and duration:
+        start = end - duration
+    elif start and not end and duration:
+        end = start + duration
+    elif start and end and not duration:
+        duration = end - start
+    else:
+        raise ValueError("At least two of the three parameters must not be None!!")
+    return start, end, duration
