@@ -1,4 +1,6 @@
 # coding=utf-8
 
-DB_NAME = "data"
+DATABASE_NAME = "wetstat"
+DATA_DB_NAME = "data"
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+COL_NAME_TIME = "Time"

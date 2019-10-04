@@ -22,7 +22,7 @@ class DbData(object):
 
 
 def create_connection() -> MySQLConnection:
-    return connector.connect(database="wetstat",
+    return connector.connect(database=db_const.DATABASE_NAME,
                              user="root",
                              password="root",
                              host="localhost",
@@ -39,7 +39,7 @@ def get_all_columns(cursor: MySQLCursor = None) -> List[str]:
         is_own_cursor = True
     else:
         is_own_cursor = False
-    cursor.execute("EXPLAIN data")
+    cursor.execute("EXPLAIN " + db_const.DATA_DB_NAME)
     exp = cursor.fetchall()
     if is_own_cursor:
         cursor.close()
@@ -54,8 +54,8 @@ def add_column(col_name: str, cursor: MySQLCursor = None):
         is_own_cursor = False
     if not util.is_valid_sql_name(col_name):
         raise ValueError(f"Invalid column name: '{col_name}'!!!!")
-    cursor.execute(f"ALTER TABLE data ADD {col_name} FLOAT;")
-    logger.log.info(f"Added column '{col_name}' in wetstat.data")
+    cursor.execute(f"ALTER TABLE {db_const.DATA_DB_NAME} ADD {col_name} FLOAT;")
+    logger.log.info(f"Added column '{col_name}' in {db_const.DATABASE_NAME}.{db_const.DATA_DB_NAME}")
     if is_own_cursor:
         cursor.close()
 
@@ -116,13 +116,13 @@ def do_insert(connection, cursor, column_names, values: Union[Iterable[object], 
     except IntegrityError as e:
         if "Duplicate entry" in e.msg and update_if_exists:
             if is_multi_insert:
-                # single insert because only one of many records has errors
+                # single insert because not all records have errors, so some require insert and some require update
                 for record in values:
                     do_insert(connection, cursor, column_names, record)
             else:
                 # only one record, we know that this record causes the problem
                 values = values[0]
-                timestamp = values[column_names.index("Time")]
+                timestamp = values[column_names.index(db_const.COL_NAME_TIME)]
                 do_update(connection, cursor, timestamp, column_names, values)
         else:
             raise e
@@ -130,7 +130,8 @@ def do_insert(connection, cursor, column_names, values: Union[Iterable[object], 
 
 def do_update(connection, cursor, timestamp, column_names, values: Iterable[object]) -> None:
     sets = [f"{col}={val}" for col, val in zip(column_names, values)]
-    final_command = f"UPDATE data SET {', '.join(sets)} WHERE Time={to_sql_str(timestamp)};"
+    final_command = f"UPDATE {db_const.DATA_DB_NAME} SET {', '.join(sets)} " \
+                    f"WHERE {db_const.COL_NAME_TIME}={to_sql_str(timestamp)};"
     cursor.execute(final_command)
     connection.commit()
 
@@ -152,7 +153,7 @@ def load_data_for_date_range(start: datetime.datetime, end: datetime.datetime) -
     try:
         cur = conn.cursor()
         params = start.strftime(db_const.DATETIME_FORMAT), end.strftime(db_const.DATETIME_FORMAT)
-        cur.execute("SELECT * FROM data WHERE Time BETWEEN %s AND %s", params)
+        cur.execute(f"SELECT * FROM {db_const.DATA_DB_NAME} WHERE {db_const.COL_NAME_TIME} BETWEEN %s AND %s", params)
         db_data = fetch_to_db_data(cur)
         return db_data
     finally:
@@ -168,7 +169,7 @@ def insert_record(timestamp: datetime.datetime, **values):
     try:
         cur = conn.cursor()
         cols = list(values.keys())
-        cols.append("Time")
+        cols.append(db_const.COL_NAME_TIME)
         vals = list(values.values())
         vals.append(to_sql_str(timestamp))
         do_insert(conn, cur, cols, vals)
