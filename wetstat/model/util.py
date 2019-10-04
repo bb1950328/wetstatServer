@@ -2,9 +2,10 @@
 import datetime
 import re
 import time
+from typing import Union
 
 
-def human_readable_size(size_bytes: int, round_digits: int = 3) -> str:
+def human_readable_size(size_bytes: Union[int, float], round_digits: int = 3, unit: str = "B") -> str:
     sizes = {
         60: "E",
         50: "P",
@@ -14,12 +15,13 @@ def human_readable_size(size_bytes: int, round_digits: int = 3) -> str:
         10: "K",
     }
     prefix = ""
-    for bits, prefix in sizes.items():
+    for bits, pr in sizes.items():
         s = (1 << bits)
         if size_bytes > s:
             size_bytes /= s
+            prefix = pr
             break
-    return f"{round(size_bytes, round_digits)}{prefix}B"
+    return f"{round(size_bytes, round_digits)}{prefix}{unit}"
 
 
 def round_time(dt: datetime.datetime = None, round_to: int = 60, mode=0):
