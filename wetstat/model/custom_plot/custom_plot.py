@@ -14,6 +14,8 @@ from wetstat.common import logger, config
 from wetstat.model import csvtools
 from wetstat.model.csvtools import DataContainer
 from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
+from wetstat.model.db import db_model, db_const
+from wetstat.model.db.db_model import DbData
 from wetstat.view.message_container import MessageContainer
 
 
@@ -33,7 +35,7 @@ class CustomPlot(object):
     end: Optional[datetime]
     sensoroptions: Dict[str, CustomPlotSensorOptions]
     axislabels: Optional[dict]
-    data: Optional[DataContainer]
+    data: Optional[DbData]
     dpi: int
     figsize: Tuple[int, int]
     linewidth: float
@@ -127,15 +129,10 @@ class CustomPlot(object):
         return None
 
     def load_data(self, ignore_missing: bool = True) -> Optional[DataContainer]:
-        missing = ((not ignore_missing) and self.check_data_exists())
-        if missing:
-            raise FileNotFoundError("Data does not exist! (at least " + missing + ") missing")
         if self.data is not None:
             # data already here
             return
-        self.data = csvtools.load_csv_for_range(config.get_datafolder(),
-                                                self.start, self.end,
-                                                ignore_missing=ignore_missing)
+        self.data = db_model.load_data_for_date_range(self.start, self.end)
 
     def add_message(self, message: str, percent=None):
         timestamp = (perf_counter_ns() - self.start_ts) / 10 ** 9
@@ -175,22 +172,17 @@ class CustomPlot(object):
             self.datalines = {}
         for hr_hash in self.sensoroptions:
             short_name = self.sensoroptions[hr_hash].get_sensor().get_short_name()
-            x = np.array([])
-            y = np.array([])
-            for day in self.data.data:
-                if short_name in day.fields:
-                    x = np.append(x, day.array[:, 0])
-                    # debug:
-                    y = np.append(y, day.array[:, day.fields.index(short_name)])
+            x = self.data.array[:, 0]
+            y = self.data.array[:, self.data.columns.index(short_name)]
             x = [d.timestamp() for d in x]
             self.datalines[hr_hash] = (x, y)
 
-    def make_all_lines_minmaxavg(self):
+    def make_all_lines_minmaxavg(self) -> None:
         for hr_hash in self.sensoroptions:
             if self.sensoroptions[hr_hash].get_minmaxavg_interval() is not None:
                 self.make_line_minmaxavg(hr_hash)
 
-    def make_line_minmaxavg(self, hr_hash):
+    def make_line_minmaxavg(self, hr_hash: str) -> bool:
         """
         :param hr_hash: key of self.sensoroptions
         :return: True when something changed, otherwise False
@@ -232,7 +224,7 @@ class CustomPlot(object):
         self.datalines[hr_hash] = (x_new, (miny, maxy, avgy))
         return True
 
-    def prepare_axis_labels(self):
+    def prepare_axis_labels(self) -> None:
         if self.axislabels is not None:
             return
         self.axislabels = {}
@@ -312,8 +304,9 @@ class CustomPlot(object):
             raise ValueError("Load data first!!")
         self.xtick_pos = []
         self.xtick_str = []
-        start = self.data.data[0].array[0, 0].timestamp()
-        end = self.data.data[-1].array[-1, 0].timestamp()
+        time_col_index = self.data.columns.index(db_const.COL_NAME_TIME)
+        start = self.data.array[0, time_col_index].timestamp()
+        end = self.data.array[-1, time_col_index].timestamp()
 
         self.xtick_pos = np.linspace(start, end, self.max_xticks)
         self.xtick_pos = self.vectorized_from_ts(self.xtick_pos)

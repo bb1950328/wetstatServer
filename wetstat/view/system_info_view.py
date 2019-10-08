@@ -72,7 +72,6 @@ def system_real_download(request: WSGIRequest) -> HttpResponse:
         dd.set_end(datetime.datetime.strptime(request.GET.get("end"), "%Y-%m-%d"))
     except ValueError:
         return views.show_error(request, "Falsches Format für Start/Ende!", "/system/download")
-    dd.single_file = "single" in request.GET.keys()
     dd.make_zip = "zip" in request.GET.keys()
     path = dd.prepare_download()
     with open(path, "rb") as out:

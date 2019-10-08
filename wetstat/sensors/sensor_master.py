@@ -1,6 +1,5 @@
 # coding=utf-8
 import datetime
-import os
 import threading
 import time
 from typing import Optional, List
@@ -8,10 +7,12 @@ from typing import Optional, List
 import numpy as np
 import schedule
 
-from wetstat.common import config, logger
-from wetstat.model import csvtools, util
+from wetstat.common import logger
+from wetstat.model import util
+from wetstat.model.db import db_model
 from wetstat.sensors.abstract.base_sensor import BaseSensor, CompressionFunction
 from wetstat.sensors.real.digital_temp_sensor import DigitalTempSensor
+from wetstat.sensors.real.fake_sensor import FakeSensor
 from wetstat.sensors.real.humidity_sensor import HumiditySensor
 from wetstat.sensors.real.light_sensor import LightSensor
 from wetstat.sensors.real.old.old_light_sensor import OldLightSensor
@@ -23,6 +24,8 @@ from wetstat.sensors.real.temp_sensor import TempSensor
 OLD_SENSORS: List[BaseSensor] = [
     OldTempSensor(2),
     OldLightSensor(),
+    FakeSensor(1),
+    FakeSensor(2),
 ]
 
 USED_SENSORS: List[BaseSensor] = [
@@ -129,9 +132,8 @@ class SensorMaster(object):
                 val = 0
             values.append(round(val, 3))
 
-        logger.log.debug(f"measured values {str(values)}")
-        path = csvtools.save_values(config.get_datafolder(), heads, values, savedate)
-        logger.log.debug(f"saved values in {os.path.basename(path)}")
+        db_model.insert_record(savedate, update_if_exists=True, **db_model.record_to_dict(values, heads))
+        logger.log.debug(f"measured and saved values {str(values)}")
 
     @staticmethod
     def measure(freq: int = 600):

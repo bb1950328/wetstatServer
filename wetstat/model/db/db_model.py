@@ -4,21 +4,22 @@ import datetime
 import time
 from concurrent import futures
 from dataclasses import dataclass
-from typing import List, Tuple, Union, Iterable, Dict
+from typing import List, Union, Iterable, Dict, Collection, Optional
 
+import numpy as np
 from mysql import connector
 from mysql.connector import MySQLConnection, IntegrityError
 from mysql.connector.cursor import MySQLCursor
 
 from wetstat.common import logger
 from wetstat.model import util
-from wetstat.model.csvtools import DayData, DataContainer
+# from wetstat.model.csvtools import DayData, DataContainer
 from wetstat.model.db import db_const
 
 
 @dataclass
 class DbData(object):
-    array: List[Tuple[Union[datetime.datetime, float]]]
+    array: np.ndarray
     columns: List[str]
 
 
@@ -68,7 +69,7 @@ def to_sql_str(value: object) -> str:
         return str(value)
 
 
-def insert_daydata(daydata: DayData, add_missing_columns=False, create_own_connection=False) -> None:
+def insert_daydata(daydata, add_missing_columns=False, create_own_connection=False) -> None:
     if create_own_connection:
         connection = create_connection()
     else:
@@ -137,7 +138,7 @@ def do_update(connection, cursor, timestamp, column_names, values: Iterable[obje
     connection.commit()
 
 
-def insert_datacontainer(container: DataContainer, use_threads=False, add_missing_columns=True) -> None:
+def insert_datacontainer(container, use_threads=False, add_missing_columns=True) -> None:
     if use_threads:
         ex = futures.ThreadPoolExecutor()
         for dd in container.data:
@@ -193,11 +194,11 @@ def insert_record(timestamp: datetime.datetime, update_if_exists=False, **values
 
 
 def fetch_to_db_data(cursor: MySQLCursor) -> DbData:
-    return DbData(cursor.fetchall(), cursor.column_names)
+    return DbData(np.array(cursor.fetchall()), cursor.column_names)
 
 
 def export_to_csv(start: datetime.datetime, end: datetime.datetime, path: str,
-                  columns=None, delimiter=";", none_value: str = ""):
+                  columns: Optional[Collection[str]] = None, delimiter=";", none_value: str = ""):
     start_ts = time.perf_counter()
     cur = None
     out = None
@@ -303,7 +304,7 @@ def get_value_sums(columns,
             cur.close()
 
 
-def record_to_dict(record: Tuple, columns: Tuple[str], none_value=None):
+def record_to_dict(record: Iterable, columns: Iterable[str], none_value=None):
     return {col: value if value is not None else none_value
             for col, value in zip(columns, record)}
 

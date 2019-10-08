@@ -10,11 +10,12 @@ from django.utils.safestring import mark_safe
 
 from wetstat.common import config, logger
 from wetstat.common.config import get_date
-from wetstat.model import util, csvtools
+from wetstat.model import util
 from wetstat.model.custom_plot.custom_plot import CustomPlot
 from wetstat.model.custom_plot.fixed_time_custom_plot import FixedTimeCustomPlot
 from wetstat.model.custom_plot.request import CustomPlotRequest
 from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
+from wetstat.model.db import db_model
 from wetstat.model.util import MockDict
 from wetstat.sensors.abstract.base_sensor import CompressionFunction
 from wetstat.sensors.sensor_master import SensorMaster, ALL_SENSORS
@@ -29,8 +30,10 @@ def load_previous_values(ndays: int) -> Dict[str, float]:
     oneday = datetime.timedelta(days=1)
     now_date = config.get_date()
     try:
-        value_record = csvtools.get_nearest_record(now_date - delta)
-        sum_record = csvtools.get_value_sums(end=now_date - delta, duration=oneday)
+        value_record = db_model.find_nearest_record(now_date - delta)
+        sum_record = db_model.get_value_sums(columns=SensorMaster.get_sum_sensor_short_names(),
+                                             end=now_date - delta,
+                                             duration=oneday)
     except ValueError or FileNotFoundError:
         logger.log.exception(f"Error while loading data for {ndays} before!")
         return MockDict()
@@ -45,8 +48,6 @@ def load_previous_values(ndays: int) -> Dict[str, float]:
             rec = value_record
         ret_record[short_name] = rec[short_name]
     return ret_record
-
-
 
 
 def index(request) -> HttpResponse:
@@ -70,6 +71,14 @@ def index(request) -> HttpResponse:
         v_yesterday = yesterday.get(name)
         v_lastmonth = lastmonth.get(name, "?")
         v_lastyear = lastyear.get(name, "?")
+        if v_today is None:
+            continue
+        if v_yesterday is None:
+            v_yesterday = 0
+        if v_lastmonth is None:
+            v_lastmonth = "?"
+        if v_lastyear is None:
+            v_lastyear = "?"
         sarr.append(
             {
                 "name": sensor.get_long_name(),
