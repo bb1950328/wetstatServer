@@ -7,6 +7,7 @@ from typing import Optional, Set, Dict
 import numpy as np
 
 from wetstat.common import config
+from wetstat.model import util
 from wetstat.sensors import sensor_master
 from wetstat.sensors.abstract.base_sensor import CompressionFunction
 
@@ -170,14 +171,7 @@ def get_value_sums(*,
                    start: datetime.datetime = None,
                    end: datetime.datetime = None,
                    duration: datetime.timedelta = None) -> Dict[str, float]:
-    if not start and end and duration:
-        start = end - duration
-    elif start and not end and duration:
-        end = start + duration
-    elif start and end and not duration:
-        duration = end - start
-    else:
-        raise ValueError("At least two of the three parameters must be passed!!")
+    start, end, duration = util.calculate_missing_start_end_duration(start, end, duration)
     used_files = []
     oneday = datetime.timedelta(days=1)
     i = start

@@ -50,12 +50,19 @@ def test_get_sums() -> None:
     print(result)
 
 
+def test_nearest_record() -> None:
+    ts = datetime.datetime(2015, 6, 15, 12, 5, 1)
+    result = db_model.find_nearest_record(ts)
+    print(result)
+
+
 if __name__ == "__main__":
     try:
         # insert_all_data()
         # load1()
         # insert1()
         # test_export()
-        test_get_sums()
+        # test_get_sums()
+        test_nearest_record()
     finally:
         db_model.cleanup()

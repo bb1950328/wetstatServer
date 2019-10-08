@@ -252,8 +252,36 @@ def export_to_csv(start: datetime.datetime, end: datetime.datetime, path: str,
             out.close()
 
 
-def find_nearest_timestamp(timestamp: datetime.datetime):
-    pass  # TODO
+def find_nearest_record(timestamp: datetime.datetime):
+    """
+    :param timestamp: datetime.datetime
+    :return: nearest record, to past if one record is as far as another record
+    """
+    time_str = to_sql_str(timestamp)
+    cur = None
+    try:
+        cur = conn.cursor()
+        cur.execute(f"SELECT * FROM data WHERE Time >= {time_str} ORDER BY Time LIMIT 1;")
+        res_future = cur.fetchone()
+        future_cols = cur.column_names
+        future_time_index = future_cols.index(db_const.COL_NAME_TIME)
+        to_future = res_future[future_time_index] - timestamp
+
+        cur.execute(f"SELECT * FROM data WHERE Time <= {time_str} ORDER BY Time DESC LIMIT 1;")
+        res_past = cur.fetchone()
+        past_cols = cur.column_names
+        past_time_index = past_cols.index(db_const.COL_NAME_TIME)
+        to_past = timestamp - res_past[past_time_index]
+        if to_future < to_past:
+            record, columns = res_future, future_cols
+        else:
+            record, columns = res_past, past_cols
+
+        return record_to_dict(record, columns)
+
+    finally:
+        if cur:
+            cur.close()
 
 
 def get_value_sums(columns,
@@ -269,11 +297,15 @@ def get_value_sums(columns,
     try:
         cur = conn.cursor()
         execute_select_range(start, end, cur, col_list)
-        res = cur.fetchone()
-        return {col: value if value else 0 for col, value in zip(cur.column_names, res)}
+        return record_to_dict(cur.fetchone(), cur.column_names, none_value=0)
     finally:
         if cur:
             cur.close()
+
+
+def record_to_dict(record: Tuple, columns: Tuple[str], none_value=None):
+    return {col: value if value is not None else none_value
+            for col, value in zip(columns, record)}
 
 
 def cleanup() -> None:
