@@ -1,7 +1,7 @@
 # coding=utf-8
 import os
 import random
-from datetime import datetime, timedelta
+from datetime import datetime
 from time import perf_counter_ns
 from typing import Optional, Dict, Union, List, Callable, Tuple
 
@@ -10,9 +10,7 @@ import numpy as np
 from matplotlib.image import imread, imsave
 from numpy.core.multiarray import ndarray
 
-from wetstat.common import logger, config
-from wetstat.model import csvtools
-from wetstat.model.csvtools import DataContainer
+from wetstat.common import logger
 from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
 from wetstat.model.db import db_model, db_const
 from wetstat.model.db.db_model import DbData
@@ -20,6 +18,7 @@ from wetstat.view.message_container import MessageContainer
 
 
 class CustomPlot(object):
+    start_ts: float
     # Type hints:
     message_container: Optional[MessageContainer]
     plot_id: str
@@ -65,6 +64,7 @@ class CustomPlot(object):
         self.legend_mode = 0  # 0=inside plot, 1=save in separate file, 2=no legend
         self.plot_id = hex(random.randint(0x1000000000000, 0xfffffffffffff))[2:]
         self.message_container = None
+        self.start_ts = 0.0
         self.PERCENTS = [0, 5.64786686, 5.650508519, 5.692775063, 5.695416722, 5.748249901, 6.020340774, 8.017434949,
                          8.020076608, 23.36547352, 29.54695549, 30.09906221, 100, 100]
 
@@ -109,26 +109,7 @@ class CustomPlot(object):
     def get_end(self) -> datetime:
         return self.end
 
-    def check_data_exists(self) -> Optional[str]:
-        """
-        :return: filename of the first missing file, None if everything is ok
-        """
-        if self.start is None or self.end is None:
-            raise ValueError("Start and end have to be set when calling this method!")
-        oneday = timedelta(days=1)
-        i = self.start
-        files = []
-        while i < self.end:
-            files.append(csvtools.get_filename_for_date(i))
-            i = i + oneday
-        datafolder = config.get_datafolder()
-        for file in files:
-            path = os.path.join(datafolder, file)
-            if not os.path.isfile(path):
-                return file
-        return None
-
-    def load_data(self, ignore_missing: bool = True) -> Optional[DataContainer]:
+    def load_data(self) -> None:
         if self.data is not None:
             # data already here
             return
@@ -146,7 +127,7 @@ class CustomPlot(object):
     def set_title(self, title: str):
         self.title = title
 
-    def get_title(self):
+    def get_title(self) -> str:
         if self.title is not None:
             return self.title
         elif self.start is not None and self.end is not None:
@@ -156,7 +137,7 @@ class CustomPlot(object):
             self.title += self.end.strftime("%d.%m.%y")
         return self.title
 
-    def set_all_linecolors(self):
+    def set_all_linecolors(self) -> None:
         standards = ["red", "green", "blue", "orange", "black", "yellow", "black"]
         for key, sensor in self.sensoroptions.items():
             color = sensor.get_line_color()
@@ -165,7 +146,7 @@ class CustomPlot(object):
             elif color in standards:
                 standards.remove(color)
 
-    def split_data_to_lines(self):
+    def split_data_to_lines(self) -> None:
         if self.datalines is not None:
             return  # Already splitted
         else:
@@ -257,7 +238,7 @@ class CustomPlot(object):
             self.axes[i] = [sa, sb]
         self.axes = list(filter(lambda x: x is not None, self.axes))
 
-    def distribute_lines_to_axes(self):
+    def distribute_lines_to_axes(self) -> None:
         self.lines_of_axes = []
         numbers = [(0 if so.get_axis() is None else int(so.get_axis()[0])) for so in self.sensoroptions.values()]
         ma = max(set(numbers))  # set(...) to remove duplicates
@@ -299,7 +280,7 @@ class CustomPlot(object):
         self.lines_of_axes = list(filter(lambda x: not (len(x[0]) == 0 and len(x[1]) == 0),
                                          self.lines_of_axes))  # remove empty subplots
 
-    def generate_xticks(self):
+    def generate_xticks(self) -> None:
         if self.data is None:
             raise ValueError("Load data first!!")
         self.xtick_pos = []
@@ -313,12 +294,12 @@ class CustomPlot(object):
         self.xtick_str = np.array([pos.strftime(self.dateformat) for pos in self.xtick_pos])
         self.xtick_pos = [d.timestamp() for d in self.xtick_pos]
 
-    def generate_legends(self):
+    def generate_legends(self) -> None:
         self.legends = {hr_hash: op.get_sensor().get_long_name() + op.get_minmaxavg_interval_for_legend()
                         for hr_hash, op in self.sensoroptions.items()}
 
     @staticmethod
-    def save_legend(legend, filename="legend.png", expand=None, crop=4):
+    def save_legend(legend, filename="legend.png", expand=None, crop=4) -> None:
         if expand is None:
             expand = [-5, -5, 5, 5]
         fig = legend.figure
@@ -333,9 +314,8 @@ class CustomPlot(object):
             img = img[crop:w - crop, crop:h - crop]
             imsave(filename, img)
 
-    def create_plots(self):
+    def create_plots(self) -> float:
         # percents = [0.00, 47.07, 47.07, 47.07, 47.07, 47.09, 65.86, 86.72, 86.72, 87.34, 88.38, 88.82, 95.87, 100.00]
-        ##debug:
         try:
             self.start_ts = perf_counter_ns()  # self only for debug
             self.add_message("Lade Daten", self.PERCENTS[0])
