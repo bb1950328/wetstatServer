@@ -23,7 +23,7 @@ def get_interpreter() -> str:
 
 def get_date() -> datetime.datetime:
     # for development
-    return datetime.datetime.now() - datetime.timedelta(days=365)  # TODO DO NOT COMMIT !!!!!!
+    #return datetime.datetime.now() - datetime.timedelta(days=365)  # TODO DO NOT COMMIT !!!!!!
     # noinspection PyUnreachableCode
     return datetime.datetime.now()
 

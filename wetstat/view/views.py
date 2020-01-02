@@ -38,8 +38,10 @@ def load_previous_values(ndays: int) -> Dict[str, float]:
         logger.log.exception(f"Error while loading data for {ndays} before!")
         return MockDict()
     ret_record = {}
+    record_timestamp = None
     for short_name in value_record.keys():
         if short_name == "Time":
+            record_timestamp = value_record[short_name]
             continue
         sensor = SensorMaster.get_sensor_for_info("short_name", short_name)
         if sensor.get_compression_function() == CompressionFunction.SUM:
@@ -47,16 +49,16 @@ def load_previous_values(ndays: int) -> Dict[str, float]:
         else:
             rec = value_record
         ret_record[short_name] = rec[short_name]
-    return ret_record
+    return record_timestamp, ret_record
 
 
 def index(request) -> HttpResponse:
     log_request(request)
 
-    today = load_previous_values(0)
-    yesterday = load_previous_values(1)
-    lastmonth = load_previous_values(30)
-    lastyear = load_previous_values(365)
+    ts_0, today = load_previous_values(0)
+    ts_1, yesterday = load_previous_values(1)
+    ts_30, lastmonth = load_previous_values(30)
+    ts_365, lastyear = load_previous_values(365)
 
     if isinstance(today, MockDict):
         return show_error(request, "Es wurden keine Daten zum aktuellen Zeitpunkt gefunden.", "week.html")
@@ -90,7 +92,8 @@ def index(request) -> HttpResponse:
                 "color": sensor.get_display_color(),
             }
         )
-    context = {"sensors": {"array": sarr}}
+    context = {"sensors": {"array": sarr},
+               "record_dates": f"{ts_0}, {ts_1}, {ts_30}, {ts_365}"}
     return render(request, "wetstat/index.html", context)
 
 

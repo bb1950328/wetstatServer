@@ -25,8 +25,8 @@ class DbData(object):
 
 def create_connection() -> MySQLConnection:
     return connector.connect(database=db_const.DATABASE_NAME,
-                             user="root",
-                             password="root",
+                             user="wetstat_user",
+                             password="wetstat",
                              host="localhost",
                              port=3306,
                              )
@@ -262,22 +262,30 @@ def find_nearest_record(timestamp: datetime.datetime):
     cur = None
     try:
         cur = conn.cursor()
-        cur.execute(f"SELECT * FROM data WHERE Time >= {time_str} ORDER BY Time LIMIT 1;")
+        cur.execute(f"SELECT * FROM data WHERE Time >= {time_str} ORDER BY Time ASC LIMIT 1;")
         res_future = cur.fetchone()
         future_cols = cur.column_names
         future_time_index = future_cols.index(db_const.COL_NAME_TIME)
-        to_future = res_future[future_time_index] - timestamp
 
         cur.execute(f"SELECT * FROM data WHERE Time <= {time_str} ORDER BY Time DESC LIMIT 1;")
         res_past = cur.fetchone()
         past_cols = cur.column_names
         past_time_index = past_cols.index(db_const.COL_NAME_TIME)
-        to_past = timestamp - res_past[past_time_index]
-        if to_future < to_past:
+        
+        if res_future is not None and res_past is not None:
+            
+            to_future = res_future[future_time_index] - timestamp
+            to_past = timestamp - res_past[past_time_index]
+            if to_future < to_past:
+                record, columns = res_future, future_cols
+            else:
+                record, columns = res_past, past_cols
+        elif res_future is not None:
             record, columns = res_future, future_cols
-        else:
+        elif res_past is not None:
             record, columns = res_past, past_cols
-
+        else:  # both None
+            return None
         return record_to_dict(record, columns)
 
     finally:
