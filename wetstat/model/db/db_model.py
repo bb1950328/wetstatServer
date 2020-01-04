@@ -271,9 +271,8 @@ def find_nearest_record(timestamp: datetime.datetime):
         res_past = cur.fetchone()
         past_cols = cur.column_names
         past_time_index = past_cols.index(db_const.COL_NAME_TIME)
-        
+
         if res_future is not None and res_past is not None:
-            
             to_future = res_future[future_time_index] - timestamp
             to_past = timestamp - res_past[past_time_index]
             if to_future < to_past:
