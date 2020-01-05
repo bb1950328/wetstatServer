@@ -261,7 +261,9 @@ def find_nearest_record(timestamp: datetime.datetime):
     time_str = to_sql_str(timestamp)
     cur = None
     try:
+        conn.commit()  # to get changes which are made by other connections after creation of this connection
         cur = conn.cursor()
+
         cur.execute(f"SELECT * FROM data WHERE Time >= {time_str} ORDER BY Time ASC LIMIT 1;")
         res_future = cur.fetchone()
         future_cols = cur.column_names
