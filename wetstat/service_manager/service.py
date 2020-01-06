@@ -189,6 +189,7 @@ class ShutdownButtonService(BaseService):
     def is_restart_after_crash() -> bool:
         return True
 
+
 class CurrentValueProviderService(BaseService):
 
     def run(self) -> None:
@@ -199,4 +200,3 @@ class CurrentValueProviderService(BaseService):
     @staticmethod
     def is_restart_after_crash() -> bool:
         return True
-

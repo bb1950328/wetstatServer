@@ -67,7 +67,8 @@ def run_current_value_provider_server() -> None:
             if data:
                 res = "{}"
                 with last_row_lock:
-                    res = json.dumps({sname: val for sname, val in zip(SensorMaster.get_used_sensor_short_names(), last_row)})
+                    res = json.dumps({sname: val for sname, val
+                                      in zip(SensorMaster.get_used_sensor_short_names(), last_row)})
                 com.send(res.encode())
             com.close()
     except Exception:
@@ -78,11 +79,8 @@ def run_current_value_provider_server() -> None:
 
 def get_current_values() -> dict:
     try:
-        #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock = socket.create_connection(("127.0.0.1", CURRENT_VALUE_PORT), 1)
-        #sock.connect(("127.0.0.1", CURRENT_VALUE_PORT))
         sock.send("aaaa".encode())
-        #sock.settimeout(1)
         return json.loads(sock.recv(4096).decode())
     except ConnectionRefusedError or ConnectionError:
         logger.log.exception("Exception in get_current_values")

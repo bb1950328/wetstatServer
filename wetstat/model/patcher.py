@@ -64,7 +64,11 @@ class Patcher(object):
                                      f"ORDER BY Time LIMIT 1")
             else:
                 self._cursor.execute("SELECT * FROM data ORDER BY Time LIMIT 1")
-            self._current = {col: val for col, val in zip(self._cursor.column_names, self._cursor.fetchone())}
+            fetched = self._cursor.fetchone()
+            if not fetched:
+                return False
+            print(fetched)
+            self._current = {col: val for col, val in zip(self._cursor.column_names, fetched)}
             return len(self._current) > 0
 
     def __init__(self) -> None:

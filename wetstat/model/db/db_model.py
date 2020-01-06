@@ -13,7 +13,6 @@ from mysql.connector.cursor import MySQLCursor
 
 from wetstat.common import logger
 from wetstat.model import util
-# from wetstat.model.csvtools import DayData, DataContainer
 from wetstat.model.db import db_const
 
 
