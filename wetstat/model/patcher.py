@@ -48,7 +48,7 @@ class Patcher(object):
 
     class SQLIterator(object):
         def __init__(self) -> None:
-            self._cursor = db_model.conn.cursor()
+            self._cursor = db_model.create_cursor()
             self._current = None
 
         @property
@@ -79,7 +79,7 @@ class Patcher(object):
 
     def run(self) -> None:
         try:
-            self.cur = db_model.conn.cursor()
+            self.cur = db_model.create_cursor()
             sql_at_end = not self.sql.next()
             executed = 0
             while self.csv.next():

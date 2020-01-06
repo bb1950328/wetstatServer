@@ -19,12 +19,12 @@ class CustomPlotDbRow(object):
 
 
 def is_id_available(id_: str) -> bool:
-    c = conn.cursor()
+    c = create_cursor()
     c.execute("SELECT id FROM plots WHERE id=?", id_)
     return not c.fetchall()
 
 
 def delete_row(id_: str):
     with conn:
-        c = conn.cursor()
+        c = create_cursor()
         c.execute("DELETE FROM plots WHERE id=?", id_)

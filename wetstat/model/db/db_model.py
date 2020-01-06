@@ -34,9 +34,23 @@ def create_connection() -> MySQLConnection:
 conn = create_connection()
 
 
+def create_cursor(*args, **kwargs) -> MySQLCursor:
+    tries = 0
+    global conn
+    while True:
+        try:
+            return conn.cursor(*args, **kwargs)
+        except Exception as e:
+            tries += 1
+            if tries > 3:
+                raise e
+
+            conn = create_connection()
+
+
 def get_all_columns(cursor: MySQLCursor = None) -> List[str]:
     if not cursor:
-        cursor = conn.cursor()
+        cursor = create_cursor()
         is_own_cursor = True
     else:
         is_own_cursor = False
@@ -49,7 +63,7 @@ def get_all_columns(cursor: MySQLCursor = None) -> List[str]:
 
 def add_column(col_name: str, cursor: MySQLCursor = None):
     if not cursor:
-        cursor = conn.cursor()
+        cursor = create_cursor()
         is_own_cursor = True
     else:
         is_own_cursor = False
@@ -153,7 +167,7 @@ def load_data_for_date_range(start: datetime.datetime, end: datetime.datetime,
     cur = None
     try:
         conn.commit()
-        cur = conn.cursor()
+        cur = create_cursor()
         if already_existing is None:
             execute_select_range(start, end, cur)
             db_data = fetch_to_db_data(cur)
@@ -210,7 +224,7 @@ def insert_record(timestamp: datetime.datetime, update_if_exists=False, **values
     """
     cur = None
     try:
-        cur = conn.cursor()
+        cur = create_cursor()
         cols = list(values.keys())
         cols.append(db_const.COL_NAME_TIME)
         vals = list(values.values())
@@ -231,7 +245,7 @@ def export_to_csv(start: datetime.datetime, end: datetime.datetime, path: str,
     cur = None
     out = None
     try:
-        cur = conn.cursor()
+        cur = create_cursor()
         execute_select_range(start, end, cur)
         if columns is None:
             columns = cur.column_names
@@ -290,7 +304,7 @@ def find_nearest_record(timestamp: datetime.datetime):
     cur = None
     try:
         conn.commit()  # to get changes which are made by other connections after creation of this connection
-        cur = conn.cursor()
+        cur = create_cursor()
 
         cur.execute(f"SELECT * FROM data WHERE Time >= {time_str} ORDER BY Time ASC LIMIT 1;")
         res_future = cur.fetchone()
@@ -333,7 +347,7 @@ def get_value_sums(columns,
     col_list = (f"SUM({sn}) AS {sn}" for sn in columns)
     cur = None
     try:
-        cur = conn.cursor()
+        cur = create_cursor()
         execute_select_range(start, end, cur, col_list)
         return record_to_dict(cur.fetchone(), cur.column_names, none_value=0)
     finally:
