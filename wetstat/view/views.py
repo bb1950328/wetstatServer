@@ -2,7 +2,7 @@
 import datetime
 import os
 import time
-from typing import Dict, Union
+from typing import Dict, Union, Tuple
 
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -17,6 +17,7 @@ from wetstat.model.custom_plot.request import CustomPlotRequest
 from wetstat.model.custom_plot.sensor_options import CustomPlotSensorOptions
 from wetstat.model.db import db_model
 from wetstat.model.util import MockDict
+from wetstat.sensors import sensor_master
 from wetstat.sensors.abstract.base_sensor import CompressionFunction
 from wetstat.sensors.sensor_master import SensorMaster, ALL_SENSORS
 from wetstat.view.generate_plot_thread import GeneratePlotThread
@@ -25,7 +26,7 @@ from wetstat.view.message_container import MessageContainer
 message_container = MessageContainer()
 
 
-def load_previous_values(ndays: int) -> Dict[str, float]:
+def load_previous_values(ndays: int) -> Tuple[datetime.datetime, Dict[str, float]]:
     delta = datetime.timedelta(days=ndays)
     oneday = datetime.timedelta(days=1)
     now_date = config.get_date()
@@ -36,7 +37,7 @@ def load_previous_values(ndays: int) -> Dict[str, float]:
                                              duration=oneday)
     except ValueError or FileNotFoundError:
         logger.log.exception(f"Error while loading data for {ndays} before!")
-        return MockDict()
+        return datetime.datetime.fromtimestamp(0), MockDict()
     ret_record = {}
     record_timestamp = None
     for short_name in value_record.keys():
@@ -55,7 +56,9 @@ def load_previous_values(ndays: int) -> Dict[str, float]:
 def index(request) -> HttpResponse:
     log_request(request)
 
-    ts_0, today = load_previous_values(0)
+    ts_0, today = datetime.datetime.now(), sensor_master.get_current_values()
+    if not today:
+        ts_0, today = load_previous_values(0)
     ts_1, yesterday = load_previous_values(1)
     ts_30, lastmonth = load_previous_values(30)
     ts_365, lastyear = load_previous_values(365)

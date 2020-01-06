@@ -27,7 +27,7 @@ class ServiceManager:
         self.services = {}
         self.submitted = {}
         self.last_crash = {}
-        self.executor = futures.ThreadPoolExecutor()
+        self.executor = futures.ThreadPoolExecutor(max_workers=100)
         self.socket = None
         self.submitted_lock = threading.Lock()
 
@@ -51,6 +51,7 @@ class ServiceManager:
     def start_service(self, name: str) -> None:
         with self.submitted_lock:
             self.submitted[name] = self.executor.submit(self.services[name].run)
+            logger.log.info(f"Started service {name}")
 
     def restart_service(self, name: str) -> None:
         self.stop_service(name)
@@ -138,6 +139,7 @@ if __name__ == '__main__':
     manager.update_service("plot_cleanup", service.PlotCleanupService())
     manager.update_service("log_cleanup", service.LogCleanupService())
     manager.update_service("shutdown_button", service.ShutdownButtonService())
+    manager.update_service("current_value_provider", service.CurrentValueProviderService())
 
     if config.on_pi():
         manager.start_service("apache")
@@ -146,6 +148,7 @@ if __name__ == '__main__':
     manager.start_service("plot_cleanup")
     manager.start_service("log_cleanup")
     manager.start_service("shutdown_button")
+    manager.start_service("current_value_provider")
 
     manager.watchdog()
     try:

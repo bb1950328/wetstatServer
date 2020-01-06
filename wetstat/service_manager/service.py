@@ -188,3 +188,15 @@ class ShutdownButtonService(BaseService):
     @staticmethod
     def is_restart_after_crash() -> bool:
         return True
+
+class CurrentValueProviderService(BaseService):
+
+    def run(self) -> None:
+        logger.log.debug("before run_current_value_provider_server()")
+        sensor_master.run_current_value_provider_server()
+        logger.log.debug("after run_current_value_provider_server()")
+
+    @staticmethod
+    def is_restart_after_crash() -> bool:
+        return True
+
