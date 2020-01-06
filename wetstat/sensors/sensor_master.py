@@ -44,6 +44,13 @@ ALL_SENSORS: List[BaseSensor] = [*USED_SENSORS, *OLD_SENSORS]
 
 SUM_SENSORS = [sens for sens in ALL_SENSORS if sens.get_compression_function() == CompressionFunction.SUM]
 
+UNIT_NAMES = {
+    "°C": "Temperatur",
+    "%": "Prozent",
+    "hpa": "Luftdruck",
+    "mm": "Millimeter",
+}
+
 schedule.logger.setLevel(schedule.logging.ERROR)
 
 measuring_allowed = True

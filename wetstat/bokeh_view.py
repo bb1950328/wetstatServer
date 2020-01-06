@@ -1,13 +1,14 @@
 # coding=utf-8
 import datetime
+from typing import Optional, List
 
 import numpy as np
 from bokeh.client import pull_session
 from bokeh.embed import server_session
 from bokeh.layouts import column, row
-from bokeh.models import DataRange1d, Select, Toggle, ColumnDataSource, HoverTool
+from bokeh.models import DataRange1d, Select, Toggle, ColumnDataSource, HoverTool, LinearAxis
 from bokeh.models.widgets import DatePicker
-from bokeh.plotting import figure
+from bokeh.plotting import figure, Figure
 from bokeh.server.server import Server
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse
@@ -41,18 +42,135 @@ def bkapp_view(request: WSGIRequest) -> HttpResponse:
         return render(request, "wetstat/bokeh_embed.html", context)
 
 
+class WetstatPlot(object):
+    def __init__(self, nr, app) -> None:
+        self._sensor_list_a: List[str] = []
+        self._sensor_list_b: List[str] = []
+        self._renderers_a = {}
+        self._renderers_b = {}
+        self._unit_a = None
+        self._unit_b = None
+        self.nr = nr
+        self.app = app
+        self.plot: Optional[Figure] = None
+        self.y_axis_2 = None
+        self.create_plot()
+
+    @property
+    def unit_a(self) -> str:
+        return self._unit_a
+
+    @unit_a.setter
+    def unit_a(self, new) -> None:
+        self._unit_a = new
+        self.plot.yaxis.axis_label = self._generate_axis_label(self._unit_a)
+
+    @property
+    def unit_b(self) -> str:
+        return self._unit_a
+
+    @unit_b.setter
+    def unit_b(self, new) -> None:
+        self._unit_b = new
+        if new is None:
+            self._remove_2nd_axis()
+        else:
+            self._add_2nd_y_axis()
+
+    @property
+    def sensor_list_a(self) -> List[str]:
+        return self._sensor_list_a
+
+    @property
+    def sensor_list_b(self) -> List[str]:
+        return self._sensor_list_b
+
+    def refresh_lines(self) -> None:
+        in_list = set(
+            *self.sensor_list_a,
+            *self.sensor_list_b,
+        )
+        in_renderer = set(
+            *self._renderers_a.keys(),
+            *self._renderers_b.keys(),
+        )
+        all_sensors = set(*in_list, *in_renderer)
+        for sn in all_sensors:
+            if sn not in in_list:
+                if sn in self._renderers_a.keys():
+                    self._renderers_a[sn].visible = False
+                elif sn in self._renderers_b.keys():
+                    self._renderers_b[sn].visible = False
+            else:
+                if sn not in in_renderer:
+                    if sn in self.app.data.columns:
+                        rlist = self._renderers_a if sn in self.sensor_list_a else self._renderers_b
+                        sens = sensor_master.SensorMaster.get_sensor_for_info("short_name", sn)
+                        rlist[sn] = self.plot.line("Time", sn, source=self.app.cds,
+                                                   color=sens.get_display_color(),
+                                                   # legend_label=sens.get_long_name(),
+                                                   )
+
+                    else:
+                        print(f"no data found for {sn}!!!")
+                else:
+                    if sn in self.sensor_list_a:
+                        if sn in self._renderers_a:
+                            self._renderers_a[sn].visible = True
+                        else:  # moved from b to a
+                            self._renderers_b[sn].y_range_name = "a"
+                    else:
+                        if sn in self._renderers_b:
+                            self._renderers_b[sn].visible = True
+                        else:  # moved from a to b
+                            self._renderers_b[sn].y_range_name = "b"
+
+    @staticmethod
+    def _generate_axis_label(unit: str) -> str:
+        try:
+            return f"{sensor_master.UNIT_NAMES[unit]} [{unit}]"
+        except KeyError:
+            return f"[{unit}]"
+
+    def _add_2nd_y_axis(self) -> None:
+        if self.y_axis_2 is None:
+            self.plot.extra_y_ranges = {
+                "b": DataRange1d(range_padding=0),
+            }
+            self.y_axis_2 = LinearAxis(y_range_name="b", axis_label=self._generate_axis_label(self.unit_b))
+            self.plot.add_layout(self.y_axis_2, "right")
+        else:
+            self.y_axis_2.visible = True
+            self.y_axis_2.axis_label = self._generate_axis_label(self.unit_a)
+
+    def _remove_2nd_axis(self) -> None:
+        if self.y_axis_2 is not None:
+            self.y_axis_2.visible = False
+
+    def create_plot(self) -> None:
+        self.plot = figure(
+            x_axis_type="datetime",
+            x_axis_label='Zeit',
+            y_range_name="a",
+            tools=["xpan", "xwheel_zoom", "hover", "crosshair", "reset", "save"]
+        )
+        self.plot.x_range = DataRange1d(range_padding=0.0)
+        self.plot.grid.grid_line_alpha = 0.3
+
+
 class WetstatBokehApp(object):
 
     def __init__(self, doc) -> None:
         self.doc = doc
-        self.plot = None
+        self.plots: List[WetstatPlot] = []
         self.today = datetime.date.today() - datetime.timedelta(days=365)
         self.now = datetime.datetime.now() - datetime.timedelta(days=365)
         self.end = self.now
         self.start = self.end - datetime.timedelta(days=1)
         self.data = None
         self.cds = None
-        self.line_renderers = {}
+        # self.line_renderers = {}
+        # self.axis_units: List[Dict[str, str]] = []  # [{"a": "°C", "b": "%"}, {"a": "mm", "b": "hpa"}]
         self.so_rows = []
         self.so_widgets = {}
         self.picker_start = None
@@ -80,25 +198,78 @@ class WetstatBokehApp(object):
         else:
             self.cds = new
 
-    def callback_sensor(self, attr, old, new) -> None:
+    def callback_sensor_active(self, attr, old, new) -> None:
         print("Callback sensor")
         tooltips = []
         for sn in ALL_SHORT_NAMES:
-            a = self.so_widgets[sn]["active"]
-            if a.active:
-                if sn not in self.line_renderers.keys():  # box got activated for the first time
-                    self.create_line(sn)
-                else:
-                    self.line_renderers[sn].visible = True
-                sens = sensor_master.SensorMaster.get_sensor_for_info("short_name", sn)
-                tooltips.append((sens.get_long_name(), sens.get_short_name()))
+            act = self.so_widgets[sn]["active"]
+            axi = self.so_widgets[sn]["axis"]
+            sens = sensor_master.SensorMaster.get_sensor_for_info("short_name", sn)
+            unit = sens.get_unit()
+
+            i_plt = int(axi[0])
+            slist = self.plots[i_plt].sensor_list_a
+            other_list = self.plots[i_plt].sensor_list_b
+            if axi[1] == "b":
+                slist, other_list = other_list, slist
+            if act:
+                if sn not in slist:
+                    slist.append(sn)
+                    if sn in other_list:
+                        other_list.remove(sn)
             else:
-                if sn in self.line_renderers.keys():
-                    self.line_renderers[sn].visible = False
-        self.hover_tool.tooltips = tooltips
+                if sn in slist:
+                    slist.remove(sn)
+            self.plots[i_plt].refresh_lines()
+            tooltips.append((sens.get_long_name(), f"@{sens.get_short_name()}"))
+
+        for plt in self.plots:
+            for to in plt.plot.tools:
+                if isinstance(to, HoverTool):
+                    to.tooltips = tooltips
+                    break
+
+    def callback_sensor_axis(self, attr, old, new) -> None:
+        axes = {sn: self.so_widgets[sn]["axis"].value for sn in ALL_SHORT_NAMES}
+        found = False
+        for i, plt in enumerate(self.plots):
+            for sn in plt.sensor_list_a + plt.sensor_list_b:
+                if axes[sn] != f"{i}a":
+                    # remove on old axis
+                    if sn in plt.sensor_list_a:
+                        plt.sensor_list_a.remove(sn)
+                    else:
+                        plt.sensor_list_b.remove(sn)
+
+                    # find new axis and add
+                    i_ax_plt = int(axes[sn][0])
+                    ax_plt = self.plots[i_ax_plt]
+                    unit = sensor_master.SensorMaster.get_sensor_for_info("short_name", sn).get_unit()
+                    if axes[sn][1] == "a":
+                        if ax_plt.unit_a and unit != ax_plt.unit_a:
+                            raise ValueError(f"This axis is already occupied by unit '{ax_plt.unit_a}' !!!")
+                        ax_plt.unit_a = unit
+                        ax_plt.sensor_list_a.append(sn)
+                    else:
+                        if ax_plt.unit_b and unit != ax_plt.unit_b:
+                            raise ValueError(f"This axis is already occupied by unit '{ax_plt.unit_a}' !!!")
+                        ax_plt.unit_b = unit
+                        ax_plt.sensor_list_b.append(sn)
+
+                    ax_plt.refresh_lines()
+
+                    found = True
+                    break
+            if found:
+                break
+        if not found:
+            raise ValueError("Nothing changed?!?")
+
+    def refresh_axis_options(self):
+        pass  # TODO
 
     def callback_show_legend(self, attr, old, new) -> None:
-        self.plot.legend.location = "top_left" if new else "none"  # todo make the legend disappear
+        pass  # self.plot.legend.location = "top_left" if new else "none"  # todo make the legend disappear
 
     def callback_start_changed(self, attr, old, new) -> None:
         self.callback_date_changed(new, self.end)
@@ -129,15 +300,10 @@ class WetstatBokehApp(object):
         self.set_new_dbdata(self.data)
 
     def initialize(self) -> None:
-        self.plot = figure(
-            title='Auswertung',
-            x_axis_type="datetime",
-            x_axis_label='Zeit',
-            tools=["xpan", "xwheel_zoom", "hover", "reset", "save"]
-            # toolbar_location=None,
-        )
-        self.plot.x_range = DataRange1d(range_padding=0.0)
-        self.plot.grid.grid_line_alpha = 0.3
+
+        # self.hover_tool = HoverTool()
+        # self.hover_tool.point_policy = "follow_mouse"
+        # self.plot.add_tools(self.hover_tool)
 
         self.data = db_model.load_data_for_date_range(self.start, self.end)
         self.set_new_dbdata(self.data)
@@ -145,11 +311,11 @@ class WetstatBokehApp(object):
         for sens in sensor_master.USED_SENSORS:
             active = Toggle(label=sens.get_long_name(),
                             active=sens.get_short_name() in DEFAULT_ACTIVE_SENSORS,
-                            background=sens.get_display_color(),  # todo make button white when inactive, else colored
+                            background=sens.get_display_color(),  # todo make button white if inactive, else colored
                             width_policy="fixed",
                             width=140,
                             )
-            active.on_change("active", self.callback_sensor)
+            active.on_change("active", self.callback_sensor_active)
             interval = Select(title="",
                               value="Kein",
                               options=["Kein", "Stunde", "Tag", "Woche", "Monat", "Jahr"],
@@ -191,26 +357,13 @@ class WetstatBokehApp(object):
         self.show_legend_toggle.on_change("active", self.callback_show_legend)
         date_range_row = row(self.picker_start, self.picker_end)
 
-        # slider = Slider(start=0, end=30, value=0, step=1, title="Smoothing by N Days")
-        # slider.on_change('value', callback)
+        self.callback_sensor_active("value", 0, 0)
+        self.doc.add_root(row(column(*self.so_rows, date_range_row, self.show_legend_toggle),
+                              column(plt.plot for plt in self.plots),
+                              )
+                          )
 
-        self.callback_sensor("value", 0, 0)
-        self.hover_tool = HoverTool()
-        self.plot.add_tools(self.hover_tool)
-        self.doc.add_root(row(column(*self.so_rows, date_range_row, self.show_legend_toggle), self.plot))
-
-        # doc.theme = Theme(filename="theme.yaml")
-
-    def create_line(self, short_name) -> None:
-        if short_name in self.data.columns:
-            sens = sensor_master.SensorMaster.get_sensor_for_info("short_name", short_name)
-            ret = self.plot.line("Time", short_name, source=self.cds,
-                                 color=sens.get_display_color(),
-                                 legend=sens.get_long_name(),
-                                 )
-            self.line_renderers[short_name] = ret
-        else:
-            print(f"no data found for {short_name}!!!")
+        # self.doc.theme = Theme(filename="theme.yaml")
 
     @staticmethod
     def create(doc) -> None:
