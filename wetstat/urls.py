@@ -1,6 +1,7 @@
 # coding=utf-8
 from django.urls import path
 
+from wetstat import bokeh_view
 from wetstat.view import views, system_info_view
 
 urlpatterns = [
@@ -28,6 +29,9 @@ urlpatterns = [
 
     path("progress", views.progress),
     path("progress.html", views.progress),
+
+    path("bokeh", bokeh_view.bkapp_view),
+    path("bokeh.html", bokeh_view.bkapp_view),
 
     path("system", system_info_view.system_info),
     path("system/info.html", system_info_view.system_info),

@@ -67,7 +67,6 @@ class Patcher(object):
             fetched = self._cursor.fetchone()
             if not fetched:
                 return False
-            print(fetched)
             self._current = {col: val for col, val in zip(self._cursor.column_names, fetched)}
             return len(self._current) > 0
 
@@ -82,6 +81,7 @@ class Patcher(object):
         try:
             self.cur = db_model.conn.cursor()
             sql_at_end = not self.sql.next()
+            executed = 0
             while self.csv.next():
                 while self.sql.current["Time"] < self.csv.current["Time"] and not sql_at_end:
                     sql_at_end = not self.sql.next()
@@ -91,8 +91,15 @@ class Patcher(object):
                     self.extend_current_sql()
                 else:
                     self.insert_sql_from_csv()
+                executed += 1
+                if executed > 64:
+                    db_model.conn.commit()
+                    print("COMMIT")
+                    executed = 0
         finally:
+            db_model.conn.commit()
             self.cur.close()
+            db_model.conn.close()
 
     def extend_current_sql(self) -> None:
         to_extend = []
@@ -109,7 +116,9 @@ class Patcher(object):
             print("cannot extend ", dt)
 
     def insert_sql_from_csv(self) -> None:
-        common_cols = list(set(self.csv.current.keys()) & set(self.sql.current.keys()))
+        common_cols = tuple(set(self.csv.current.keys()) & set(self.sql.current.keys()))
+        if common_cols == ("Time",) or "Time" not in common_cols:
+            return
         cols = ", ".join(common_cols)
         values = ", ".join([db_model.to_sql_str(self.csv.current[k]) for k in common_cols])
         query = f"INSERT INTO data ({cols}) VALUES ({values});"

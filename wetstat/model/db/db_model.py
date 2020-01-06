@@ -148,13 +148,42 @@ def insert_datacontainer(container, use_threads=False, add_missing_columns=True)
             insert_daydata(dd, add_missing_columns=add_missing_columns)
 
 
-def load_data_for_date_range(start: datetime.datetime, end: datetime.datetime) -> DbData:
+def load_data_for_date_range(start: datetime.datetime, end: datetime.datetime,
+                             already_existing: Optional[DbData] = None, delete_too_much_existing=False) -> DbData:
     cur = None
     try:
+        conn.commit()
         cur = conn.cursor()
-        execute_select_range(start, end, cur)
-        db_data = fetch_to_db_data(cur)
-        return db_data
+        if already_existing is None:
+            execute_select_range(start, end, cur)
+            db_data = fetch_to_db_data(cur)
+            return db_data
+        else:
+            result_arr = already_existing.array
+            ex_time_data = already_existing.array[:, already_existing.columns.index("Time")]
+            ex_start = ex_time_data[0]
+            ex_end = ex_time_data[-1]
+            print(f"extend existing {ex_start} to {ex_end}")
+            if start < ex_start:
+                before_data = load_data_for_date_range(start, ex_start)
+                result_arr = np.concatenate((before_data.array, result_arr))
+                print(f"loaded before data {start} to {ex_start}")
+            elif ex_start < start and delete_too_much_existing:
+                i = 0
+                while ex_time_data[i] < start:
+                    i += 1
+                result_arr = result_arr[i:]
+            if end > ex_end:
+                after_data = load_data_for_date_range(ex_end, end)
+                result_arr = np.concatenate((result_arr, after_data.array))
+                print(f"loaded after data {ex_end} to {end}")
+            elif ex_end > end and delete_too_much_existing:
+                i = 1
+                while ex_time_data[-i] > end:
+                    i += 1
+                result_arr = result_arr[:-i]
+            already_existing.array = result_arr
+            return already_existing
     finally:
         if cur:
             cur.close()

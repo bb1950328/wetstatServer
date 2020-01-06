@@ -104,8 +104,19 @@ def validate_start_end(start: datetime.datetime, end: datetime.datetime) -> None
         raise ValueError("start must not be None!!!")
     elif end is None:
         raise ValueError("end must not be None!!!")
-    elif start > end:
+    if isinstance(start, datetime.date):
+        start = date_to_datetime(start)
+    if isinstance(end, datetime.date):
+        end = date_to_datetime(end)
+    if start > end:
         raise ValueError("end must be after start!!!")
+
+
+def date_to_datetime(date: datetime.date, take_max_time=False) -> datetime.datetime:
+    if isinstance(date, datetime.datetime):
+        return date  # already a datetime, nothing to do
+    min_or_max = datetime.datetime.max.time() if take_max_time else datetime.datetime.min.time()
+    return datetime.datetime.combine(date, min_or_max)
 
 
 def calculate_missing_start_end_duration(start: Optional[datetime.datetime],
