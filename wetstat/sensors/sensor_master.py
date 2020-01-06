@@ -1,5 +1,7 @@
 # coding=utf-8
 import datetime
+import json
+import socket
 import threading
 import time
 from typing import Optional, List
@@ -47,6 +49,45 @@ schedule.logger.setLevel(schedule.logging.ERROR)
 measuring_allowed = True
 measuring_allowed_lock = threading.Lock()
 
+last_row = {}
+last_row_lock = threading.Lock()
+CURRENT_VALUE_PORT = 61357
+
+
+def run_current_value_provider_server() -> None:
+    logger.log.info("Started current_value_provider_server")
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        sock.bind(("", CURRENT_VALUE_PORT))
+        sock.listen(3)
+        while True:
+            com, addr = sock.accept()
+            logger.log.info(f"current_value_provider_server accepted from {addr}")
+            data = com.recv(1024).decode()
+            if data:
+                res = "{}"
+                with last_row_lock:
+                    res = json.dumps({sname: val for sname, val in zip(SensorMaster.get_used_sensor_short_names(), last_row)})
+                com.send(res.encode())
+            com.close()
+    except Exception:
+        logger.log.exception("Exception occurred in current_value_provider_server")
+    finally:
+        sock.close()
+
+
+def get_current_values() -> dict:
+    try:
+        #sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock = socket.create_connection(("127.0.0.1", CURRENT_VALUE_PORT), 1)
+        #sock.connect(("127.0.0.1", CURRENT_VALUE_PORT))
+        sock.send("aaaa".encode())
+        #sock.settimeout(1)
+        return json.loads(sock.recv(4096).decode())
+    except ConnectionRefusedError or ConnectionError:
+        logger.log.exception("Exception in get_current_values")
+        return {}
+
 
 def stop_measuring() -> None:
     with measuring_allowed_lock:
@@ -89,6 +130,9 @@ class SensorMaster(object):
             else:
                 row.append(s.measure())
         data.append(row)
+        with last_row_lock:
+            global last_row
+            last_row = row
         if datetime.datetime.now() > stoptime:  # should stop
             return schedule.CancelJob
 
