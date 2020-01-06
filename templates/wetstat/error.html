@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Fehler</title>
-</head>
-<body>
-<a href="{{ backlink }}">Zurück</a>
-<script>
-    window.alert("{{ msg }}");
-</script>
-</body>
-</html>
+{% extends 'wetstat/base_page.html' %}
+{% block title %}Fehler{% endblock %}
+{% block content %}
+    <a href="{{ backlink }}">Zurück</a>
+    <script>
+        window.alert("{{ msg }}");
+    </script>
+{% endblock %}

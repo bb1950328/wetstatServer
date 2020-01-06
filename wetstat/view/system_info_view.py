@@ -21,14 +21,20 @@ def system_info(request) -> HttpResponse:
     infos = [{"command": (" ".join(ic.get_command())), "output": mark_safe(ic.get_output())} for ic in
              system_info_model.ALL_INFO_CLASSES]
 
-    context = {"infos": infos}
+    context = {
+        "infos": infos,
+        **views.get_base_context(""),
+    }
     return render(request, "wetstat/system/info.html", context)
 
 
 def system_services(request) -> HttpResponse:
     info = service_manager_com.get_info()
-    context = {"services": info.values() if info else None,
-               "connected": bool(info)}
+    context = {
+        "services": info.values() if info else None,
+        "connected": bool(info),
+        **views.get_base_context(""),
+    }
     return render(request, "wetstat/system/services.html", context)
 
 
@@ -47,8 +53,11 @@ def system_log(request: WSGIRequest) -> HttpResponse:
             p.msg = escape(p.msg)
             p.msg = mark_safe(p.msg.replace(config.ENDL, "<br>"))
 
-    context = {"log": parsed,
-               "levels": log_parser.LEVELS}
+    context = {
+        "log": parsed,
+        "levels": log_parser.LEVELS,
+        **views.get_base_context(""),
+    }
     return render(request, "wetstat/system/log.html", context)
 
 
@@ -59,6 +68,7 @@ def system_download(request) -> HttpResponse:
         "start_date": last_month.strftime("%Y-%m-%d"),
         "end_date": now.strftime("%Y-%m-%d"),
         "columns_available": [[sens.get_short_name(), sens.get_long_name()] for sens in sensor_master.ALL_SENSORS],
+        **views.get_base_context("")
     }
 
     return render(request, "wetstat/system/download.html", context)

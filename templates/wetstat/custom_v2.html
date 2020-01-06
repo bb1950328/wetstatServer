@@ -1,394 +1,367 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Bereich</title>
-
-    {% load static %}
-    <link rel="stylesheet" href="{% static "css/fontawesome.css" %}">
-    <link rel="stylesheet" href="{% static "css/style.css" %}">
-    <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}" crossorigin="anonymous">
-</head>
-<body>
-<script src="{% static "js/jquery-3.3.1.slim.min.js" %}" crossorigin="anonymous"></script>
-<script src="{% static "js/popper.min.js" %}" crossorigin="anonymous"></script>
-<script src="{% static "js/bootstrap.min.js" %}" crossorigin="anonymous"></script>
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
-            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav">
-            <a class="nav-item nav-link" href="/index">Home</a>
-            <a class="nav-item nav-link" href="/week">Woche</a>
-            <a class="nav-item nav-link" href="/month">Monat</a>
-            <a class="nav-item nav-link" href="/year">Jahr</a>
-            <a class="nav-item nav-link active" href="/custom_v2">Bereich</a>
-        </div>
-    </div>
-</nav>
-<main>
-    <h1>Benutzerdefinierter Bereich</h1>
-    <form id="id_customplot_form">
-        <h3>Optionen:</h3>
-        <table id="id_options_table" style="background-color:#cccccc; display: table;">
-            <tr>
-                <td class="formlabel">
-                    Start/Enddatum Typ:
-                </td>
-                <td colspan="3">
-                    <label>
-                        <select class="form-control" onchange="change_date_type()" id="id_change_date_type">
-                            <option value="fix">Fixes Start/Enddatum</option>
-                            <option value="relative">Relatives Start/Enddatum</option>
-                        </select>
-                    </label>
-                </td>
-            </tr>
-            <tr class="absolute_row">
-                <td class="formlabel">
-                    Startdatum:
-                </td>
-                <td colspan="3">
-                    <label for="id_start_date" style="display:none;"></label>
-                    <input type="datetime-local" name="start_date" value="{{ start_date }}" required=""
-                           id="id_start_date">
-                </td>
-            </tr>
-            <tr class="absolute_row">
-                <td class="formlabel">
-                    Enddatum:
-                </td>
-                <td colspan="3">
-                    <label for="id_end_date" style="display:none;"></label>
-                    <input type="datetime-local" name="end_date" value="{{ end_date }}" required="" id="id_end_date">
-                </td>
-            </tr>
-            <tr class="separator-row">
-            </tr>
-            <tr class="relative_row">
-                <td></td>
-                <td>Jahre</td>
-                <td>Tage</td>
-                <td>Stunden</td>
-            </tr>
-            <tr class="relative_row">
-                <td class="formlabel">
-                    Startdatum:
-                </td>
-                <td>
-                    <label for="id_start_years"></label>
-                    <input id="id_start_years" type="number" min="0" max="100" value="0">
-                </td>
-                <td>
-                    <label for="id_start_days"></label>
-                    <input id="id_start_days" type="number" min="0" max="365" value="1">
-                </td>
-                <td>
-                    <label for="id_start_hours"></label>
-                    <input id="id_start_hours" type="number" min="0" max="23" value="0">
-                </td>
-            </tr>
-            <tr class="relative_row">
-                <td class="formlabel">
-                    Enddatum:
-                </td>
-                <td>
-                    <label for="id_end_years"></label>
-                    <input id="id_end_years" type="number" min="0" max="100" value="0">
-                </td>
-                <td>
-                    <label for="id_end_days"></label>
-                    <input id="id_end_days" type="number" min="0" max="365" value="0">
-                </td>
-                <td>
-                    <label for="id_end_hours"></label>
-                    <input id="id_end_hours" type="number" min="0" max="23" value="0">
-                </td>
-            </tr>
-            <tr class="separator-row">
-            </tr>
-            <tr>
-                <td class="formlabel">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="id_check_title"
-                               onclick="update_disabling()">
-                        <label class="form-check-label" for="id_check_title">
-                            Anderer Titel
+{% extends 'wetstat/base_page.html' %}
+{% block title %}Bereich{% endblock %}
+{% block content %}
+    <main>
+        <h1>Benutzerdefinierter Bereich</h1>
+        <form id="id_customplot_form">
+            <h3>Optionen:</h3>
+            <table id="id_options_table" style="background-color:#cccccc; display: table;">
+                <tr>
+                    <td class="formlabel">
+                        Start/Enddatum Typ:
+                    </td>
+                    <td colspan="3">
+                        <label>
+                            <select class="form-control" onchange="change_date_type()" id="id_change_date_type">
+                                <option value="fix">Fixes Start/Enddatum</option>
+                                <option value="relative">Relatives Start/Enddatum</option>
+                            </select>
                         </label>
-                    </div>
-                </td>
-                <td colspan="3">
-                    <label for="id_input_title" style="display: none"></label>
-                    <input id="id_input_title" onchange="update_link()" onkeyup="update_link()">
-                </td>
-            </tr>
-            <tr>
-                <td class="formlabel">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="id_check_aspect"
-                               onclick="update_disabling()">
-                        <label for="id_check_aspect" class="form-check-label">
-                            Anderes Seitenverhältnis
-                        </label>
-                    </div>
-                </td>
-                <td colspan="3">
-                    <table>
-                        <tbody>
-                        <tr>
-                            <td>
-                                <label for="id_input_aspect_w"></label>
-                                <input size="4" type="number" min="1" max="1000" value="16" id="id_input_aspect_w"
-                                       onchange="update_link()"
-                                       onkeyup="update_link()">
-                            </td>
-                            <td>
-                                :
-                            </td>
-                            <td>
-                                <label for="id_input_aspect_h"></label>
-                                <input size="4" type="number" min="1" max="1000" value="9" id="id_input_aspect_h"
-                                       onchange="update_link()"
-                                       onkeyup="update_link()">
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </td>
-            </tr>
+                    </td>
+                </tr>
+                <tr class="absolute_row">
+                    <td class="formlabel">
+                        Startdatum:
+                    </td>
+                    <td colspan="3">
+                        <label for="id_start_date" style="display:none;"></label>
+                        <input type="datetime-local" name="start_date" value="{{ start_date }}" required=""
+                               id="id_start_date">
+                    </td>
+                </tr>
+                <tr class="absolute_row">
+                    <td class="formlabel">
+                        Enddatum:
+                    </td>
+                    <td colspan="3">
+                        <label for="id_end_date" style="display:none;"></label>
+                        <input type="datetime-local" name="end_date" value="{{ end_date }}" required=""
+                               id="id_end_date">
+                    </td>
+                </tr>
+                <tr class="separator-row">
+                </tr>
+                <tr class="relative_row">
+                    <td></td>
+                    <td>Jahre</td>
+                    <td>Tage</td>
+                    <td>Stunden</td>
+                </tr>
+                <tr class="relative_row">
+                    <td class="formlabel">
+                        Startdatum:
+                    </td>
+                    <td>
+                        <label for="id_start_years"></label>
+                        <input id="id_start_years" type="number" min="0" max="100" value="0">
+                    </td>
+                    <td>
+                        <label for="id_start_days"></label>
+                        <input id="id_start_days" type="number" min="0" max="365" value="1">
+                    </td>
+                    <td>
+                        <label for="id_start_hours"></label>
+                        <input id="id_start_hours" type="number" min="0" max="23" value="0">
+                    </td>
+                </tr>
+                <tr class="relative_row">
+                    <td class="formlabel">
+                        Enddatum:
+                    </td>
+                    <td>
+                        <label for="id_end_years"></label>
+                        <input id="id_end_years" type="number" min="0" max="100" value="0">
+                    </td>
+                    <td>
+                        <label for="id_end_days"></label>
+                        <input id="id_end_days" type="number" min="0" max="365" value="0">
+                    </td>
+                    <td>
+                        <label for="id_end_hours"></label>
+                        <input id="id_end_hours" type="number" min="0" max="23" value="0">
+                    </td>
+                </tr>
+                <tr class="separator-row">
+                </tr>
+                <tr>
+                    <td class="formlabel">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="id_check_title"
+                                   onclick="update_disabling()">
+                            <label class="form-check-label" for="id_check_title">
+                                Anderer Titel
+                            </label>
+                        </div>
+                    </td>
+                    <td colspan="3">
+                        <label for="id_input_title" style="display: none"></label>
+                        <input id="id_input_title" onchange="update_link()" onkeyup="update_link()">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="formlabel">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="id_check_aspect"
+                                   onclick="update_disabling()">
+                            <label for="id_check_aspect" class="form-check-label">
+                                Anderes Seitenverhältnis
+                            </label>
+                        </div>
+                    </td>
+                    <td colspan="3">
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    <label for="id_input_aspect_w"></label>
+                                    <input size="4" type="number" min="1" max="1000" value="16" id="id_input_aspect_w"
+                                           onchange="update_link()"
+                                           onkeyup="update_link()">
+                                </td>
+                                <td>
+                                    :
+                                </td>
+                                <td>
+                                    <label for="id_input_aspect_h"></label>
+                                    <input size="4" type="number" min="1" max="1000" value="9" id="id_input_aspect_h"
+                                           onchange="update_link()"
+                                           onkeyup="update_link()">
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
 
-        </table>
-        <br>
-        <h3>Sensoren:</h3>
-        <table id="id_sensor_table" class="table-bordered">
-            <thead>
-            <tr style="background-color: #cccccc; border-top-color: #000; border-top: 5px;">
-                <th></th>
-                <th>Sensor</th>
-                <th>Y-Achse</th>
-                <th>Intervall</th>
-                <th>Farbe</th>
-            </tr>
-            </thead>
-            <tbody id="id_sensor_table_body">
+            </table>
+            <br>
+            <h3>Sensoren:</h3>
+            <table id="id_sensor_table" class="table-bordered">
+                <thead>
+                <tr style="background-color: #cccccc; border-top-color: #000; border-top: 5px;">
+                    <th id="th_x"></th>
+                    <th id="th_sensor">Sensor</th>
+                    <th id="th_yaxis">Y-Achse</th>
+                    <th id="th_interval">Intervall</th>
+                    <th id="th_color">Farbe</th>
+                </tr>
+                </thead>
+                <tbody id="id_sensor_table_body">
 
-            </tbody>
-        </table>
-        <button class="btn btn-primary" type="button" id="id_add_sensor_button" onclick="add_sensor()">Hinzufügen
-        </button>
-        <button class="btn btn-danger" type="button" id="id_remove_sensor_button" onclick="remove_selected_sensors()">
-            Entfernen
-        </button>
-    </form>
-    <h3>Resultat:</h3>
-    Link zum Graph:
-    <label id="id_label_auto_update_link">
-        <input type="checkbox" id="id_check_auto_update_link" onchange="real_update_link()" checked>
-        Link automatisch aktualisieren
-    </label>
-    <a id="id_result_link"></a>
-</main>
-<script>
-    let available_sensors_short_name = {{ short_names }};
-    let available_sensors_long_name = {{ long_names }};
+                </tbody>
+            </table>
+            <button class="btn btn-primary" type="button" id="id_add_sensor_button" onclick="add_sensor()">Hinzufügen
+            </button>
+            <button class="btn btn-danger" type="button" id="id_remove_sensor_button"
+                    onclick="remove_selected_sensors()">
+                Entfernen
+            </button>
+        </form>
+        <h3>Resultat:</h3>
+        Link zum Graph:
+        <label id="id_label_auto_update_link">
+            <input type="checkbox" id="id_check_auto_update_link" onchange="real_update_link()" checked>
+            Link automatisch aktualisieren
+        </label>
+        <a id="id_result_link"></a>
+    </main>
+    <script>
+        let available_sensors_short_name = {{ short_names }};
+        let available_sensors_long_name = {{ long_names }};
 
-    function build_sensor_link() {
-        let tbody = document.getElementById("id_sensor_table_body");
-        let link = "";
-        let rows = tbody.getElementsByTagName("tr");//document.getElementsByClassName("sensor_row");
-        for (let i = 0; i < rows.length; i++) {
-            let row = rows[i];
-            let tds = row.getElementsByTagName("td");
-            let check = (tds[0].getElementsByTagName("input"))[0];
-            console.log(check.checked);
-            let select = (tds[1].getElementsByTagName("select"))[0];
-            let short_name = select.options[select.selectedIndex].value;
-            let input = (tds[2].getElementsByTagName("input"))[0];
-            let axis = input.value;
-            if (axis === "") {
-                axis = "auto";
+        function build_sensor_link() {
+            let tbody = document.getElementById("id_sensor_table_body");
+            let link = "";
+            let rows = tbody.getElementsByTagName("tr");//document.getElementsByClassName("sensor_row");
+            for (let i = 0; i < rows.length; i++) {
+                let row = rows[i];
+                let tds = row.getElementsByTagName("td");
+                let check = (tds[0].getElementsByTagName("input"))[0];
+                console.log(check.checked);
+                let select = (tds[1].getElementsByTagName("select"))[0];
+                let short_name = select.options[select.selectedIndex].value;
+                let input = (tds[2].getElementsByTagName("input"))[0];
+                let axis = input.value;
+                if (axis === "") {
+                    axis = "auto";
+                }
+                select = (tds[3].getElementsByTagName("select"))[0];
+                let interval = select.options[select.selectedIndex].value;
+                input = (tds[4].getElementsByTagName("input"))[0];
+                let color = input.value;
+                if (color === "#ffffff") {
+                    color = "auto";
+                } else {
+                    color.replace("#", "_35"); // because # is special char in GET URL
+                }
+                link += "&line=";
+                link += short_name;
+                link += ",";
+                link += axis;
+                link += ",";
+                link += interval;
+                link += ",";
+                link += color;
+                console.log(short_name, axis, interval, color);
             }
-            select = (tds[3].getElementsByTagName("select"))[0];
-            let interval = select.options[select.selectedIndex].value;
-            input = (tds[4].getElementsByTagName("input"))[0];
-            let color = input.value;
-            if (color === "#ffffff") {
-                color = "auto";
+            return link;
+        }
+
+        function remove_selected_sensors() {
+            let tbody = document.getElementById("id_sensor_table_body");
+
+            let rows = tbody.getElementsByTagName("tr");//document.getElementsByClassName("sensor_row");
+            for (let i = 0; i < rows.length; i++) {
+                let row = rows[i];
+                let tds = row.getElementsByTagName("td");
+                let check = (tds[0].getElementsByTagName("input"))[0];
+                console.log(check.checked);
+                if (check.checked) {
+                    row.parentNode.removeChild(row);
+                    update_link();
+                    remove_selected_sensors(); //restart for loop because rows changed
+                    return;
+                }
+            }
+        }
+
+        function add_sensor() {
+            let st = document.getElementById("id_sensor_table_body");
+            let row = st.insertRow(-1);
+            row.class = "sensor_row";
+
+            let cell = row.insertCell(-1);
+            let checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.class = "sensor_checkbox";
+            cell.appendChild(checkbox);
+
+            cell = row.insertCell(-1);
+            let combobox = document.createElement("select");
+            combobox.classList.add("form-control");
+            combobox.onchange = update_link;
+            for (let i in available_sensors_short_name) {
+                let opt = document.createElement("option");
+                opt.value = available_sensors_short_name[i];
+                opt.innerHTML = available_sensors_long_name[i];
+                combobox.appendChild(opt);
+            }
+            cell.appendChild(combobox);
+
+            cell = row.insertCell(-1);
+            let entry = document.createElement("input");
+            entry.maxLength = 4;
+            entry.size = 4;
+            entry.onchange = update_link;
+            cell.appendChild(entry);
+
+            cell = row.insertCell(-1);
+            combobox = document.createElement("select");
+            combobox.classList.add("form-control");
+            let interval_display = ["Kein", "Stunde", "Tag", "Woche", "Monat", "Jahr"];
+            let interval_value = ["none", "hour", "day", "week", "month", "year"];
+            for (let i in interval_value) {
+                let opt = document.createElement("option");
+                opt.value = interval_value[i];
+                opt.innerHTML = interval_display[i];
+                combobox.appendChild(opt);
+            }
+            combobox.onchange = update_link;
+            cell.appendChild(combobox);
+
+            cell = row.insertCell(-1);
+            entry = document.createElement("input");
+            entry.type = "color";
+            entry.value = "#ffffff";
+            entry.size = 4;
+            entry.onchange = update_link;
+            cell.appendChild(entry);
+            update_link();
+        }
+
+        function change_date_type() {
+            let abs_rows = document.getElementsByClassName("absolute_row");
+            let rel_rows = document.getElementsByClassName("relative_row");
+
+            let date_type_sel = document.getElementById("id_change_date_type");
+            let disabled = date_type_sel.selectedIndex === 1;
+            for (let i = 0; i < abs_rows.length; i++) {
+                let abs_inputs = abs_rows[i].getElementsByTagName("input");
+                for (let k = 0; k < abs_inputs.length; k++) {
+                    abs_inputs[k].disabled = disabled;
+                }
+            }
+            for (let i = 0; i < rel_rows.length; i++) {
+                let rel_inputs = rel_rows[i].getElementsByTagName("input");
+                for (let k = 0; k < rel_inputs.length; k++) {
+                    rel_inputs[k].disabled = !disabled;
+                }
+            }
+            update_link();
+        }
+
+        function real_update_link() {
+            let date_type_sel = document.getElementById("id_change_date_type");
+            let start, end;
+            if (date_type_sel.selectedIndex === 0) {
+                start = document.getElementById("id_start_date").value;
+                end = document.getElementById("id_end_date").value;
             } else {
-                color.replace("#", "_35"); // because # is special char in GET URL
+                start = document.getElementById("id_start_hours").valueAsNumber * 3600; // 3600 seconds = 1 hour
+                start += document.getElementById("id_start_days").valueAsNumber * 3600 * 24;
+                start += document.getElementById("id_start_years").valueAsNumber * 3600 * 24 * 365;
+                start = "now-" + start;
+                end = document.getElementById("id_end_hours").valueAsNumber * 3600;
+                end += document.getElementById("id_end_days").valueAsNumber * 3600 * 24;
+                end += document.getElementById("id_end_years").valueAsNumber * 3600 * 24 * 365;
+                end = "now-" + end
             }
-            link += "&line=";
-            link += short_name;
-            link += ",";
-            link += axis;
-            link += ",";
-            link += interval;
-            link += ",";
-            link += color;
-            console.log(short_name, axis, interval, color);
-        }
-        return link;
-    }
 
-    function remove_selected_sensors() {
-        let tbody = document.getElementById("id_sensor_table_body");
+            let link = "/generate_plot";
+            link += "?start=" + start;
+            link += "&end=" + end;
 
-        let rows = tbody.getElementsByTagName("tr");//document.getElementsByClassName("sensor_row");
-        for (let i = 0; i < rows.length; i++) {
-            let row = rows[i];
-            let tds = row.getElementsByTagName("td");
-            let check = (tds[0].getElementsByTagName("input"))[0];
-            console.log(check.checked);
-            if (check.checked) {
-                row.parentNode.removeChild(row);
-                update_link();
-                remove_selected_sensors(); //restart for loop because rows changed
-                return;
+            link += build_sensor_link();
+
+            let inp_title = document.getElementById("id_input_title");
+            if (!inp_title.disabled) {
+                link += "&title=" + inp_title.value
             }
-        }
-    }
 
-    function add_sensor() {
-        let st = document.getElementById("id_sensor_table_body");
-        let row = st.insertRow(-1);
-        row.class = "sensor_row";
-
-        let cell = row.insertCell(-1);
-        let checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.class = "sensor_checkbox";
-        cell.appendChild(checkbox);
-
-        cell = row.insertCell(-1);
-        let combobox = document.createElement("select");
-        combobox.classList.add("form-control");
-        combobox.onchange = update_link;
-        for (let i in available_sensors_short_name) {
-            let opt = document.createElement("option");
-            opt.value = available_sensors_short_name[i];
-            opt.innerHTML = available_sensors_long_name[i];
-            combobox.appendChild(opt);
-        }
-        cell.appendChild(combobox);
-
-        cell = row.insertCell(-1);
-        let entry = document.createElement("input");
-        entry.maxLength = 4;
-        entry.size = 4;
-        entry.onchange = update_link;
-        cell.appendChild(entry);
-
-        cell = row.insertCell(-1);
-        combobox = document.createElement("select");
-        combobox.classList.add("form-control");
-        let interval_display = ["Kein", "Stunde", "Tag", "Woche", "Monat", "Jahr"];
-        let interval_value = ["none", "hour", "day", "week", "month", "year"];
-        for (let i in interval_value) {
-            let opt = document.createElement("option");
-            opt.value = interval_value[i];
-            opt.innerHTML = interval_display[i];
-            combobox.appendChild(opt);
-        }
-        combobox.onchange = update_link;
-        cell.appendChild(combobox);
-
-        cell = row.insertCell(-1);
-        entry = document.createElement("input");
-        entry.type = "color";
-        entry.value = "#ffffff";
-        entry.size = 4;
-        entry.onchange = update_link;
-        cell.appendChild(entry);
-        update_link();
-    }
-
-    function change_date_type() {
-        let abs_rows = document.getElementsByClassName("absolute_row");
-        let rel_rows = document.getElementsByClassName("relative_row");
-
-        let date_type_sel = document.getElementById("id_change_date_type");
-        let disabled = date_type_sel.selectedIndex === 1;
-        for (let i = 0; i < abs_rows.length; i++) {
-            let abs_inputs = abs_rows[i].getElementsByTagName("input");
-            for (let k = 0; k < abs_inputs.length; k++) {
-                abs_inputs[k].disabled = disabled;
+            let input_aspect_w = document.getElementById("id_input_aspect_w");
+            if (!input_aspect_w.disabled) {
+                let input_aspect_h = document.getElementById("id_input_aspect_h");
+                link += "&aspect_ratio=" + input_aspect_w.value + ":" + input_aspect_h.value;
             }
+
+            let a = document.getElementById("id_result_link");
+            a.href = link;
+            a.innerText = a.href; // reading from 'a.href' because that's a absolute link now, 'link' is only relative
         }
-        for (let i = 0; i < rel_rows.length; i++) {
-            let rel_inputs = rel_rows[i].getElementsByTagName("input");
-            for (let k = 0; k < rel_inputs.length; k++) {
-                rel_inputs[k].disabled = !disabled;
+
+        function update_link() {
+            let auto_update = document.getElementById("id_check_auto_update_link");
+            if (auto_update.checked) {
+                real_update_link();
             }
-        }
-        update_link();
-    }
 
-    function real_update_link() {
-        let date_type_sel = document.getElementById("id_change_date_type");
-        let start, end;
-        if (date_type_sel.selectedIndex === 0) {
-            start = document.getElementById("id_start_date").value;
-            end = document.getElementById("id_end_date").value;
-        } else {
-            start = document.getElementById("id_start_hours").valueAsNumber * 3600; // 3600 seconds = 1 hour
-            start += document.getElementById("id_start_days").valueAsNumber * 3600 * 24;
-            start += document.getElementById("id_start_years").valueAsNumber * 3600 * 24 * 365;
-            start = "now-" + start;
-            end = document.getElementById("id_end_hours").valueAsNumber * 3600;
-            end += document.getElementById("id_end_days").valueAsNumber * 3600 * 24;
-            end += document.getElementById("id_end_years").valueAsNumber * 3600 * 24 * 365;
-            end = "now-" + end
         }
 
-        let link = "/generate_plot";
-        link += "?start=" + start;
-        link += "&end=" + end;
+        function update_disabling() {
+            let check_title = document.getElementById("id_check_title");
+            let input_title = document.getElementById("id_input_title");
+            input_title.disabled = !check_title.checked;
+            let check_aspect = document.getElementById("id_check_aspect");
 
-        link += build_sensor_link();
-
-        let inp_title = document.getElementById("id_input_title");
-        if (!inp_title.disabled) {
-            link += "&title=" + inp_title.value
-        }
-
-        let input_aspect_w = document.getElementById("id_input_aspect_w");
-        if (!input_aspect_w.disabled) {
+            let input_aspect_w = document.getElementById("id_input_aspect_w");
             let input_aspect_h = document.getElementById("id_input_aspect_h");
-            link += "&aspect_ratio=" + input_aspect_w.value + ":" + input_aspect_h.value;
+            input_aspect_w.disabled = !check_aspect.checked;
+            input_aspect_h.disabled = !check_aspect.checked;
+            update_link();
         }
 
-        let a = document.getElementById("id_result_link");
-        a.href = link;
-        a.innerText = a.href; // reading from 'a.href' because that's a absolute link now, 'link' is only relative
-    }
-
-    function update_link() {
-        let auto_update = document.getElementById("id_check_auto_update_link");
-        if (auto_update.checked) {
-            real_update_link();
-        }
-
-    }
-
-    function update_disabling() {
-        let check_title = document.getElementById("id_check_title");
-        let input_title = document.getElementById("id_input_title");
-        input_title.disabled = !check_title.checked;
-        let check_aspect = document.getElementById("id_check_aspect");
-
-        let input_aspect_w = document.getElementById("id_input_aspect_w");
-        let input_aspect_h = document.getElementById("id_input_aspect_h");
-        input_aspect_w.disabled = !check_aspect.checked;
-        input_aspect_h.disabled = !check_aspect.checked;
-        update_link();
-    }
-
-    change_date_type();
-    update_disabling();
-    real_update_link();
-</script>
-</body>
-</html>
+        change_date_type();
+        update_disabling();
+        real_update_link();
+    </script>
+{% endblock %}

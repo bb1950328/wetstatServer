@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Index</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Wetterstation{% endblock %}</title>
 </head>
 <body>
 {% load static %}
@@ -12,7 +13,6 @@
 <script src="{% static "js/jquery-3.3.1.slim.min.js" %}" crossorigin="anonymous"></script>
 <script src="{% static "js/popper.min.js" %}" crossorigin="anonymous"></script>
 <script src="{% static "js/bootstrap.min.js" %}" crossorigin="anonymous"></script>
-
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
             aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,25 +20,29 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav">
-            <a class="nav-item nav-link" href="/index">Home</a>
-            <a class="nav-item nav-link" href="/week">Woche</a>
-            <a class="nav-item nav-link active" href="/month">Monat</a>
-            <a class="nav-item nav-link" href="/year">Jahr</a>
-            <a class="nav-item nav-link" href="/custom_v2">Bereich</a>
+            <a id="nav_index" class="nav-item nav-link" href="/index">Aktuell</a>
+            <a id="nav_week" class="nav-item nav-link" href="/week">Woche</a>
+            <a id="nav_month" class="nav-item nav-link" href="/month">Monat</a>
+            <a id="nav_year" class="nav-item nav-link" href="/year">Jahr</a>
+            <a id="nav_custom_v2" class="nav-item nav-link" href="/custom_v2">Bereich</a>
+            <a id="nav_bokeh" class="nav-item nav-link" href="/bokeh">Auswertung</a>
         </div>
     </div>
 </nav>
-<h1>Letzte 28 Tage</h1>
-<img src="{% static plotfile %}" alt="plot">
-<script>
-    function topnavResponsive() {
-        let x = document.getElementById("myTopnav");
-        if (x.className === "topnav") {
-            x.className += " responsive";
-        } else {
-            x.className = "topnav";
+<main>
+    <script>
+        let elems = document.getElementsByClassName("nav-link");
+        for (let ei = 0; ei < elems.length; ei++) {
+            let e = elems[ei];
+            if (e.id === "nav_{{ active_nav_id }}") {
+                e.classList.add("active");
+                break;
+            }
         }
-    }
-</script>
+    </script>
+    {% block content %}
+        Wetstat
+    {% endblock %}
+</main>
 </body>
 </html>

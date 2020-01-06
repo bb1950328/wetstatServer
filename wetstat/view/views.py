@@ -2,7 +2,7 @@
 import datetime
 import os
 import time
-from typing import Dict, Union, Tuple
+from typing import Dict, Union, Tuple, Any
 
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -95,8 +95,11 @@ def index(request) -> HttpResponse:
                 "color": sensor.get_display_color(),
             }
         )
-    context = {"sensors": {"array": sarr},
-               "record_dates": f"{ts_0}, {ts_1}, {ts_30}, {ts_365}"}
+    context = {
+        "sensors": {"array": sarr},
+        "record_dates": f"{ts_0}, {ts_1}, {ts_30}, {ts_365}",
+        **get_base_context("index"),
+    }
     return render(request, "wetstat/index.html", context)
 
 
@@ -152,13 +155,16 @@ def render_generated_plot(request, cp: CustomPlot, name: str) -> HttpResponse:
     cp.message_container = message_container
     filename = f"{name}_plot{plot_id}.svg"
     path = os.path.join(config.get_staticfolder(), "plot", filename)
-    context = {"plotfile": "/plot/" + filename,
-               "plot_id": plot_id,
-               "active_week": "",
-               "active_month": "",
-               "active_year": "",
-               "active_custom": "",
-               f"active_{name}": " active"}
+    context = {
+        "plotfile": "/plot/" + filename,
+        "plot_id": plot_id,
+        "active_week": "",
+        "active_month": "",
+        "active_year": "",
+        "active_custom": "",
+        f"active_{name}": " active",
+        **get_base_context(name),
+    }
     cp.filename = path
     cp.set_legend_mode(1)  # separate file
     thread = GeneratePlotThread(cp)
@@ -190,13 +196,17 @@ def custom_v2(request):
         "end_date": isoformat_no_seconds(get_date()),
         "short_names": mark_safe(short_names),
         "long_names": mark_safe(long_names),
+        **get_base_context("custom_v2"),
     }
     return render(request, "wetstat/custom_v2.html", context=context)
 
 
 def show_error(request, message: str, backlink: str):
-    context = {"msg": message,
-               "backlink": backlink}
+    context = {
+        "msg": message,
+        "backlink": backlink,
+        **get_base_context(""),
+    }
     return render(request, "wetstat/error.html", context=context)
 
 
@@ -232,3 +242,9 @@ def progress(request):
     msgs.insert(1, f"%%ppx={round(ppx, 3)}%%")
     context = {"content": "Wrong plot id!!!" if msgs is None else "\n".join(msgs)}
     return render(request, "wetstat/dummy.html", context)
+
+
+def get_base_context(active_nav_id: str) -> Dict[str, Any]:
+    return {
+        "active_nav_id": active_nav_id
+    }

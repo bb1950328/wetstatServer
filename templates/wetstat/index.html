@@ -1,80 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Index</title>
-</head>
-<body>
-{% load static %}
-<link rel="stylesheet" href="{% static "css/fontawesome.css" %}">
-<link rel="stylesheet" href="{% static "css/style.css" %}">
-<link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}" crossorigin="anonymous">
-<script src="{% static "js/jquery-3.3.1.slim.min.js" %}" crossorigin="anonymous"></script>
-<script src="{% static "js/popper.min.js" %}" crossorigin="anonymous"></script>
-<script src="{% static "js/bootstrap.min.js" %}" crossorigin="anonymous"></script>
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
-            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav">
-            <a class="nav-item nav-link active" href="/index">Home</a>
-            <a class="nav-item nav-link" href="/week">Woche</a>
-            <a class="nav-item nav-link" href="/month">Monat</a>
-            <a class="nav-item nav-link" href="/year">Jahr</a>
-            <a class="nav-item nav-link" href="/custom_v2">Bereich</a>
+{% extends 'wetstat/base_page.html' %}
+{% block title %}Aktuell{% endblock %}
+{% block content %}
+    <h1>Aktuelle Daten</h1>
+    {% for sensor in sensors.array %}
+        <div class="sensor" style="background-color: {{ sensor.color }}">
+            <p class="sensorname">{{ sensor.name }}</p>
+            {% load static %}
+            <img src="{% static 'img/' %}{{ sensor.img }}" alt="trend icon" width="40" height="40" class="trendimg">
+            <span class="sensorvalue">{{ sensor.value }} {{ sensor.unit }}</span>
+            <p class="before">Vor 1 Monat: {{ sensor.before_month }} {{ sensor.unit }}</p>
+            <p class="before">Vor 1 Jahr: {{ sensor.before_year }} {{ sensor.unit }}</p>
         </div>
-    </div>
-</nav>
-<h1>Home</h1>
-{% for sensor in sensors.array %}
-    <div class="sensor" style="background-color: {{ sensor.color }}">
-        <p class="sensorname">{{ sensor.name }}</p>
-        <img src="{% static 'img/' %}{{ sensor.img }}" alt="trend icon" width="40" height="40" class="trendimg">
-        <span class="sensorvalue">{{ sensor.value }} {{ sensor.unit }}</span>
-        <p class="before">Vor 1 Monat: {{ sensor.before_month }} {{ sensor.unit }}</p>
-        <p class="before">Vor 1 Jahr: {{ sensor.before_year }} {{ sensor.unit }}</p>
-    </div>
-{% endfor %}
-<p>Daten von: {{ record_dates }}</p>
-<script>
-    let MIN_WIDTH = 280;
-    function topnavResponsive() {
-        let x = document.getElementById("myTopnav");
-        if (x.className === "topnav") {
-            x.className += " responsive";
-        } else {
-            x.className = "topnav";
-        }
-    }
+    {% endfor %}
+    <p>Daten von: {{ record_dates }}</p>
+    <script>
+        let MIN_WIDTH = 280;
 
-    function resizedWindow() {
-        let allDivs = document.getElementsByClassName("sensor");
-        let allTitles = document.getElementsByClassName("sensorname");
-        let allImgs = document.getElementsByClassName("trendimg");
-        let allValues = document.getElementsByClassName("sensorvalue");
-        let allBefores = document.getElementsByClassName("before");
-        let width = window.innerWidth / 3.33;
-        if (width < MIN_WIDTH) {
-            width = MIN_WIDTH
+        function topnavResponsive() {
+            let x = document.getElementById("myTopnav");
+            if (x.className === "topnav") {
+                x.className += " responsive";
+            } else {
+                x.className = "topnav";
+            }
         }
-        for (let i = 0; i < allDivs.length; i++) {
-            allDivs[i].style.width = width + "px";
-            allDivs[i].style.height = width * 3 / 5 + "px";
-            allTitles[i].style.fontSize = (width / 12) + "px";
-            allImgs[i].style.width = (width / 8) + "px";
-            allImgs[i].style.height = (width / 8) + "px";
-            allValues[i].style.fontSize = (width / 8) + "px";
-        }
-        for (let i = 0; i < allBefores.length; i++) { // need own foreach because they are more
-            allBefores[i].style.fontSize = (width / 20) + "px";
-        }
-    }
 
-    window.addEventListener('resize', resizedWindow);
-    resizedWindow()
-</script>
-</body>
-</html>
+        function resizedWindow() {
+            let allDivs = document.getElementsByClassName("sensor");
+            let allTitles = document.getElementsByClassName("sensorname");
+            let allImgs = document.getElementsByClassName("trendimg");
+            let allValues = document.getElementsByClassName("sensorvalue");
+            let allBefores = document.getElementsByClassName("before");
+            let width = window.innerWidth / 3.33;
+            if (width < MIN_WIDTH) {
+                width = MIN_WIDTH
+            }
+            for (let i = 0; i < allDivs.length; i++) {
+                allDivs[i].style.width = width + "px";
+                allDivs[i].style.height = width * 3 / 5 + "px";
+                allTitles[i].style.fontSize = (width / 12) + "px";
+                allImgs[i].style.width = (width / 8) + "px";
+                allImgs[i].style.height = (width / 8) + "px";
+                allValues[i].style.fontSize = (width / 8) + "px";
+            }
+            for (let i = 0; i < allBefores.length; i++) { // need own foreach because they are more
+                allBefores[i].style.fontSize = (width / 20) + "px";
+            }
+        }
+
+        window.addEventListener('resize', resizedWindow);
+        resizedWindow()
+    </script>
+{% endblock %}
