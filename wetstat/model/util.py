@@ -2,7 +2,9 @@
 import datetime
 import re
 import time
-from typing import Union, Optional
+from typing import Union, Optional, List
+
+import psutil
 
 
 def human_readable_size(size_bytes: Union[int, float], round_digits: int = 3, unit: str = "B") -> str:
@@ -131,3 +133,16 @@ def calculate_missing_start_end_duration(start: Optional[datetime.datetime],
     else:
         raise ValueError("At least two of the three parameters must not be None!!")
     return start, end, duration
+
+
+def get_parent_process_names() -> List[str]:
+    proc = psutil.Process()
+    names = []
+    while proc:
+        names.append(proc.name())
+        proc = proc.parent()
+    return names
+
+
+def is_apache_process() -> bool:
+    return "apache2" in get_parent_process_names()
