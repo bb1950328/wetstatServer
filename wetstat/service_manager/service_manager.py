@@ -140,6 +140,7 @@ if __name__ == '__main__':
     manager.update_service("log_cleanup", service.LogCleanupService())
     manager.update_service("shutdown_button", service.ShutdownButtonService())
     manager.update_service("current_value_provider", service.CurrentValueProviderService())
+    manager.update_service("bokeh_server", service.BokehServerService())
 
     if config.on_pi():
         manager.start_service("apache")
@@ -149,6 +150,7 @@ if __name__ == '__main__':
     manager.start_service("log_cleanup")
     manager.start_service("shutdown_button")
     manager.start_service("current_value_provider")
+    manager.start_service("bokeh_server")
 
     manager.watchdog()
     try:

@@ -23,16 +23,17 @@ from wetstat.view import views
 ALL_SHORT_NAMES = sensor_master.SensorMaster.get_used_sensor_short_names()
 
 URL = "/wetstat_bokeh"
+PORT = 5006
 DEFAULT_ACTIVE_SENSORS = ["DigitalTemp", "Humidity"]
 
 
 def bkapp_view(request: WSGIRequest) -> HttpResponse:
-    with pull_session(url=f"http://localhost:5006{URL}") as session:
+    with pull_session(url=f"http://localhost:{PORT}{URL}") as session:
         # update or customize that session
         session.document.roots[0].children[1].title.text = "Special Sliders For A Specific User!"
 
         # generate a script to load the customized session
-        script = server_session(session_id=session.id, url=f'http://localhost:5006{URL}')
+        script = server_session(session_id=session.id, url=f'http://localhost:{PORT}{URL}')
 
         # use the script in the rendered page
         context = {
@@ -67,7 +68,7 @@ class WetstatPlot(object):
 
     @property
     def unit_b(self) -> str:
-        return self._unit_a
+        return self._unit_b
 
     @unit_b.setter
     def unit_b(self, new) -> None:
@@ -86,15 +87,9 @@ class WetstatPlot(object):
         return self._sensor_list_b
 
     def refresh_lines(self) -> None:
-        in_list = set(
-            *self.sensor_list_a,
-            *self.sensor_list_b,
-        )
-        in_renderer = set(
-            *self._renderers_a.keys(),
-            *self._renderers_b.keys(),
-        )
-        all_sensors = set(*in_list, *in_renderer)
+        in_list = {*self.sensor_list_a, *self.sensor_list_b}
+        in_renderer = {*self._renderers_a.keys(), *self._renderers_b.keys()}
+        all_sensors = {*in_list, *in_renderer}
         for sn in all_sensors:
             if sn not in in_list:
                 if sn in self._renderers_a.keys():
@@ -102,14 +97,35 @@ class WetstatPlot(object):
                 elif sn in self._renderers_b.keys():
                     self._renderers_b[sn].visible = False
             else:
-                if sn not in in_renderer:
+                moved = False
+                if sn in self.sensor_list_a and sn in self._renderers_b:
+                    self._renderers_b[sn].visible = False
+                    if sn in self._renderers_a:
+                        self._renderers_a[sn].visible = True
+                    else:
+                        moved = True
+                if sn in self.sensor_list_b and sn in self._renderers_a:
+                    self._renderers_a[sn].visible = False
+                    if sn in self._renderers_b:
+                        self._renderers_b[sn].visible = True
+                    else:
+                        moved = True
+
+                if sn not in in_renderer or moved:
                     if sn in self.app.data.columns:
                         rlist = self._renderers_a if sn in self.sensor_list_a else self._renderers_b
                         sens = sensor_master.SensorMaster.get_sensor_for_info("short_name", sn)
+                        is_a = rlist == self._renderers_a
                         rlist[sn] = self.plot.line("Time", sn, source=self.app.cds,
                                                    color=sens.get_display_color(),
                                                    # legend_label=sens.get_long_name(),
+                                                   y_range_name="default" if is_a else "b",
                                                    )
+                        if is_a:
+                            self.unit_a = sens.get_unit()
+                        else:
+                            self.unit_b = sens.get_unit()
+
 
                     else:
                         print(f"no data found for {sn}!!!")
@@ -117,13 +133,10 @@ class WetstatPlot(object):
                     if sn in self.sensor_list_a:
                         if sn in self._renderers_a:
                             self._renderers_a[sn].visible = True
-                        else:  # moved from b to a
-                            self._renderers_b[sn].y_range_name = "a"
                     else:
                         if sn in self._renderers_b:
                             self._renderers_b[sn].visible = True
-                        else:  # moved from a to b
-                            self._renderers_b[sn].y_range_name = "b"
+        # TODO rescale axes a and b to visible glyphs
 
     @staticmethod
     def _generate_axis_label(unit: str) -> str:
@@ -133,15 +146,8 @@ class WetstatPlot(object):
             return f"[{unit}]"
 
     def _add_2nd_y_axis(self) -> None:
-        if self.y_axis_2 is None:
-            self.plot.extra_y_ranges = {
-                "b": DataRange1d(range_padding=0),
-            }
-            self.y_axis_2 = LinearAxis(y_range_name="b", axis_label=self._generate_axis_label(self.unit_b))
-            self.plot.add_layout(self.y_axis_2, "right")
-        else:
-            self.y_axis_2.visible = True
-            self.y_axis_2.axis_label = self._generate_axis_label(self.unit_a)
+        self.y_axis_2.visible = True
+        self.y_axis_2.axis_label = self._generate_axis_label(self._unit_b)
 
     def _remove_2nd_axis(self) -> None:
         if self.y_axis_2 is not None:
@@ -151,11 +157,18 @@ class WetstatPlot(object):
         self.plot = figure(
             x_axis_type="datetime",
             x_axis_label='Zeit',
-            y_range_name="a",
             tools=["xpan", "xwheel_zoom", "hover", "crosshair", "reset", "save"]
         )
+        self.plot.y_range.name = "a"
         self.plot.x_range = DataRange1d(range_padding=0.0)
         self.plot.grid.grid_line_alpha = 0.3
+
+        self.plot.extra_y_ranges = {
+            "b": DataRange1d(range_padding=0),
+        }
+        self.y_axis_2 = LinearAxis(y_range_name="b", axis_label=self._generate_axis_label(self.unit_b))
+        self.plot.add_layout(self.y_axis_2, "right")
+        self.y_axis_2.visible = False
 
 
 class WetstatBokehApp(object):
@@ -177,6 +190,7 @@ class WetstatBokehApp(object):
         self.picker_end = None
         self.show_legend_toggle = None
         self.hover_tool = None
+        self.plot_column = None
 
     def set_new_dbdata(self, db_data: db_model.DbData) -> None:
         time_col = db_data.array[:, db_data.columns.index("Time")]
@@ -202,12 +216,12 @@ class WetstatBokehApp(object):
         print("Callback sensor")
         tooltips = []
         for sn in ALL_SHORT_NAMES:
-            act = self.so_widgets[sn]["active"]
-            axi = self.so_widgets[sn]["axis"]
+            act = self.so_widgets[sn]["active"].active
+            axi = self.so_widgets[sn]["y_axis"].value
             sens = sensor_master.SensorMaster.get_sensor_for_info("short_name", sn)
             unit = sens.get_unit()
 
-            i_plt = int(axi[0])
+            i_plt = int(axi[0]) - 1
             slist = self.plots[i_plt].sensor_list_a
             other_list = self.plots[i_plt].sensor_list_b
             if axi[1] == "b":
@@ -230,11 +244,11 @@ class WetstatBokehApp(object):
                     break
 
     def callback_sensor_axis(self, attr, old, new) -> None:
-        axes = {sn: self.so_widgets[sn]["axis"].value for sn in ALL_SHORT_NAMES}
+        axes = {sn: self.so_widgets[sn]["y_axis"].value for sn in ALL_SHORT_NAMES}
         found = False
         for i, plt in enumerate(self.plots):
             for sn in plt.sensor_list_a + plt.sensor_list_b:
-                if axes[sn] != f"{i}a":
+                if axes[sn] != f"{i + 1}a":
                     # remove on old axis
                     if sn in plt.sensor_list_a:
                         plt.sensor_list_a.remove(sn)
@@ -242,7 +256,9 @@ class WetstatBokehApp(object):
                         plt.sensor_list_b.remove(sn)
 
                     # find new axis and add
-                    i_ax_plt = int(axes[sn][0])
+                    i_ax_plt = int(axes[sn][0]) - 1
+                    while i_ax_plt >= len(self.plots):
+                        self.add_new_plot(len(self.plots) + 1)
                     ax_plt = self.plots[i_ax_plt]
                     unit = sensor_master.SensorMaster.get_sensor_for_info("short_name", sn).get_unit()
                     if axes[sn][1] == "a":
@@ -252,7 +268,7 @@ class WetstatBokehApp(object):
                         ax_plt.sensor_list_a.append(sn)
                     else:
                         if ax_plt.unit_b and unit != ax_plt.unit_b:
-                            raise ValueError(f"This axis is already occupied by unit '{ax_plt.unit_a}' !!!")
+                            raise ValueError(f"This axis is already occupied by unit '{ax_plt.unit_b}' !!!")
                         ax_plt.unit_b = unit
                         ax_plt.sensor_list_b.append(sn)
 
@@ -304,6 +320,7 @@ class WetstatBokehApp(object):
         # self.hover_tool = HoverTool()
         # self.hover_tool.point_policy = "follow_mouse"
         # self.plot.add_tools(self.hover_tool)
+        self.plots.append(WetstatPlot(1, self))
 
         self.data = db_model.load_data_for_date_range(self.start, self.end)
         self.set_new_dbdata(self.data)
@@ -328,6 +345,7 @@ class WetstatBokehApp(object):
                             width_policy="fixed",
                             width=70,
                             )
+            y_axis.on_change("value", self.callback_sensor_axis)
             self.so_rows.append(row(active, interval, y_axis))
             self.so_widgets[sens.get_short_name()] = {
                 "active": active,
@@ -358,8 +376,9 @@ class WetstatBokehApp(object):
         date_range_row = row(self.picker_start, self.picker_end)
 
         self.callback_sensor_active("value", 0, 0)
+        self.plot_column = column(*[plt.plot for plt in self.plots])
         self.doc.add_root(row(column(*self.so_rows, date_range_row, self.show_legend_toggle),
-                              column(plt.plot for plt in self.plots),
+                              self.plot_column,
                               )
                           )
 
@@ -367,15 +386,24 @@ class WetstatBokehApp(object):
 
     @staticmethod
     def create(doc) -> None:
+        # start_bokeh_server_if_not_running()
         app = WetstatBokehApp(doc)
         app.initialize()
 
+    def add_new_plot(self, num):
+        self.plots.append(WetstatPlot(num, self))
+        self.plot_column  # TODO add new plot to this layout to display it
 
-if __name__ == '__main__':
+
+def run_bokeh_server() -> None:
     server = Server({URL: WetstatBokehApp.create}, num_procs=1,
-                    allow_websocket_origin=["127.0.0.1:8000", "localhost:5006"])
+                    allow_websocket_origin=["127.0.0.1:8000", f"localhost:{PORT}"], port=PORT)
     server.start()
-    print(f'Opening Bokeh application on http://localhost{URL}:5006')
+    print(f"Opening Bokeh application on http://localhost{URL}:{PORT}")
 
     server.io_loop.add_callback(server.show, URL)
     server.io_loop.start()
+
+
+if __name__ == '__main__':
+    run_bokeh_server()
