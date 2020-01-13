@@ -6,7 +6,7 @@ import numpy as np
 from bokeh.client import pull_session
 from bokeh.embed import server_session
 from bokeh.layouts import column, row
-from bokeh.models import DataRange1d, Select, Toggle, ColumnDataSource, HoverTool, LinearAxis
+from bokeh.models import DataRange1d, Select, Toggle, ColumnDataSource, HoverTool, LinearAxis, Column
 from bokeh.models.widgets import DatePicker
 from bokeh.plotting import figure, Figure
 from bokeh.server.server import Server
@@ -15,6 +15,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
+from wetstat.common import logger
 from wetstat.model import util
 from wetstat.model.db import db_model
 from wetstat.sensors import sensor_master
@@ -125,8 +126,6 @@ class WetstatPlot(object):
                             self.unit_a = sens.get_unit()
                         else:
                             self.unit_b = sens.get_unit()
-
-
                     else:
                         print(f"no data found for {sn}!!!")
                 else:
@@ -136,6 +135,11 @@ class WetstatPlot(object):
                     else:
                         if sn in self._renderers_b:
                             self._renderers_b[sn].visible = True
+        if not self.sensor_list_a:
+            self.unit_a = None
+        if not self.sensor_list_b:
+            self.unit_b = None
+        self.plot.visible = bool(self.unit_a or self.unit_b)
         # TODO rescale axes a and b to visible glyphs
 
     @staticmethod
@@ -182,28 +186,18 @@ class WetstatBokehApp(object):
         self.start = self.end - datetime.timedelta(days=1)
         self.data = None
         self.cds = None
-        # self.line_renderers = {}
-        # self.axis_units: List[Dict[str, str]] = []  # [{"a": "°C", "b": "%"}, {"a": "mm", "b": "hpa"}]
         self.so_rows = []
         self.so_widgets = {}
         self.picker_start = None
         self.picker_end = None
         self.show_legend_toggle = None
         self.hover_tool = None
-        self.plot_column = None
+        self.plot_column: Optional[Column] = None
 
     def set_new_dbdata(self, db_data: db_model.DbData) -> None:
         time_col = db_data.array[:, db_data.columns.index("Time")]
         istart = np.searchsorted(time_col, self.start, "left")
         iend = np.searchsorted(time_col, self.end, "right")
-        # istart = 0
-        # iend = len(db_data.array)
-        # while db_data.array[istart, db_data.columns.index("Time")] < self.start:
-        #     istart += 1
-        # while db_data.array[iend, db_data.columns.index("Time")] > self.end:
-        #     iend -= 1
-        # istart -= 1
-        # iend += 1
 
         data_dict = {db_data.columns[i]: db_data.array[istart:iend, i] for i in range(len(db_data.columns))}
         new = ColumnDataSource(data=data_dict)
@@ -219,7 +213,6 @@ class WetstatBokehApp(object):
             act = self.so_widgets[sn]["active"].active
             axi = self.so_widgets[sn]["y_axis"].value
             sens = sensor_master.SensorMaster.get_sensor_for_info("short_name", sn)
-            unit = sens.get_unit()
 
             i_plt = int(axi[0]) - 1
             slist = self.plots[i_plt].sensor_list_a
@@ -245,41 +238,43 @@ class WetstatBokehApp(object):
 
     def callback_sensor_axis(self, attr, old, new) -> None:
         axes = {sn: self.so_widgets[sn]["y_axis"].value for sn in ALL_SHORT_NAMES}
-        found = False
-        for i, plt in enumerate(self.plots):
-            for sn in plt.sensor_list_a + plt.sensor_list_b:
-                if axes[sn] != f"{i + 1}a":
-                    # remove on old axis
-                    if sn in plt.sensor_list_a:
-                        plt.sensor_list_a.remove(sn)
-                    else:
-                        plt.sensor_list_b.remove(sn)
-
-                    # find new axis and add
-                    i_ax_plt = int(axes[sn][0]) - 1
-                    while i_ax_plt >= len(self.plots):
-                        self.add_new_plot(len(self.plots) + 1)
-                    ax_plt = self.plots[i_ax_plt]
-                    unit = sensor_master.SensorMaster.get_sensor_for_info("short_name", sn).get_unit()
-                    if axes[sn][1] == "a":
-                        if ax_plt.unit_a and unit != ax_plt.unit_a:
-                            raise ValueError(f"This axis is already occupied by unit '{ax_plt.unit_a}' !!!")
-                        ax_plt.unit_a = unit
-                        ax_plt.sensor_list_a.append(sn)
-                    else:
-                        if ax_plt.unit_b and unit != ax_plt.unit_b:
-                            raise ValueError(f"This axis is already occupied by unit '{ax_plt.unit_b}' !!!")
-                        ax_plt.unit_b = unit
-                        ax_plt.sensor_list_b.append(sn)
-
-                    ax_plt.refresh_lines()
-
-                    found = True
-                    break
-            if found:
+        possible = []
+        for sn, ax in axes.items():
+            if ax == new:
+                possible.append(sn)
+        old_plt = self.plots[int(old[0]) - 1]
+        slist = old_plt.sensor_list_a if old[1] == "a" else old_plt.sensor_list_b
+        for short_name in slist:
+            if short_name in possible:
+                self.move_line(short_name, old, new)
                 break
-        if not found:
-            raise ValueError("Nothing changed?!?")
+
+    def move_line(self, short_name: str, old: str, new: str) -> None:
+        old_n, old_c = old
+        new_n, new_c = new
+        old_n, new_n = int(old_n), int(new_n)
+        while new_n > len(self.plots):
+            logger.log.debug("added new plot")
+            self.add_new_plot(len(self.plots) + 1)
+        old_plt = self.plots[old_n - 1]
+        new_plt = self.plots[new_n - 1]
+        old_slist = old_plt.sensor_list_a if old_c == "a" else old_plt.sensor_list_b
+        new_slist = new_plt.sensor_list_a if new_c == "a" else new_plt.sensor_list_b
+        new_unit = new_plt.unit_a if new_c == "a" else new_plt.unit_b
+        sens = sensor_master.SensorMaster.get_sensor_for_info("short_name", short_name)
+        if new_unit and new_unit != sens.get_unit():
+            logger.log.debug(f"axis {new} is already occupied by unit {new_unit}!!!")
+            self.so_widgets[short_name]["y_axis"].value = old
+            return
+        old_slist.remove(short_name)
+        new_slist.append(short_name)
+        if new_c == "a":
+            new_plt.unit_a = sens.get_unit()
+        else:
+            new_plt.unit_b = sens.get_unit()
+        old_plt.refresh_lines()
+        new_plt.refresh_lines()
+        logger.log.debug(f"moved {short_name} from {old} to {new}.")
 
     def refresh_axis_options(self):
         pass  # TODO
@@ -341,7 +336,7 @@ class WetstatBokehApp(object):
                               )
             y_axis = Select(title="",
                             value="1a",
-                            options=["1a", "1b", "2a", "2b", "2a", "3b"],
+                            options=["1a", "1b", "2a", "2b", "3a", "3b"],
                             width_policy="fixed",
                             width=70,
                             )
@@ -386,13 +381,13 @@ class WetstatBokehApp(object):
 
     @staticmethod
     def create(doc) -> None:
-        # start_bokeh_server_if_not_running()
         app = WetstatBokehApp(doc)
         app.initialize()
 
     def add_new_plot(self, num):
-        self.plots.append(WetstatPlot(num, self))
-        self.plot_column  # TODO add new plot to this layout to display it
+        wetstat_plot = WetstatPlot(num, self)
+        self.plots.append(wetstat_plot)
+        self.plot_column.children.append(wetstat_plot.plot)
 
 
 def run_bokeh_server() -> None:
