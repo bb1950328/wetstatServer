@@ -7,7 +7,7 @@ import numpy as np
 from bokeh.client import pull_session
 from bokeh.embed import server_session
 from bokeh.layouts import column, row
-from bokeh.models import DataRange1d, Select, Toggle, ColumnDataSource, LinearAxis, Column
+from bokeh.models import DataRange1d, Select, Toggle, ColumnDataSource, LinearAxis, Column, Div
 from bokeh.models.widgets import DatePicker
 from bokeh.plotting import figure, Figure
 from bokeh.server.server import Server
@@ -213,6 +213,7 @@ class WetstatBokehApp(object):
         self.hover_tool = None
         self.plot_column: Optional[Column] = None
         self.callback_enabled = True
+        self.msg_div: Optional[Div] = None
 
     def set_new_dbdata(self, db_data: db_model.DbData) -> None:
         time_col = db_data.array[:, db_data.columns.index("Time")]
@@ -226,7 +227,7 @@ class WetstatBokehApp(object):
         else:
             self.cds = new
 
-    def redisplay_lines(self):
+    def redisplay_lines(self) -> None:
         axes_for_sn = {sn: self.so_widgets[sn]["y_axis"].value for sn in ALL_SHORT_NAMES}  # {Temp1: 1a, Rain: 1b, ..}
         active_for_sn = {sn: self.so_widgets[sn]["active"].active for sn in ALL_SHORT_NAMES}  # {Temp1: True, ...}
         sens_lists = []  # [{a: [Temp1, Temp2], b: [Rain]}, {a: [Humidity], b: []}, {a: [], b: [Pressure]}]
@@ -247,6 +248,9 @@ class WetstatBokehApp(object):
                 plot.sensor_list_b.extend(sens_lists[i_plot]["b"])
             plot.refresh_lines()
         self.refresh_axis_options()
+        self.msg_div.text = "<br>".join(f"{i + 1}, {li}" for i, li in enumerate(sens_lists)) + \
+                            "<hr>" + \
+                            "<br>".join(f"{plot.nr}={plot.unit_a}|{plot.unit_b}" for plot in self.plots)
 
     def callback_sensor_active(self, attr, old, new) -> None:
         if self.callback_enabled:
@@ -258,7 +262,7 @@ class WetstatBokehApp(object):
             print("Callback axis")
             self.redisplay_lines()
 
-    def add_enough_plots(self, at_least_count):
+    def add_enough_plots(self, at_least_count: int) -> None:
         while at_least_count > len(self.plots):
             print("added new plot")
             self.add_new_plot(len(self.plots) + 1)
@@ -381,10 +385,12 @@ class WetstatBokehApp(object):
         self.show_legend_toggle.on_change("active", self.callback_show_legend)
         date_range_row = row(self.picker_start, self.picker_end)
 
+        self.msg_div = Div(text=".")
+
         self.callback_sensor_active("value", 0, 0)
         self.refresh_axis_options()
         self.plot_column = column(*[plt.plot for plt in self.plots])
-        self.doc.add_root(row(column(*self.so_rows, date_range_row, self.show_legend_toggle),
+        self.doc.add_root(row(column(*self.so_rows, date_range_row, self.show_legend_toggle, self.msg_div),
                               self.plot_column,
                               )
                           )
