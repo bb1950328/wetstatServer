@@ -1,12 +1,13 @@
 # coding=utf-8
 import datetime
+import pprint
 from typing import Optional, List
 
 import numpy as np
 from bokeh.client import pull_session
 from bokeh.embed import server_session
 from bokeh.layouts import column, row
-from bokeh.models import DataRange1d, Select, Toggle, ColumnDataSource, HoverTool, LinearAxis, Column
+from bokeh.models import DataRange1d, Select, Toggle, ColumnDataSource, LinearAxis, Column
 from bokeh.models.widgets import DatePicker
 from bokeh.plotting import figure, Figure
 from bokeh.server.server import Server
@@ -15,7 +16,6 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
 
-from wetstat.common import logger
 from wetstat.model import util
 from wetstat.model.db import db_model
 from wetstat.sensors import sensor_master
@@ -67,7 +67,7 @@ class WetstatPlot(object):
     @unit_a.setter
     def unit_a(self, new) -> None:
         if self._unit_a != new:
-            logger.log.debug(f"Unit {self.nr}a is {new} now. (was {self._unit_a})")
+            print(f"Unit {self.nr}a is {new} now. (was {self._unit_a})")
         self._unit_a = new
         self.plot.yaxis.axis_label = self._generate_axis_label(self._unit_a)
 
@@ -78,7 +78,7 @@ class WetstatPlot(object):
     @unit_b.setter
     def unit_b(self, new) -> None:
         if self._unit_b != new:
-            logger.log.debug(f"Unit {self.nr}b is {new} now. (was {self._unit_b})")
+            print(f"Unit {self.nr}b is {new} now. (was {self._unit_b})")
         self._unit_b = new
         if new is None:
             self._remove_2nd_axis()
@@ -94,7 +94,7 @@ class WetstatPlot(object):
         return self._sensor_list_b
 
     def refresh_lines(self) -> None:
-        logger.log.debug(f"Refreshing lines for nr={self.nr}")
+        print(f"Refreshing lines for nr={self.nr}")
         in_list = {*self.sensor_list_a, *self.sensor_list_b}
         in_renderer = {*self._renderers_a.keys(), *self._renderers_b.keys()}
         all_sensors = {*in_list, *in_renderer}
@@ -103,10 +103,10 @@ class WetstatPlot(object):
             if sn not in in_list:
                 if sn in self._renderers_a.keys():
                     self._renderers_a[sn].visible = False
-                    logger.log.debug(f"{sn} not in {self.nr}a anymore.")
+                    print(f"{sn} not in {self.nr}a anymore.")
                 elif sn in self._renderers_b.keys():
                     self._renderers_b[sn].visible = False
-                    logger.log.debug(f"{sn} not in {self.nr}b anymore.")
+                    print(f"{sn} not in {self.nr}b anymore.")
             else:
                 moved = False
                 if sn in self.sensor_list_a and sn in self._renderers_b and self._renderers_b[sn].visible:
@@ -116,7 +116,7 @@ class WetstatPlot(object):
                         self.unit_a = sens.get_unit()
                     else:
                         moved = True
-                    logger.log.debug(f"{sn} moved from {self.nr}b to {self.nr}a (but stayed in same plot)")
+                    print(f"{sn} moved from {self.nr}b to {self.nr}a (but stayed in same plot)")
                 if sn in self.sensor_list_b and sn in self._renderers_a and self._renderers_a[sn].visible:
                     self._renderers_a[sn].visible = False
                     if sn in self._renderers_b:
@@ -124,7 +124,7 @@ class WetstatPlot(object):
                         self.unit_b = sens.get_unit()
                     else:
                         moved = True
-                    logger.log.debug(f"{sn} moved from {self.nr}a to {self.nr}b (but stayed in same plot)")
+                    print(f"{sn} moved from {self.nr}a to {self.nr}b (but stayed in same plot)")
 
                 if sn not in in_renderer or moved:
                     if sn in self.app.data.columns:
@@ -135,7 +135,7 @@ class WetstatPlot(object):
                                                    # legend_label=sens.get_long_name(),
                                                    y_range_name="default" if is_a else "b",
                                                    )
-                        logger.log.debug(f"created new line {sn} on {self.nr}{'a' if is_a else 'b'}")
+                        print(f"created new line {sn} on {self.nr}{'a' if is_a else 'b'}")
                         if is_a:
                             self.unit_a = sens.get_unit()
                         else:
@@ -147,12 +147,12 @@ class WetstatPlot(object):
                         if sn in self._renderers_a:
                             self._renderers_a[sn].visible = True
                             self.unit_a = sens.get_unit()
-                            logger.log.debug(f"{sn} appeared again on {self.nr}a")
+                            print(f"{sn} appeared again on {self.nr}a")
                     else:
                         if sn in self._renderers_b:
                             self._renderers_b[sn].visible = True
                             self.unit_b = sens.get_unit()
-                            logger.log.debug(f"{sn} appeared again on {self.nr}b")
+                            print(f"{sn} appeared again on {self.nr}b")
         if not self.sensor_list_a:
             self.unit_a = None
         if not self.sensor_list_b:
@@ -212,6 +212,7 @@ class WetstatBokehApp(object):
         self.show_legend_toggle = None
         self.hover_tool = None
         self.plot_column: Optional[Column] = None
+        self.callback_enabled = True
 
     def set_new_dbdata(self, db_data: db_model.DbData) -> None:
         time_col = db_data.array[:, db_data.columns.index("Time")]
@@ -225,87 +226,45 @@ class WetstatBokehApp(object):
         else:
             self.cds = new
 
+    def redisplay_lines(self):
+        axes_for_sn = {sn: self.so_widgets[sn]["y_axis"].value for sn in ALL_SHORT_NAMES}  # {Temp1: 1a, Rain: 1b, ..}
+        active_for_sn = {sn: self.so_widgets[sn]["active"].active for sn in ALL_SHORT_NAMES}  # {Temp1: True, ...}
+        sens_lists = []  # [{a: [Temp1, Temp2], b: [Rain]}, {a: [Humidity], b: []}, {a: [], b: [Pressure]}]
+        for sn, axis in axes_for_sn.items():
+            if active_for_sn[sn]:
+                ax_i, ax_side = axis
+                ax_i = int(ax_i)
+                while len(sens_lists) < ax_i:
+                    sens_lists.append({"a": [], "b": []})
+                sens_lists[ax_i - 1][ax_side].append(sn)
+        print(f"Current distribution: {pprint.pformat(sens_lists)}")
+        self.add_enough_plots(len(sens_lists))
+        for i_plot, plot in enumerate(self.plots):
+            plot.sensor_list_a.clear()
+            plot.sensor_list_b.clear()
+            if len(sens_lists) > i_plot:
+                plot.sensor_list_a.extend(sens_lists[i_plot]["a"])
+                plot.sensor_list_b.extend(sens_lists[i_plot]["b"])
+            plot.refresh_lines()
+        self.refresh_axis_options()
+
     def callback_sensor_active(self, attr, old, new) -> None:
-        print("Callback sensor")
-        tooltips = []
-        for sn in ALL_SHORT_NAMES:
-            action = None
-
-            act = self.so_widgets[sn]["active"].active
-            axi = self.so_widgets[sn]["y_axis"].value
-            sens = sensor_master.SensorMaster.get_sensor_for_info("short_name", sn)
-
-            i_plt = int(axi[0]) - 1
-            if i_plt >= len(self.plots) and not act:  # this sensor was never added
-                continue
-            self.add_enough_plots(i_plt)
-            slist = self.plots[i_plt].sensor_list_a
-            if act:
-                if sn not in slist:
-                    slist.append(sn)
-                    self.plots[i_plt].refresh_lines()
-                    action = "added"
-            else:
-                if sn in slist:
-                    slist.remove(sn)
-                    action = "removed"
-                self.plots[i_plt].refresh_lines()
-            if action:
-                self.refresh_axis_options()
-                logger.log.debug(f"{action} {sn} on axis {axi}")
-            tooltips.append((sens.get_long_name(), f"@{sens.get_short_name()}"))
-
-        for plt in self.plots:
-            for to in plt.plot.tools:
-                if isinstance(to, HoverTool):
-                    to.tooltips = tooltips
-                    break
+        if self.callback_enabled:
+            print("Callback sensor")
+            self.redisplay_lines()
 
     def callback_sensor_axis(self, attr, old, new) -> None:
-        axes = {sn: self.so_widgets[sn]["y_axis"].value for sn in ALL_SHORT_NAMES}
-        possible = []
-        for sn, ax in axes.items():
-            if ax == new:
-                possible.append(sn)
-        old_plt = self.plots[int(old[0]) - 1]
-        slist = old_plt.sensor_list_a if old[1] == "a" else old_plt.sensor_list_b
-        for short_name in slist:
-            if short_name in possible:
-                self.move_line(short_name, old, new)
-                break
+        if self.callback_enabled:
+            print("Callback axis")
+            self.redisplay_lines()
 
-    def move_line(self, short_name: str, old: str, new: str) -> None:
-        old_n, old_c = old
-        new_n, new_c = new
-        old_n, new_n = int(old_n), int(new_n)
-        self.add_enough_plots(new_n - 1)
-        old_plt = self.plots[old_n - 1]
-        new_plt = self.plots[new_n - 1]
-        old_slist = old_plt.sensor_list_a if old_c == "a" else old_plt.sensor_list_b
-        new_slist = new_plt.sensor_list_a if new_c == "a" else new_plt.sensor_list_b
-        new_unit = new_plt.unit_a if new_c == "a" else new_plt.unit_b
-        sens = sensor_master.SensorMaster.get_sensor_for_info("short_name", short_name)
-        if new_unit and new_unit != sens.get_unit():
-            logger.log.debug(f"axis {new} is already occupied by unit {new_unit}!!!")
-            self.so_widgets[short_name]["y_axis"].value = old
-            return
-        old_slist.remove(short_name)
-        new_slist.append(short_name)
-        if new_c == "a":
-            new_plt.unit_a = sens.get_unit()
-        else:
-            new_plt.unit_b = sens.get_unit()
-        old_plt.refresh_lines()
-        new_plt.refresh_lines()
-        self.refresh_axis_options()
-        logger.log.debug(f"moved {short_name} from {old} to {new}.")
-
-    def add_enough_plots(self, wanted_index):
-        while wanted_index >= len(self.plots):
-            logger.log.debug("added new plot")
+    def add_enough_plots(self, at_least_count):
+        while at_least_count > len(self.plots):
+            print("added new plot")
             self.add_new_plot(len(self.plots) + 1)
 
     def refresh_axis_options(self) -> None:
+        self.callback_enabled = False
         num_plots = len(self.plots)
         for short_name, opts in self.so_widgets.items():
             oldvalue = opts["y_axis"]
@@ -325,6 +284,7 @@ class WetstatBokehApp(object):
                 opts["y_axis"].value = oldvalue
             else:
                 opts["y_axis"].value = new_options[0]
+        self.callback_enabled = True
 
     def callback_show_legend(self, attr, old, new) -> None:
         pass  # self.plot.legend.location = "top_left" if new else "none"  # todo make the legend disappear
