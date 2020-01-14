@@ -146,3 +146,10 @@ def get_parent_process_names() -> List[str]:
 
 def is_apache_process() -> bool:
     return "apache2" in get_parent_process_names()
+
+
+def make_color_lighter(old: str) -> str:
+    old = old[1:]  # cut the '#'
+    parts = [old[0:2], old[2:4], old[4:6]]
+    parts = [hex(int((int(v, 16) + 255) / 2))[2:] for v in parts]
+    return f"#{''.join(parts)}"

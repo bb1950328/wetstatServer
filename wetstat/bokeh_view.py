@@ -1,7 +1,7 @@
 # coding=utf-8
 import datetime
 import pprint
-from typing import Optional, List
+from typing import Optional, List, Dict, Callable
 
 import numpy as np
 from bokeh.client import pull_session
@@ -20,6 +20,9 @@ from wetstat.model import util
 from wetstat.model.db import db_model
 from wetstat.sensors import sensor_master
 from wetstat.view import views
+
+INTERVAL_DISPLAYNAMES = ["Kein", "Stunde", "Tag", "Woche", "Monat", "Jahr"]
+INTERVAL_INTERNALNAMES = ["none", "hour", "day", "week", "month", "year"]
 
 MAX_SUBPLOTS = 3
 
@@ -55,7 +58,7 @@ class WetstatPlot(object):
         self._unit_a = None
         self._unit_b = None
         self.nr = nr
-        self.app = app
+        self.app: WetstatBokehApp = app
         self.plot: Optional[Figure] = None
         self.y_axis_2 = None
         self.create_plot()
@@ -130,11 +133,19 @@ class WetstatPlot(object):
                     if sn in self.app.data.columns:
                         rlist = self._renderers_a if sn in self.sensor_list_a else self._renderers_b
                         is_a = rlist == self._renderers_a
-                        rlist[sn] = self.plot.line("Time", sn, source=self.app.cds,
+                        source = self.app.get_source(sn)
+                        self.plot.varea(f"Time", f"min", f"max", source=source,
+                                        color=util.make_color_lighter(sens.get_display_color()),
+                                        # legend_label=sens.get_long_name(),
+                                        y_range_name="default" if is_a else "b",
+                                        )  # todo add to renderers somehow
+
+                        rlist[sn] = self.plot.line(f"Time", f"avg", source=source,
                                                    color=sens.get_display_color(),
                                                    # legend_label=sens.get_long_name(),
                                                    y_range_name="default" if is_a else "b",
                                                    )
+
                         print(f"created new line {sn} on {self.nr}{'a' if is_a else 'b'}")
                         if is_a:
                             self.unit_a = sens.get_unit()
@@ -204,7 +215,8 @@ class WetstatBokehApp(object):
         self.end = self.now
         self.start = self.end - datetime.timedelta(days=1)
         self.data = None
-        self.cds = None
+        # self.cds = None
+        self.sources: Dict[str, ColumnDataSource] = {}  # short_name is key
         self.so_rows = []
         self.so_widgets = {}
         self.picker_start = None
@@ -215,17 +227,131 @@ class WetstatBokehApp(object):
         self.callback_enabled = True
         self.msg_div: Optional[Div] = None
 
-    def set_new_dbdata(self, db_data: db_model.DbData) -> None:
-        time_col = db_data.array[:, db_data.columns.index("Time")]
-        istart = np.searchsorted(time_col, self.start, "left")
-        iend = np.searchsorted(time_col, self.end, "right")
+    def get_source(self, short_name: str) -> ColumnDataSource:
+        if short_name not in self.sources.keys():
+            self.sources[short_name] = ColumnDataSource()
+            self.update_source(short_name)
+        return self.sources[short_name]
 
-        data_dict = {db_data.columns[i]: db_data.array[istart:iend, i] for i in range(len(db_data.columns))}
-        new = ColumnDataSource(data=data_dict)
-        if self.cds:
-            self.cds.data = new.data
+    def update_source(self, short_name: str) -> None:
+        self.sources[short_name].data = self.generate_cds_from_data(short_name).data
+
+    def update_all_existing_sources(self) -> None:
+        for sn in self.sources.keys():
+            self.update_source(sn)
+
+    def generate_cds_from_data(self, short_name: str) -> ColumnDataSource:
+        time_all = self.data.array[:, self.data.columns.index("Time")]
+        istart = np.searchsorted(time_all, self.start, "left")
+        iend = np.searchsorted(time_all, self.end, "right")
+
+        time_col = self.data.array[istart:iend, self.data.columns.index("Time")]
+        data_col = self.data.array[istart:iend, self.data.columns.index(short_name)]
+
+        dname = self.so_widgets[short_name]["interval"].value
+        idx = INTERVAL_DISPLAYNAMES.index(dname)
+        iname = INTERVAL_INTERNALNAMES[idx]
+        if iname == "none" or not any(data_col):
+            maxy = data_col
+            avgy = data_col
+            miny = data_col
+            times = time_col
         else:
-            self.cds = new
+            times = np.array([])
+            miny = np.array([])
+            maxy = np.array([])
+            avgy = np.array([])
+            if iname == "day":
+                relevant: Callable[[datetime], datetime.date] = lambda dt: dt.date()
+            elif iname == "hour":
+                relevant: Callable[[datetime], int] = lambda dt: dt.hour
+            elif iname == "week":
+                relevant: Callable[[datetime], int] = lambda dt: int(dt.strftime("%W"))  # week of year
+            elif iname == "month":
+                relevant: Callable[[datetime], int] = lambda dt: dt.month
+            elif iname == "year":
+                relevant: Callable[[datetime], int] = lambda dt: dt.year
+            else:
+                raise ValueError()
+
+            istart = 0
+            iend = 1
+            while iend < len(time_col):
+                while iend < len(time_col) and (relevant(time_col[istart]) == relevant(time_col[iend])):
+                    iend += 1
+                miny = np.append(miny, np.amin(data_col[istart:iend]))
+                maxy = np.append(maxy, np.amax(data_col[istart:iend]))
+                avgy = np.append(avgy, np.mean(data_col[istart:iend]))
+                idx = int((istart + iend) // 2)  # median
+                times = np.append(times, time_col[idx])
+                istart = iend
+                iend = istart + 1
+        source = ColumnDataSource(data={"Time": times,
+                                        "avg": avgy,
+                                        "min": miny,
+                                        "max": maxy})
+        return source
+
+    # def set_new_dbdata(self, db_data: db_model.DbData) -> None:
+    #     time_col = db_data.array[:, db_data.columns.index("Time")]
+    #     istart = np.searchsorted(time_col, self.start, "left")
+    #     iend = np.searchsorted(time_col, self.end, "right")
+    #
+    #     data_dict = {db_data.columns[i]: db_data.array[istart:iend, i] for i in range(len(db_data.columns))}
+    #     new = self.apply_intervals(data_dict)
+    #     if self.cds:
+    #         self.cds.data = new.data
+    #     else:
+    #         self.cds = new
+    #
+    # def apply_intervals(self, source: Dict[str, np.array]) -> ColumnDataSource:
+    #     result = {}
+    #     time_col = source["Time"]
+    #     for sn in ALL_SHORT_NAMES:
+    #         """dname = self.so_widgets[sn]["interval"].value
+    #         idx = INTERVAL_DISPLAYNAMES.index(dname)
+    #         iname = INTERVAL_INTERNALNAMES[idx]
+    #         source_col = source[sn]
+    #         if iname == "none" or not any(source_col):
+    #             result[f"{sn}_max"] = source_col
+    #             result[f"{sn}_avg"] = source_col
+    #             result[f"{sn}_min"] = source_col
+    #             result[f"{sn}_Time"] = time_col
+    #         else:
+    #             x_new = []
+    #             miny = np.array([])
+    #             maxy = np.array([])
+    #             avgy = np.array([])
+    #             if iname == "day":
+    #                 relevant: Callable[[datetime], datetime.date] = lambda dt: dt.date()
+    #             elif iname == "hour":
+    #                 relevant: Callable[[datetime], int] = lambda dt: dt.hour
+    #             elif iname == "week":
+    #                 relevant: Callable[[datetime], int] = lambda dt: int(dt.strftime("%W"))  # week of year
+    #             elif iname == "month":
+    #                 relevant: Callable[[datetime], int] = lambda dt: dt.month
+    #             elif iname == "year":
+    #                 relevant: Callable[[datetime], int] = lambda dt: dt.year
+    #             else:
+    #                 raise ValueError()
+    #
+    #             istart = 0
+    #             iend = 1
+    #             while iend < len(time_col):
+    #                 while iend < len(time_col) and (relevant(time_col[istart]) == relevant(time_col[iend])):
+    #                     iend += 1
+    #                 miny = np.append(miny, np.amin(source_col[istart:iend]))
+    #                 maxy = np.append(maxy, np.amax(source_col[istart:iend]))
+    #                 avgy = np.append(avgy, np.mean(source_col[istart:iend]))
+    #                 idx = int((istart + iend) // 2)  # median
+    #                 x_new.append(time_col[idx])
+    #                 istart = iend
+    #                 iend = istart + 1
+    #             result[f"{sn}_Time"] = np.array(x_new)
+    #             result[f"{sn}_max"] = maxy
+    #             result[f"{sn}_avg"] = avgy
+    #             result[f"{sn}_min"] = miny"""
+    #     return ColumnDataSource(data=result)
 
     def redisplay_lines(self) -> None:
         axes_for_sn = {sn: self.so_widgets[sn]["y_axis"].value for sn in ALL_SHORT_NAMES}  # {Temp1: 1a, Rain: 1b, ..}
@@ -319,7 +445,13 @@ class WetstatBokehApp(object):
         if data_end < self.end:
             self.end = data_end
 
-        self.set_new_dbdata(self.data)
+        self.update_all_existing_sources()
+
+    def build_interval_callback(self, short_name: str) -> Callable:
+        def callback(attr, old, new) -> None:
+            self.update_source(short_name)
+
+        return callback
 
     def initialize(self) -> None:
 
@@ -327,9 +459,6 @@ class WetstatBokehApp(object):
         # self.hover_tool.point_policy = "follow_mouse"
         # self.plot.add_tools(self.hover_tool)
         self.plots.append(WetstatPlot(1, self))
-
-        self.data = db_model.load_data_for_date_range(self.start, self.end)
-        self.set_new_dbdata(self.data)
 
         for sens in sensor_master.USED_SENSORS:
             opts = []
@@ -344,11 +473,12 @@ class WetstatBokehApp(object):
                             )
             active.on_change("active", self.callback_sensor_active)
             interval = Select(title="",
-                              value="Kein",
-                              options=["Kein", "Stunde", "Tag", "Woche", "Monat", "Jahr"],
+                              value=INTERVAL_DISPLAYNAMES[1],
+                              options=INTERVAL_DISPLAYNAMES,
                               width_policy="fixed",
                               width=85,
                               )
+            interval.on_change("value", self.build_interval_callback(sens.get_short_name()))
             y_axis = Select(title="",
                             value="1a",
                             options=opts,
@@ -386,6 +516,9 @@ class WetstatBokehApp(object):
         date_range_row = row(self.picker_start, self.picker_end)
 
         self.msg_div = Div(text=".")
+
+        self.data = db_model.load_data_for_date_range(self.start, self.end)
+        # self.set_new_dbdata(self.data)
 
         self.callback_sensor_active("value", 0, 0)
         self.refresh_axis_options()
