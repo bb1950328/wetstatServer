@@ -69,7 +69,7 @@ class WetstatPlot(object):
         self.nr = nr
         self.app: WetstatBokehApp = app
         self.plot: Optional[Figure] = None
-        self.y_axis_2 = None
+        self.y_axis_2: Optional[LinearAxis] = None
         self.create_plot()
 
     @property
@@ -238,8 +238,9 @@ class WetstatPlot(object):
         self.plot.grid.grid_line_alpha = 0.3
 
         self.plot.extra_y_ranges = {
-            "b": DataRange1d(range_padding=0),
+            "b": DataRange1d(range_padding=0, only_visible=True),
         }
+        self.plot.y_range.only_visible = True
         self.y_axis_2 = LinearAxis(y_range_name="b", axis_label=self._generate_axis_label(self.unit_b))
         self.plot.add_layout(self.y_axis_2, "right")
         self.y_axis_2.visible = False
@@ -255,7 +256,6 @@ class WetstatBokehApp(object):
         self.end = self.now
         self.start = self.end - datetime.timedelta(days=1)
         self.data = None
-        # self.cds = None
         self.sources: Dict[str, ColumnDataSource] = {}  # short_name is key
         self.so_rows = []
         self.so_widgets = {}
@@ -354,67 +354,6 @@ class WetstatBokehApp(object):
         idx = INTERVAL_DISPLAYNAMES.index(dname)
         iname = INTERVAL_INTERNALNAMES[idx]
         return iname
-
-    # def set_new_dbdata(self, db_data: db_model.DbData) -> None:
-    #     time_col = db_data.array[:, db_data.columns.index("Time")]
-    #     istart = np.searchsorted(time_col, self.start, "left")
-    #     iend = np.searchsorted(time_col, self.end, "right")
-    #
-    #     data_dict = {db_data.columns[i]: db_data.array[istart:iend, i] for i in range(len(db_data.columns))}
-    #     new = self.apply_intervals(data_dict)
-    #     if self.cds:
-    #         self.cds.data = new.data
-    #     else:
-    #         self.cds = new
-    #
-    # def apply_intervals(self, source: Dict[str, np.array]) -> ColumnDataSource:
-    #     result = {}
-    #     time_col = source["Time"]
-    #     for sn in ALL_SHORT_NAMES:
-    #         """dname = self.so_widgets[sn]["interval"].value
-    #         idx = INTERVAL_DISPLAYNAMES.index(dname)
-    #         iname = INTERVAL_INTERNALNAMES[idx]
-    #         source_col = source[sn]
-    #         if iname == "none" or not any(source_col):
-    #             result[f"{sn}_max"] = source_col
-    #             result[f"{sn}_avg"] = source_col
-    #             result[f"{sn}_min"] = source_col
-    #             result[f"{sn}_Time"] = time_col
-    #         else:
-    #             x_new = []
-    #             miny = np.array([])
-    #             maxy = np.array([])
-    #             avgy = np.array([])
-    #             if iname == "day":
-    #                 relevant: Callable[[datetime], datetime.date] = lambda dt: dt.date()
-    #             elif iname == "hour":
-    #                 relevant: Callable[[datetime], int] = lambda dt: dt.hour
-    #             elif iname == "week":
-    #                 relevant: Callable[[datetime], int] = lambda dt: int(dt.strftime("%W"))  # week of year
-    #             elif iname == "month":
-    #                 relevant: Callable[[datetime], int] = lambda dt: dt.month
-    #             elif iname == "year":
-    #                 relevant: Callable[[datetime], int] = lambda dt: dt.year
-    #             else:
-    #                 raise ValueError()
-    #
-    #             istart = 0
-    #             iend = 1
-    #             while iend < len(time_col):
-    #                 while iend < len(time_col) and (relevant(time_col[istart]) == relevant(time_col[iend])):
-    #                     iend += 1
-    #                 miny = np.append(miny, np.amin(source_col[istart:iend]))
-    #                 maxy = np.append(maxy, np.amax(source_col[istart:iend]))
-    #                 avgy = np.append(avgy, np.mean(source_col[istart:iend]))
-    #                 idx = int((istart + iend) // 2)  # median
-    #                 x_new.append(time_col[idx])
-    #                 istart = iend
-    #                 iend = istart + 1
-    #             result[f"{sn}_Time"] = np.array(x_new)
-    #             result[f"{sn}_max"] = maxy
-    #             result[f"{sn}_avg"] = avgy
-    #             result[f"{sn}_min"] = miny"""
-    #     return ColumnDataSource(data=result)
 
     def redisplay_lines(self) -> None:
         axes_for_sn = {sn: self.so_widgets[sn]["y_axis"].value for sn in ALL_SHORT_NAMES}  # {Temp1: 1a, Rain: 1b, ..}
