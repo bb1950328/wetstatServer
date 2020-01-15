@@ -19,10 +19,19 @@ from django.utils.safestring import mark_safe
 from wetstat.model import util
 from wetstat.model.db import db_model
 from wetstat.sensors import sensor_master
+from wetstat.sensors.abstract.base_sensor import CompressionFunction
 from wetstat.view import views
 
 INTERVAL_DISPLAYNAMES = ["Kein", "Stunde", "Tag", "Woche", "Monat", "Jahr"]
 INTERVAL_INTERNALNAMES = ["none", "hour", "day", "week", "month", "year"]
+INTERVAL_LENTGHS = {
+    "none": datetime.timedelta(minutes=10),
+    "hour": datetime.timedelta(hours=1),
+    "day": datetime.timedelta(days=1),
+    "week": datetime.timedelta(weeks=1),
+    "month": datetime.timedelta(days=30),
+    "year": datetime.timedelta(days=365),
+}
 
 MAX_SUBPLOTS = 3
 
@@ -105,25 +114,31 @@ class WetstatPlot(object):
             sens = sensor_master.SensorMaster.get_sensor_for_info("short_name", sn)
             if sn not in in_list:
                 if sn in self._renderers_a.keys():
-                    self._renderers_a[sn].visible = False
+                    for re in self._renderers_a[sn]:
+                        re.visible = False
                     print(f"{sn} not in {self.nr}a anymore.")
                 elif sn in self._renderers_b.keys():
-                    self._renderers_b[sn].visible = False
+                    for re in self._renderers_b[sn]:
+                        re.visible = False
                     print(f"{sn} not in {self.nr}b anymore.")
             else:
                 moved = False
-                if sn in self.sensor_list_a and sn in self._renderers_b and self._renderers_b[sn].visible:
-                    self._renderers_b[sn].visible = False
+                if sn in self.sensor_list_a and sn in self._renderers_b and self._renderers_b[sn][0].visible:
+                    for re in self._renderers_b[sn]:
+                        re.visible = False
                     if sn in self._renderers_a:
-                        self._renderers_a[sn].visible = True
+                        for re in self._renderers_a[sn]:
+                            re.visible = True
                         self.unit_a = sens.get_unit()
                     else:
                         moved = True
                     print(f"{sn} moved from {self.nr}b to {self.nr}a (but stayed in same plot)")
-                if sn in self.sensor_list_b and sn in self._renderers_a and self._renderers_a[sn].visible:
-                    self._renderers_a[sn].visible = False
+                if sn in self.sensor_list_b and sn in self._renderers_a and self._renderers_a[sn][0].visible:
+                    for re in self._renderers_a[sn]:
+                        re.visible = False
                     if sn in self._renderers_b:
-                        self._renderers_b[sn].visible = True
+                        for re in self._renderers_b[sn]:
+                            re.visible = True
                         self.unit_b = sens.get_unit()
                     else:
                         moved = True
@@ -134,17 +149,31 @@ class WetstatPlot(object):
                         rlist = self._renderers_a if sn in self.sensor_list_a else self._renderers_b
                         is_a = rlist == self._renderers_a
                         source = self.app.get_source(sn)
-                        self.plot.varea(f"Time", f"min", f"max", source=source,
-                                        color=util.make_color_lighter(sens.get_display_color()),
-                                        # legend_label=sens.get_long_name(),
-                                        y_range_name="default" if is_a else "b",
-                                        )  # todo add to renderers somehow
+                        if sens.get_compression_function() == CompressionFunction.MINMAXAVG:
+                            rlist[sn] = [
+                                self.plot.varea(f"Time", f"min", f"max", source=source,
+                                                color=util.make_color_lighter(sens.get_display_color()),
+                                                # legend_label=sens.get_long_name(),
+                                                y_range_name="default" if is_a else "b",
+                                                ),
 
-                        rlist[sn] = self.plot.line(f"Time", f"avg", source=source,
-                                                   color=sens.get_display_color(),
-                                                   # legend_label=sens.get_long_name(),
-                                                   y_range_name="default" if is_a else "b",
-                                                   )
+                                self.plot.line(f"Time", f"avg", source=source,
+                                               color=sens.get_display_color(),
+                                               # legend_label=sens.get_long_name(),
+                                               y_range_name="default" if is_a else "b",
+                                               ),
+                            ]
+                        elif sens.get_compression_function() == CompressionFunction.SUM:
+                            iname = self.app.get_interval_of_sensor(sn)
+                            width = INTERVAL_LENTGHS[iname] * 0.75
+                            rlist[sn] = [
+                                self.plot.vbar("Time", width, "max", source=source,
+                                               color=sens.get_display_color(),
+                                               y_range_name="default" if is_a else "b",
+                                               name=f"vbar_{sn}",
+                                               alpha=0.5,
+                                               )
+                            ]
 
                         print(f"created new line {sn} on {self.nr}{'a' if is_a else 'b'}")
                         if is_a:
@@ -156,12 +185,14 @@ class WetstatPlot(object):
                 else:
                     if sn in self.sensor_list_a:
                         if sn in self._renderers_a:
-                            self._renderers_a[sn].visible = True
+                            for re in self._renderers_a[sn]:
+                                re.visible = True
                             self.unit_a = sens.get_unit()
                             print(f"{sn} appeared again on {self.nr}a")
                     else:
                         if sn in self._renderers_b:
-                            self._renderers_b[sn].visible = True
+                            for re in self._renderers_b[sn]:
+                                re.visible = True
                             self.unit_b = sens.get_unit()
                             print(f"{sn} appeared again on {self.nr}b")
         if not self.sensor_list_a:
@@ -170,6 +201,15 @@ class WetstatPlot(object):
             self.unit_b = None
         self.plot.visible = bool(self.unit_a or self.unit_b)
         # TODO rescale axes a and b to visible glyphs
+
+    def refresh_vbar_widths(self) -> None:
+        for sn in self.sensor_list_a + self.sensor_list_b:
+            sens = sensor_master.SensorMaster.get_sensor_for_info("short_name", sn)
+            if sens.get_compression_function() == CompressionFunction.SUM:
+                iname = self.app.get_interval_of_sensor(sn)
+                result = self.plot.select(name=f"vbar_{sn}")
+                if result:
+                    result[0].glyph.width = INTERVAL_LENTGHS[iname] * 0.75
 
     @staticmethod
     def _generate_axis_label(unit: str) -> str:
@@ -235,6 +275,8 @@ class WetstatBokehApp(object):
 
     def update_source(self, short_name: str) -> None:
         self.sources[short_name].data = self.generate_cds_from_data(short_name).data
+        for plt in self.plots:
+            plt.refresh_vbar_widths()
 
     def update_all_existing_sources(self) -> None:
         for sn in self.sources.keys():
@@ -248,9 +290,9 @@ class WetstatBokehApp(object):
         time_col = self.data.array[istart:iend, self.data.columns.index("Time")]
         data_col = self.data.array[istart:iend, self.data.columns.index(short_name)]
 
-        dname = self.so_widgets[short_name]["interval"].value
-        idx = INTERVAL_DISPLAYNAMES.index(dname)
-        iname = INTERVAL_INTERNALNAMES[idx]
+        iname = self.get_interval_of_sensor(short_name)
+
+        sens = sensor_master.SensorMaster.get_sensor_for_info("short_name", short_name)
         if iname == "none" or not any(data_col):
             maxy = data_col
             avgy = data_col
@@ -279,9 +321,24 @@ class WetstatBokehApp(object):
             while iend < len(time_col):
                 while iend < len(time_col) and (relevant(time_col[istart]) == relevant(time_col[iend])):
                     iend += 1
-                miny = np.append(miny, np.amin(data_col[istart:iend]))
-                maxy = np.append(maxy, np.amax(data_col[istart:iend]))
-                avgy = np.append(avgy, np.mean(data_col[istart:iend]))
+                compr_func = sens.get_compression_function()
+                if compr_func == CompressionFunction.MINMAXAVG:
+                    min_value = np.amin(data_col[istart:iend])
+                    max_value = np.amax(data_col[istart:iend])
+                    avg_value = np.mean(data_col[istart:iend])
+                else:
+                    if compr_func == CompressionFunction.SUM:
+                        func = np.sum
+                    elif compr_func == CompressionFunction.MAX:
+                        func = np.amax
+                    elif compr_func == CompressionFunction.MIN:
+                        func = np.amin
+                    else:
+                        raise ValueError(f"Unsupported Compression function: {compr_func}")
+                    min_value = max_value = avg_value = func(data_col[istart:iend])
+                miny = np.append(miny, min_value)
+                maxy = np.append(maxy, max_value)
+                avgy = np.append(avgy, avg_value)
                 idx = int((istart + iend) // 2)  # median
                 times = np.append(times, time_col[idx])
                 istart = iend
@@ -291,6 +348,12 @@ class WetstatBokehApp(object):
                                         "min": miny,
                                         "max": maxy})
         return source
+
+    def get_interval_of_sensor(self, short_name):
+        dname = self.so_widgets[short_name]["interval"].value
+        idx = INTERVAL_DISPLAYNAMES.index(dname)
+        iname = INTERVAL_INTERNALNAMES[idx]
+        return iname
 
     # def set_new_dbdata(self, db_data: db_model.DbData) -> None:
     #     time_col = db_data.array[:, db_data.columns.index("Time")]
