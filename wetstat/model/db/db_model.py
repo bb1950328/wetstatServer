@@ -35,17 +35,8 @@ conn = create_connection()
 
 
 def create_cursor(*args, **kwargs) -> MySQLCursor:
-    tries = 0
-    global conn
-    while True:
-        try:
-            return conn.cursor(*args, **kwargs)
-        except Exception as e:
-            tries += 1
-            if tries > 3:
-                raise e
-
-            conn = create_connection()
+    conn.ping(reconnect=True, attempts=10, delay=1)
+    return conn.cursor(*args, **kwargs)
 
 
 def get_all_columns(cursor: MySQLCursor = None) -> List[str]:
