@@ -28,6 +28,7 @@ def create_connection() -> MySQLConnection:
                              password="wetstat",
                              host="localhost",
                              port=3306,
+                             buffered=True,
                              )
 
 
