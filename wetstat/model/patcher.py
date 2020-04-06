@@ -6,7 +6,7 @@ from wetstat.model.db import db_model
 
 
 class Patcher(object):
-    DATA_FILE = r"C:\tmp\agrometeo-data3.csv"
+    DATA_FILE = r"/tmp/agrometeo-data3.csv"
     TIME_FORMAT = "%d.%m.%Y %H:%M"
     CSV_NULL_CHARS = "?x"
 
