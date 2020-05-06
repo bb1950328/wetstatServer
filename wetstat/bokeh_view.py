@@ -39,16 +39,17 @@ ALL_SHORT_NAMES = sensor_master.SensorMaster.get_used_sensor_short_names()
 
 URL = "/wetstat_bokeh"
 PORT = 5006
+MY_IP = util.get_my_ip()
 DEFAULT_ACTIVE_SENSORS = ["DigitalTemp"]
 
 
 def bkapp_view(request: WSGIRequest) -> HttpResponse:
-    with pull_session(url=f"http://localhost:{PORT}{URL}") as session:
+    with pull_session(url=f"http://{MY_IP}:{PORT}{URL}") as session:
         # update or customize that session
-        session.document.roots[0].children[1].title.text = "Special Sliders For A Specific User!"
+        #session.document.roots[0].children[1].title.text = "Special Sliders For A Specific User!"
 
         # generate a script to load the customized session
-        script = server_session(session_id=session.id, url=f'http://localhost:{PORT}{URL}')
+        script = server_session(session_id=session.id, url=f'http://{MY_IP}:{PORT}{URL}')
 
         # use the script in the rendered page
         context = {
@@ -496,13 +497,13 @@ class WetstatBokehApp(object):
             }
 
         self.picker_start = DatePicker(title="Start",
-                                       min_date=datetime.date(2010, 1, 1),
-                                       max_date=self.today - datetime.timedelta(days=1),
+                                       #min_date=datetime.date(2010, 1, 1),
+                                       #max_date=self.today - datetime.timedelta(days=1),
                                        width_policy="fixed",
                                        width=150)
         self.picker_end = DatePicker(title="Ende",
-                                     min_date=datetime.date(2010, 1, 2),
-                                     max_date=self.today,
+                                     #min_date=datetime.date(2010, 1, 2),
+                                     #max_date=self.today,
                                      width_policy="fixed",
                                      width=150)
 
@@ -545,7 +546,7 @@ class WetstatBokehApp(object):
 
 def run_bokeh_server() -> None:
     server = Server({URL: WetstatBokehApp.create}, num_procs=1,
-                    allow_websocket_origin=["127.0.0.1:8000", f"localhost:{PORT}"], port=PORT)
+                    allow_websocket_origin=["127.0.0.1:8000", f"localhost:{PORT}", f"{MY_IP}:{PORT}", MY_IP], port=PORT)
     server.start()
     print(f"Opening Bokeh application on http://localhost{URL}:{PORT}")
 
@@ -554,4 +555,5 @@ def run_bokeh_server() -> None:
 
 
 if __name__ == '__main__':
+    print("You executed this file, so we start the bokeh server...")
     run_bokeh_server()

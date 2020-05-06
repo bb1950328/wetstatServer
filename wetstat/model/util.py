@@ -2,10 +2,12 @@
 import datetime
 import re
 import time
+import subprocess
 from typing import Union, Optional, List
 
 import psutil
 
+IP_ADDRESS_PATTERN = r"\d\d\d\.\d\d\d\.\d\d\d\.\d\d\d"
 
 def human_readable_size(size_bytes: Union[int, float], round_digits: int = 3, unit: str = "B") -> str:
     sizes = {
@@ -153,3 +155,10 @@ def make_color_lighter(old: str) -> str:
     parts = [old[0:2], old[2:4], old[4:6]]
     parts = [hex(int((int(v, 16) + 255) / 2))[2:] for v in parts]
     return f"#{''.join(parts)}"
+
+def get_my_ip() -> str:
+    status, outp = subprocess.getstatusoutput("ipconfig")
+    if status == 0:
+        return re.findall(IP_ADDRESS_PATTERN, outp)[0]
+    else:
+        return subprocess.getoutput("hostname -I").strip()

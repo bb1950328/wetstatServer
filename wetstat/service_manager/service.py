@@ -163,7 +163,7 @@ class LogCleanupService(DailyService):
 
 class ShutdownButtonService(BaseService):
     pin: int = 21  # BCM
-    demo_mode = False
+    demo_mode = True
 
     def run(self) -> None:
         if config.on_pi():

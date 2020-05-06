@@ -138,7 +138,7 @@ if __name__ == '__main__':
     manager.update_service("counter", service.CounterService())
     manager.update_service("plot_cleanup", service.PlotCleanupService())
     manager.update_service("log_cleanup", service.LogCleanupService())
-    manager.update_service("shutdown_button", service.ShutdownButtonService())
+    #manager.update_service("shutdown_button", service.ShutdownButtonService())
     manager.update_service("current_value_provider", service.CurrentValueProviderService())
     manager.update_service("bokeh_server", service.BokehServerService())
 
@@ -148,7 +148,7 @@ if __name__ == '__main__':
     manager.start_service("counter")
     manager.start_service("plot_cleanup")
     manager.start_service("log_cleanup")
-    manager.start_service("shutdown_button")
+    #manager.start_service("shutdown_button")
     manager.start_service("current_value_provider")
     manager.start_service("bokeh_server")
 
