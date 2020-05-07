@@ -1,3 +1,122 @@
 body {
-    background-color: #222222;
+    background-color: #010101;
+    color: #f7f7f7;
+    margin: 0;
+}
+
+header {
+    background-color: #111177;
+    height: 3rem;
+}
+
+footer {
+    background-color: #444444;
+    height: 2rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-top: 0.5rem;
+}
+
+.footer-description {
+    /*justify-content: flex-end;*/
+    margin-left: auto;
+    padding-right: 0.2rem;
+}
+
+.footer-value {
+    margin-right: auto;
+    padding-left: 0.2rem;
+}
+
+main {
+    /* TODO min-height: calc(100vh-5rem);*/
+}
+
+.menu-item {
+    display: inline-block;
+    background-color: #0062cc;
+    height: inherit;
+    color: inherit;
+    text-decoration: none;
+    padding-top: 1rem;
+    font-size: 1rem;
+    box-sizing: border-box;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.menu-item:hover {
+    background-color: #4fa4ff;
+}
+
+.template {
+    display: none !important;
+}
+
+.sensor-value-div {
+    display: grid;
+    grid-template-columns: 5rem 10rem auto auto auto 7rem;
+    color: #000000;
+    padding: 1rem;
+    box-sizing: border-box;
+    border-radius: 1rem;
+    margin-left: 2rem;
+    margin-right: 2rem;
+    margin-top: 1.5rem;
+    height: 7rem;
+}
+
+.sensor-value-div:last-child {
+    margin-bottom: 1.5rem;
+}
+
+.trend-icon {
+    grid-column: 1;
+}
+
+.trend-icon, .sensor-name, .sensor-value {
+    grid-row: 1 / 3;
+    /*padding-top: 0;*/
+    /*height: 5rem;*/
+    /*margin-top: 0;*/
+    /*margin-bottom: 0;*/
+    align-items: center;
+}
+
+.before-text {
+    grid-row: 1;
+}
+
+.before-value {
+    grid-row: 2;
+}
+
+.before-text, .before-value {
+    font-size: 75%;
+}
+
+.sensor-name {
+    grid-column: 2;
+}
+
+.before24h {
+    grid-column: 3;
+}
+
+.before28d {
+    grid-column: 4;
+}
+
+.before1y {
+    grid-column: 5;
+}
+
+.sensor-value {
+    grid-column: 6;
+    font-weight: bold;
+}
+
+@media only screen and (max-width: 600px) {
+    /*TODO*/
 }
