@@ -15,6 +15,13 @@ function create_sensor_divs() {
     });
 }
 
+/**
+ * @returns {number} unix timestamp in seconds
+ */
+function unix_now() {
+    return Math.floor(Date.now() / 1000)
+}
+
 function fill_current_values() {
     get_current_values((csv) => {
         csv.heads.forEach(short_name => {
@@ -24,6 +31,18 @@ function fill_current_values() {
             });
         });
     });
+    let now = unix_now();
+    [["24h", 86400], ["28d", 2419200], ["1y", 31536000]].forEach(_x => {
+        let [class_suffix, seconds] = _x;
+        get_next_value(now - seconds, csv => {
+            csv.heads.forEach(short_name => {
+                get_sensor_unit(short_name, unit => {
+                    let value = csv.getCell(short_name);
+                    $("#valueDiv" + short_name + " .before-value.before" + class_suffix).text(value + " " + unit);
+                });
+            });
+        })
+    })
     setTimeout(fill_current_values, 10000);
     update_last_refresh();
 }

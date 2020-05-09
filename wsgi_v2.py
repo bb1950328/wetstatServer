@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import sys
+import time
 from typing import Dict
 from typing import List
 from urllib import parse
@@ -99,7 +100,7 @@ def get_sensors(params: dict):
             "color": sens.get_display_color(),
             "unit": sens.get_unit(),
         })
-    return json.dumps(data).encode(), "text/json"
+    return json.dumps(data).encode(), "application/json"
 
 
 def get_current_values(params: dict):
@@ -111,12 +112,7 @@ def get_current_values(params: dict):
     if sum_sensors:
         values.update(db_model.get_value_sums(sum_sensors, end=now, duration=datetime.timedelta(days=1)))
     heads = list(values.keys())
-    row1 = []
-    for sn in heads:
-        val = values[sn]
-        if isinstance(val, float):
-            val = round(val, 2) if val < 1000 else int(round(val, 0))
-        row1.append(str(val))
+    row1 = [_stringify_row([values[sn] for sn in heads])]
     return to_bytes_csv([heads, row1]), "text/csv"
 
 
@@ -124,10 +120,34 @@ def get_values(params: dict):
     return b"", "text/csv"
 
 
+def next_value(params: dict):
+    params.setdefault("to", int(time.time()))
+    params.setdefault("sum_span", 60 * 60 * 24)
+    to = datetime.datetime.fromtimestamp(params["to"])
+    sum_span = datetime.timedelta(seconds=params["sum_span"])
+    values = db_model.find_nearest_record(to)
+    sum_sensors = [sens.get_short_name() for sens in sensor_master.SUM_SENSORS]
+    if sum_sensors:
+        values.update(db_model.get_value_sums(sum_sensors, end=to, duration=sum_span))
+    heads = list(values.keys())
+    row1 = [_stringify_row([values[sn] for sn in heads])]
+    return to_bytes_csv([heads, row1]), "text/csv"
+
+
+def _stringify_row(row: list) -> List[str]:
+    res = []
+    for val in row:
+        if isinstance(val, float):
+            val = round(val, 2) if val < 1000 else int(round(val, 0))
+        res.append(str(val))
+    return res
+
+
 URI_FUNC_MAP = {
     "/api/sensors": get_sensors,
     "/api/current_values": get_current_values,
     "/api/values": get_values,
+    "/api/next_value": next_value,
 }
 
 

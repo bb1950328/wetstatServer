@@ -4,16 +4,23 @@ import datetime
 import time
 from concurrent import futures
 from dataclasses import dataclass
-from typing import List, Union, Iterable, Dict, Collection, Optional
+from typing import Collection
+from typing import Dict
+from typing import Iterable
+from typing import List
+from typing import Optional
+from typing import Union
 
 import numpy as np
 from mysql import connector
-from mysql.connector import MySQLConnection, IntegrityError
+from mysql.connector import IntegrityError
+from mysql.connector import MySQLConnection
 from mysql.connector.cursor import MySQLCursor
 
 from wetstat.common import logger
 from wetstat.model import util
 from wetstat.model.db import db_const
+from wetstat.sensors import sensor_master
 
 
 @dataclass
@@ -23,13 +30,19 @@ class DbData(object):
 
 
 def create_connection() -> MySQLConnection:
-    return connector.connect(database=db_const.DATABASE_NAME,
-                             user="wetstat_user",
-                             password="wetstat",
-                             host="localhost",
-                             port=3306,
-                             buffered=True,
-                             )
+    connection = connector.connect(database=db_const.DATABASE_NAME,
+                                   user="wetstat_user",
+                                   password="wetstat",
+                                   host="localhost",
+                                   port=3306,
+                                   buffered=True,
+                                   )
+    logger.log.info("Connection made")
+    cur = connection.cursor()
+    cur.execute("SELECT COUNT(*) FROM data")
+    logger.log.info(f"Recordcount: {cur.fetchall()}")
+    cur.close()
+    return connection
 
 
 conn = create_connection()
@@ -37,6 +50,7 @@ conn = create_connection()
 
 def create_cursor(*args, **kwargs) -> MySQLCursor:
     conn.ping(reconnect=True, attempts=10, delay=1)
+    conn.commit()
     return conn.cursor(*args, **kwargs)
 
 
@@ -158,7 +172,6 @@ def load_data_for_date_range(start: datetime.datetime, end: datetime.datetime,
                              already_existing: Optional[DbData] = None, delete_too_much_existing=False) -> DbData:
     cur = None
     try:
-        conn.commit()
         cur = create_cursor()
         if already_existing is None:
             execute_select_range(start, end, cur)
@@ -193,6 +206,49 @@ def load_data_for_date_range(start: datetime.datetime, end: datetime.datetime,
     finally:
         if cur:
             cur.close()
+
+
+def load_data_with_interval(interval: datetime.timedelta, *,
+                            start: datetime.datetime = None,
+                            end: datetime.datetime = None,
+                            duration: datetime.timedelta = None) -> DbData:
+    start, end, duration = util.calculate_missing_start_end_duration(start, end, duration)
+    raw = load_data_for_date_range(start, end)
+    result = []
+    time_idx = raw.columns.index("Time")
+    idx_a = 0
+    rowcount = raw.array.shape[0]
+    while idx_a < rowcount:
+        dt_a = raw.array[idx_a, time_idx]
+        dt_b = dt_a + interval
+        idx_b = idx_a + 1
+        while raw.array[idx_b, time_idx] < dt_b and rowcount > idx_b:
+            idx_b += 1
+        chunk = raw.array[idx_a:idx_b]
+        row = []
+        for col_index, short_name in enumerate(raw.columns):
+            if short_name == "Time":
+                method = "avg"
+            else:
+                method = sensor_master.SensorMaster.get_sensor_for_info("short_name",
+                                                                        short_name).get_compression_function()
+            column = chunk[:, col_index]
+            if "avg" in method:
+                # TODO implement min and max also (for minmaxavg)
+                value = np.mean(column)
+            elif "sum" == method:
+                value = np.sum(column)
+            elif "min" == method:
+                value = np.min(column)
+            elif "max" == method:
+                value = np.max(column)
+            else:
+                logger.log.warn(f"shouldn't get here (method={method})")
+                value = np.mean(column)
+            row.append(value)
+        result.append(row)
+        idx_a = idx_b
+    return DbData(np.array(result), raw.columns)
 
 
 def execute_select_range(start, end, cursor, columns=None) -> None:
@@ -295,7 +351,7 @@ def find_nearest_record(timestamp: datetime.datetime):
     time_str = to_sql_str(timestamp)
     cur = None
     try:
-        conn.commit()  # to get changes which are made by other connections after creation of this connection
+        # conn.commit()  # to get changes which are made by other connections after creation of this connection
         cur = create_cursor()
 
         cur.execute(f"SELECT * FROM data WHERE Time >= {time_str} ORDER BY Time ASC LIMIT 1;")

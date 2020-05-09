@@ -91,7 +91,16 @@ function get_current_values(callback) {
         success: (result, status, xhr) => {
             callback(new CSV(result));
         },
-        fail: callback(new CSV("Temp1;Pressure\n21.3;936")),
+    });
+}
+
+function get_next_value(to, callback) {
+    $.ajax({
+        url: "api/current_values?to=" + to,
+        type: "get",
+        success: (result, status, xhr) => {
+            callback(new CSV(result));
+        },
     });
 }
 

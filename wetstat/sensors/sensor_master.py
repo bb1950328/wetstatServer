@@ -1,5 +1,6 @@
 # coding=utf-8
 import datetime
+import functools
 import json
 import socket
 import threading
@@ -107,6 +108,7 @@ class SensorMaster(object):
         pass
 
     @staticmethod
+    @functools.lru_cache(len(ALL_SENSORS) * 4)
     def get_sensor_for_info(name: str, value) -> Optional[BaseSensor]:
         for sensor in ALL_SENSORS:
             info = sensor.get_info()

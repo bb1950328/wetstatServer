@@ -46,7 +46,15 @@ Returns a CSV with the requested values. Following GET or POST parameters needed
     - `year`
 
 Example response:
+```
 Time;Temp1;Pressure
 1523432423;23.1;924
 1532543233;22.7;925
 1534543345;19.9;929
+```
+
+### api/next_value
+Returns a CSV with the next record to the parameter `to`, which is an UNIX timestamp. 
+There's also a parameter `sum_span` which is the number of seconds which are relevant for the sensors of type `sum`. 
+The default value is 86400 (24 hours). 
+Example response is the same as in api/current_values
