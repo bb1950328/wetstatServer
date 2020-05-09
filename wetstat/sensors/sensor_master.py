@@ -4,7 +4,8 @@ import json
 import socket
 import threading
 import time
-from typing import Optional, List
+from typing import List
+from typing import Optional
 
 import numpy as np
 import schedule
@@ -12,7 +13,8 @@ import schedule
 from wetstat.common import logger
 from wetstat.model import util
 from wetstat.model.db import db_model
-from wetstat.sensors.abstract.base_sensor import BaseSensor, CompressionFunction
+from wetstat.sensors.abstract.base_sensor import BaseSensor
+from wetstat.sensors.abstract.base_sensor import CompressionFunction
 from wetstat.sensors.real.digital_temp_sensor import DigitalTempSensor
 from wetstat.sensors.real.fake_sensor import FakeSensor
 from wetstat.sensors.real.humidity_sensor import HumiditySensor
@@ -31,13 +33,13 @@ OLD_SENSORS: List[BaseSensor] = [
 ]
 
 USED_SENSORS: List[BaseSensor] = [
-    TempSensor(1),
-    TempSensor(2),
     LightSensor(),
     DigitalTempSensor(),
     PressureSensor(),
     HumiditySensor(),
     RainSensor(),
+    TempSensor(1),
+    TempSensor(2),
 ]
 
 ALL_SENSORS: List[BaseSensor] = [*USED_SENSORS, *OLD_SENSORS]

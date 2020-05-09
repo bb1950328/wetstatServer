@@ -15,6 +15,7 @@ if di2 not in sys.path:
     sys.path.append(di2)
 # print(sys.path, file=sys.stderr)
 
+from wetstat.common import logger
 from wetstat.model.db import db_model
 from wetstat.sensors import sensor_master
 
@@ -106,7 +107,12 @@ def get_current_values(params: dict):
     if not values:
         values = db_model.find_nearest_record(datetime.datetime.now())
     heads = list(values.keys())
-    row1 = [str(values[sn]) for sn in heads]
+    row1 = []
+    for sn in heads:
+        val = values[sn]
+        if isinstance(val, float):
+            val = round(val, 2) if val < 1000 else int(round(val, 0))
+        row1.append(str(val))
     return to_bytes_csv([heads, row1]), "text/csv"
 
 
@@ -144,6 +150,7 @@ def application(environ: Dict[str, object], start_response: callable) -> list:
             status = "404 Not Found"
             output = b"The requestet URL " + uri.encode() + b" was not found."
     except Exception as e:
+        logger.log.exception("Exception in wsgi_v2")
         status = "500 Server Error"
         output = str(e).encode()
 
