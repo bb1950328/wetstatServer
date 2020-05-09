@@ -1,6 +1,22 @@
+import datetime
+import json
+import os
+import sys
+from typing import Dict
+from typing import List
 from urllib import parse
 
-from typing import Dict
+di = os.path.abspath(os.path.dirname(__file__))
+di2 = os.path.join(di, "venv", "lib")
+di2 = os.path.join(di2, os.listdir(di2)[0], "site-packages")  # result of listdir is for example "python3.8"
+if di not in sys.path:
+    sys.path.append(di)
+if di2 not in sys.path:
+    sys.path.append(di2)
+# print(sys.path, file=sys.stderr)
+
+from wetstat.model.db import db_model
+from wetstat.sensors import sensor_master
 
 ENVIRON_EXAMPLE = \
     {
@@ -69,12 +85,29 @@ ENVIRON_EXAMPLE = \
         'wsgi.version': (1, 0)},
 
 
+def to_bytes_csv(rows: List[List[object]]) -> bytes:
+    return "\n".join(";".join(map(str, row)) for row in rows).encode()
+
+
 def get_sensors(params: dict):
-    return b"", "text/json"
+    data = []
+    for sens in sensor_master.USED_SENSORS:
+        data.append({
+            "name": sens.get_long_name(),
+            "short_name": sens.get_short_name(),
+            "color": sens.get_display_color(),
+            "unit": sens.get_unit(),
+        })
+    return json.dumps(data).encode(), "text/json"
 
 
 def get_current_values(params: dict):
-    return b"", "text/csv"
+    values = sensor_master.get_current_values()
+    if not values:
+        values = db_model.find_nearest_record(datetime.datetime.now())
+    heads = list(values.keys())
+    row1 = [str(values[sn]) for sn in heads]
+    return to_bytes_csv([heads, row1]), "text/csv"
 
 
 def get_values(params: dict):

@@ -70,10 +70,6 @@ function get_sensors(callback) {
                 _get_sensors_result = result;
                 callback(result)
             },
-            fail: callback([
-                {"name": "Temperatur 1", "short_name": "Temp1", "unit": "°C", "color": "#ff00ff"},
-                {"name": "Pressure", "short_name": "Pressure", "unit": "hPa", "color": "#aadd00"}
-            ]),
         });
     }
 }
