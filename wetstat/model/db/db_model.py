@@ -19,6 +19,7 @@ from mysql.connector.cursor import MySQLCursor
 
 from wetstat.common import logger
 from wetstat.model import util
+from wetstat.model.db import connection_pool
 from wetstat.model.db import db_const
 from wetstat.sensors import sensor_master
 
@@ -45,40 +46,50 @@ def create_connection() -> MySQLConnection:
     return connection
 
 
-conn = create_connection()
+# conn = create_connection()
 
 
-def create_cursor(*args, **kwargs) -> MySQLCursor:
-    conn.ping(reconnect=True, attempts=10, delay=1)
-    conn.commit()
-    return conn.cursor(*args, **kwargs)
+# def create_cursor(*args, **kwargs) -> MySQLCursor:
+#     conn.ping(reconnect=True, attempts=10, delay=1)
+#     conn.commit()
+#     return conn.cursor(*args, **kwargs)
 
 
 def get_all_columns(cursor: MySQLCursor = None) -> List[str]:
     if not cursor:
-        cursor = create_cursor()
+        conn = connection_pool.find_conn()
+        cursor = conn.cursor()
         is_own_cursor = True
     else:
+        conn = None
         is_own_cursor = False
-    cursor.execute("EXPLAIN " + db_const.DATA_DB_NAME)
-    exp = cursor.fetchall()
-    if is_own_cursor:
-        cursor.close()
+    try:
+        cursor.execute("EXPLAIN " + db_const.DATA_DB_NAME)
+        exp = cursor.fetchall()
+    finally:
+        if is_own_cursor:
+            cursor.close()
+            connection_pool.release_conn(conn)
     return [col[0] for col in exp]
 
 
 def add_column(col_name: str, cursor: MySQLCursor = None):
     if not cursor:
-        cursor = create_cursor()
+        conn = connection_pool.find_conn()
+        cursor = conn.cursor()
         is_own_cursor = True
     else:
+        conn = None
         is_own_cursor = False
-    if not util.is_valid_sql_name(col_name):
-        raise ValueError(f"Invalid column name: '{col_name}'!!!!")
-    cursor.execute(f"ALTER TABLE {db_const.DATA_DB_NAME} ADD {col_name} FLOAT;")
-    logger.log.info(f"Added column '{col_name}' in {db_const.DATABASE_NAME}.{db_const.DATA_DB_NAME}")
-    if is_own_cursor:
-        cursor.close()
+    try:
+        if not util.is_valid_sql_name(col_name):
+            raise ValueError(f"Invalid column name: '{col_name}'!!!!")
+        cursor.execute(f"ALTER TABLE {db_const.DATA_DB_NAME} ADD {col_name} FLOAT;")
+        logger.log.info(f"Added column '{col_name}' in {db_const.DATABASE_NAME}.{db_const.DATA_DB_NAME}")
+    finally:
+        if is_own_cursor:
+            cursor.close()
+            connection_pool.release_conn(conn)
 
 
 def to_sql_str(value: object) -> str:
@@ -92,7 +103,7 @@ def insert_daydata(daydata, add_missing_columns=False, create_own_connection=Fal
     if create_own_connection:
         connection = create_connection()
     else:
-        connection = conn
+        connection = connection_pool.find_conn()
     cur = None
     try:
         cur = connection.cursor()
@@ -117,6 +128,8 @@ def insert_daydata(daydata, add_missing_columns=False, create_own_connection=Fal
             cur.close()
         if create_own_connection:
             connection.close()
+        else:
+            connection_pool.release_conn(connection)
 
 
 def do_insert(connection, cursor, column_names, values: Union[Iterable[object], Iterable[Iterable[object]]],
@@ -171,8 +184,10 @@ def insert_datacontainer(container, use_threads=False, add_missing_columns=True)
 def load_data_for_date_range(start: datetime.datetime, end: datetime.datetime,
                              already_existing: Optional[DbData] = None, delete_too_much_existing=False) -> DbData:
     cur = None
+    conn = None
     try:
-        cur = create_cursor()
+        conn = connection_pool.find_conn()
+        cur = conn.cursor()
         if already_existing is None:
             execute_select_range(start, end, cur)
             db_data = fetch_to_db_data(cur)
@@ -206,6 +221,7 @@ def load_data_for_date_range(start: datetime.datetime, end: datetime.datetime,
     finally:
         if cur:
             cur.close()
+        connection_pool.release_conn(conn)
 
 
 def load_data_with_interval(interval: datetime.timedelta, *,
@@ -271,8 +287,10 @@ def insert_record(timestamp: datetime.datetime, update_if_exists=False, **values
     example call: insert_record(time, Temp1=3, Light=5, update_if_exists=True)
     """
     cur = None
+    conn = None
     try:
-        cur = create_cursor()
+        conn = connection_pool.find_conn()
+        cur = conn.cursor()
         cols = list(values.keys())
         cols.append(db_const.COL_NAME_TIME)
         vals = list(values.values())
@@ -281,6 +299,7 @@ def insert_record(timestamp: datetime.datetime, update_if_exists=False, **values
     finally:
         if cur:
             cur.close()
+        connection_pool.release_conn(conn)
 
 
 def fetch_to_db_data(cursor: MySQLCursor) -> DbData:
@@ -291,9 +310,11 @@ def export_to_csv(start: datetime.datetime, end: datetime.datetime, path: str,
                   columns: Optional[Collection[str]] = None, delimiter=";", none_value: str = ""):
     start_ts = time.perf_counter()
     cur = None
+    conn = None
     out = None
     try:
-        cur = create_cursor()
+        conn = connection_pool.find_conn()
+        cur = conn.cursor()
         execute_select_range(start, end, cur)
         if columns is None:
             columns = cur.column_names
@@ -341,6 +362,7 @@ def export_to_csv(start: datetime.datetime, end: datetime.datetime, path: str,
             cur.close()
         if out:
             out.close()
+        connection_pool.release_conn(conn)
 
 
 def find_nearest_record(timestamp: datetime.datetime):
@@ -350,9 +372,10 @@ def find_nearest_record(timestamp: datetime.datetime):
     """
     time_str = to_sql_str(timestamp)
     cur = None
+    conn = None
     try:
-        # conn.commit()  # to get changes which are made by other connections after creation of this connection
-        cur = create_cursor()
+        conn = connection_pool.find_conn()
+        cur = conn.cursor()
 
         cur.execute(f"SELECT * FROM data WHERE Time >= {time_str} ORDER BY Time ASC LIMIT 1;")
         res_future = cur.fetchone()
@@ -382,6 +405,7 @@ def find_nearest_record(timestamp: datetime.datetime):
     finally:
         if cur:
             cur.close()
+        connection_pool.release_conn(conn)
 
 
 def get_value_sums(columns,
@@ -394,13 +418,16 @@ def get_value_sums(columns,
         raise ValueError("At least one of the given column names is invalid!!!")
     col_list = (f"SUM({sn}) AS {sn}" for sn in columns)
     cur = None
+    con = None
     try:
-        cur = create_cursor()
+        con = connection_pool.find_conn()
+        cur = con.cursor()
         execute_select_range(start, end, cur, col_list)
         return record_to_dict(cur.fetchone(), cur.column_names, none_value=0)
     finally:
         if cur:
             cur.close()
+        connection_pool.release_conn(con)
 
 
 def record_to_dict(record: Iterable, columns: Iterable[str], none_value=None):
@@ -409,5 +436,5 @@ def record_to_dict(record: Iterable, columns: Iterable[str], none_value=None):
 
 
 def cleanup() -> None:
-    conn.close()
+    connection_pool.cleanup()
     logger.log.debug("Database connection closed.")
