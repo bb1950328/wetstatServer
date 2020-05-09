@@ -103,9 +103,13 @@ def get_sensors(params: dict):
 
 
 def get_current_values(params: dict):
+    now = datetime.datetime.now()
     values = sensor_master.get_current_values()
     if not values:
-        values = db_model.find_nearest_record(datetime.datetime.now())
+        values = db_model.find_nearest_record(now)
+    sum_sensors = [sens.get_short_name() for sens in sensor_master.SUM_SENSORS]
+    if sum_sensors:
+        values.update(db_model.get_value_sums(sum_sensors, end=now, duration=datetime.timedelta(days=1)))
     heads = list(values.keys())
     row1 = []
     for sn in heads:
