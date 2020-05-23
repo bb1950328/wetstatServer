@@ -10,7 +10,7 @@ from urllib import parse
 
 di = os.path.abspath(os.path.dirname(__file__))
 di2 = os.path.join(di, "venv", "lib")
-di2 = os.path.join(di2, os.listdir(di2)[0], "site-packages")  # result of listdir is for example "python3.8"
+di2 = os.path.join(di2, os.listdir(di2)[0], "site-packages")  # result of listdir is for example ["python3.8"]
 if di not in sys.path:
     sys.path.append(di)
 if di2 not in sys.path:
@@ -22,75 +22,21 @@ from wetstat.common import logger
 from wetstat.model.db import db_model
 from wetstat.sensors import sensor_master
 
-ENVIRON_EXAMPLE = \
-    {
-        'CONTEXT_DOCUMENT_ROOT': '/home/pi/wetstatServer/http_root',
-        'CONTEXT_PREFIX': '',
-        'DOCUMENT_ROOT': '/home/pi/wetstatServer/http_root',
-        'GATEWAY_INTERFACE': 'CGI/1.1',
-        'HTTP_ACCEPT': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'HTTP_ACCEPT_ENCODING': 'gzip, deflate',
-        'HTTP_ACCEPT_LANGUAGE': 'en-US,en;q=0.5',
-        'HTTP_CONNECTION': 'keep-alive',
-        'HTTP_HOST': '192.168.178.27',
-        'HTTP_UPGRADE_INSECURE_REQUESTS': '1',
-        'HTTP_USER_AGENT': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; '
-                           'rv:75.0) Gecko/20100101 Firefox/75.0',
-        'PATH_INFO': '',
-        'QUERY_STRING': '',
-        'REMOTE_ADDR': '192.168.178.28',
-        'REMOTE_PORT': '54192',
-        'REQUEST_METHOD': 'GET',
-        'REQUEST_SCHEME': 'http',
-        'REQUEST_URI': '/api',
-        'SCRIPT_FILENAME': '/home/pi/wetstatServer/wsgi_v2.py',
-        'SCRIPT_NAME': '/api',
-        'SERVER_ADDR': '192.168.178.27',
-        'SERVER_ADMIN': 'webmaster@localhost',
-        'SERVER_NAME': '192.168.178.27',
-        'SERVER_PORT': '80',
-        'SERVER_PROTOCOL': 'HTTP/1.1',
-        'SERVER_SIGNATURE': '<address>Apache/2.4.25 (Raspbian) '
-                            'Server at 192.168.178.27 Port '
-                            '80</address>\n',
-        'SERVER_SOFTWARE': 'Apache/2.4.25 (Raspbian)',
-        'apache.version': (2, 4, 25),
-        'mod_wsgi.application_group': '',
-        'mod_wsgi.callable_object': 'application',
-        'mod_wsgi.daemon_connects': '1',
-        'mod_wsgi.daemon_restarts': '0',
-        'mod_wsgi.daemon_start': '1588786597264004',
-        'mod_wsgi.enable_sendfile': '0',
-        'mod_wsgi.handler_script': '',
-        'mod_wsgi.ignore_activity': '0',
-        'mod_wsgi.listener_host': '',
-        'mod_wsgi.listener_port': '80',
-        'mod_wsgi.path_info': '',
-        'mod_wsgi.process_group': 'wetstatServer2',
-        'mod_wsgi.queue_start': '1588786597259919',
-        'mod_wsgi.request_handler': 'wsgi-script',
-        'mod_wsgi.request_id': 'meXANNa7SbY',
-        'mod_wsgi.request_start': '1588786597258649',
-        'mod_wsgi.script_name': '/api',
-        'mod_wsgi.script_reloading': '1',
-        'mod_wsgi.script_start': '1588786597421057',
-        'mod_wsgi.thread_id': 1,
-        'mod_wsgi.thread_requests': 0,
-        'mod_wsgi.total_requests': 0,
-        'mod_wsgi.version': (4, 6, 4),
-        'wsgi.errors': "<_io.TextIOWrapper name='<wsgi.errors>' encoding='utf-8'>",
-        'wsgi.file_wrapper': "<class 'mod_wsgi.FileWrapper'>",
-        'wsgi.input': "<mod_wsgi.Input object at 0xb6805ec0>",
-        'wsgi.input_terminated': True,
-        'wsgi.multiprocess': False,
-        'wsgi.multithread': True,
-        'wsgi.run_once': False,
-        'wsgi.url_scheme': 'http',
-        'wsgi.version': (1, 0)},
+wsgi_environ = {}
 
 
 def to_bytes_csv(rows: List[List[object]]) -> bytes:
-    return "\n".join(";".join(map(str, row)) for row in rows).encode()
+    return "\n".join([row_to_csv(row) for row in rows]).encode()
+
+
+def row_to_csv(row: list) -> str:
+    # sorry for bad readability, but it's faster ;-)
+    res = ["" if val is None
+           else str(round(val, 2 if val < 1000 else 0) if isinstance(val, float)
+                    else (int(val.timestamp()) if isinstance(val, datetime.datetime)
+                          else val))
+           for val in row]
+    return ";".join(res)
 
 
 def get_sensors(params: dict):
@@ -114,12 +60,25 @@ def get_current_values(params: dict):
     if sum_sensors:
         values.update(db_model.get_value_sums(sum_sensors, end=now, duration=datetime.timedelta(days=1)))
     heads = list(values.keys())
-    row1 = _stringify_row([values[sn] for sn in heads])
+    row1 = [values[sn] for sn in heads]
     return to_bytes_csv([heads, row1]), "text/csv"
 
 
 def get_values(params: dict):
-    return b"", "text/csv"
+    start = time.perf_counter()
+
+    params.setdefault("to", int(time.time()))
+    params.setdefault("from", int(time.time() - 60 * 60 * 24 * 365))
+    from_ = datetime.datetime.fromtimestamp(int(params["from"]))
+    to = datetime.datetime.fromtimestamp(int(params["to"]))
+    data = db_model.load_data_for_date_range(from_, to)
+    rows = list(data.array)
+    result = to_bytes_csv([data.columns, *rows]), "text/csv"
+
+    stop = time.perf_counter()
+    used = (stop - start)
+    print("Used", used, "s for ", len(rows), "rows, that's", used / len(rows), "s/row", file=sys.stderr)
+    return result
 
 
 def next_value(params: dict):
@@ -132,16 +91,19 @@ def next_value(params: dict):
     if sum_sensors:
         values.update(db_model.get_value_sums(sum_sensors, end=to, duration=sum_span))
     heads = list(values.keys())
-    row1 = _stringify_row([values[sn] for sn in heads])
+    row1 = [values[sn] for sn in heads]
     return to_bytes_csv([heads, row1]), "text/csv"
 
 
-def _stringify_row(row: list) -> List[str]:
-    res = []
-    for val in row:
-        if isinstance(val, float):
-            val = round(val, 2) if val < 1000 else int(round(val, 0))
-        res.append(str(val))
+def to_serializable_dict(inp: dict) -> dict:
+    res = {}
+    for key, value in inp.items():
+        try:
+            json.dumps(value)
+        except TypeError:
+            res[key] = str(value)
+        else:
+            res[key] = value
     return res
 
 
@@ -151,6 +113,7 @@ def system_info(params: dict):
         "executable": sys.executable,
         "used_db_connections": connection_pool.get_used_count(),
         "open_db_connections": connection_pool.get_open_count(),
+        "wsgi_environ": to_serializable_dict(wsgi_environ),
     }).encode(), "application/json"
 
 
@@ -165,6 +128,8 @@ URI_FUNC_MAP = {
 
 def application(environ: Dict[str, object], start_response: callable) -> list:
     content_type = "text/plain"
+    global wsgi_environ
+    wsgi_environ = environ
     try:
         full_uri = environ["REQUEST_URI"]
         params = {}
