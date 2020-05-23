@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import time
+import traceback
 from typing import Dict
 from typing import List
 from urllib import parse
@@ -16,6 +17,7 @@ if di2 not in sys.path:
     sys.path.append(di2)
 # print(sys.path, file=sys.stderr)
 
+from wetstat.model.db import connection_pool
 from wetstat.common import logger
 from wetstat.model.db import db_model
 from wetstat.sensors import sensor_master
@@ -112,7 +114,7 @@ def get_current_values(params: dict):
     if sum_sensors:
         values.update(db_model.get_value_sums(sum_sensors, end=now, duration=datetime.timedelta(days=1)))
     heads = list(values.keys())
-    row1 = [_stringify_row([values[sn] for sn in heads])]
+    row1 = _stringify_row([values[sn] for sn in heads])
     return to_bytes_csv([heads, row1]), "text/csv"
 
 
@@ -123,14 +125,14 @@ def get_values(params: dict):
 def next_value(params: dict):
     params.setdefault("to", int(time.time()))
     params.setdefault("sum_span", 60 * 60 * 24)
-    to = datetime.datetime.fromtimestamp(params["to"])
+    to = datetime.datetime.fromtimestamp(int(params["to"]))
     sum_span = datetime.timedelta(seconds=params["sum_span"])
     values = db_model.find_nearest_record(to)
     sum_sensors = [sens.get_short_name() for sens in sensor_master.SUM_SENSORS]
     if sum_sensors:
         values.update(db_model.get_value_sums(sum_sensors, end=to, duration=sum_span))
     heads = list(values.keys())
-    row1 = [_stringify_row([values[sn] for sn in heads])]
+    row1 = _stringify_row([values[sn] for sn in heads])
     return to_bytes_csv([heads, row1]), "text/csv"
 
 
@@ -143,11 +145,21 @@ def _stringify_row(row: list) -> List[str]:
     return res
 
 
+def system_info(params: dict):
+    return json.dumps({
+        "pid": os.getpid(),
+        "executable": sys.executable,
+        "used_db_connections": connection_pool.get_used_count(),
+        "open_db_connections": connection_pool.get_open_count(),
+    }).encode(), "application/json"
+
+
 URI_FUNC_MAP = {
     "/api/sensors": get_sensors,
     "/api/current_values": get_current_values,
     "/api/values": get_values,
     "/api/next_value": next_value,
+    "/api/system_info": system_info,
 }
 
 
@@ -176,7 +188,7 @@ def application(environ: Dict[str, object], start_response: callable) -> list:
     except Exception as e:
         logger.log.exception("Exception in wsgi_v2")
         status = "500 Server Error"
-        output = str(e).encode()
+        output = traceback.format_exc().encode()
 
     response_headers = [("Content-type", content_type),
                         ("Content-length", str(len(output)))]

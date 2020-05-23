@@ -92,8 +92,8 @@ def get_current_values() -> dict:
         sock = socket.create_connection(("127.0.0.1", CURRENT_VALUE_PORT), 1)
         sock.send("aaaa".encode())
         return json.loads(sock.recv(4096).decode())
-    except (ConnectionRefusedError, ConnectionError, socket.timeout) as e:
-        logger.log.exception("Exception in get_current_values")
+    except (ConnectionError, socket.timeout) as e:
+        logger.log.exception("Caught exception in get_current_values")
         return {}
 
 

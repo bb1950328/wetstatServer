@@ -19,6 +19,7 @@ def find_conn() -> MySQLConnection:
         if all(_used) and len(_connections) < MAX_CONNECTIONS:
             conn = _new_connection()
             _connections.append(conn)
+            _used.append(True)
             conn.commit()
             return conn
     while True:
@@ -39,6 +40,16 @@ def release_conn(conn: MySQLConnection) -> None:
             with _meta_lock:
                 _used[i] = False
             return
+
+
+def get_used_count() -> int:
+    with _meta_lock:
+        return _used.count(True)
+
+
+def get_open_count() -> int:
+    with _meta_lock:
+        return len(_used)
 
 
 def _new_connection() -> MySQLConnection:

@@ -58,3 +58,14 @@ Returns a CSV with the next record to the parameter `to`, which is an UNIX times
 There's also a parameter `sum_span` which is the number of seconds which are relevant for the sensors of type `sum`. 
 The default value is 86400 (24 hours). 
 Example response is the same as in api/current_values
+
+### api/system_info
+Returns a json which looks like this:
+```json
+{
+"used_db_connections": 1,
+"open_db_connections": 4,
+"pid": 2342,
+"executable": "/usr/bin/python"
+}
+```

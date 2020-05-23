@@ -96,7 +96,7 @@ function get_current_values(callback) {
 
 function get_next_value(to, callback) {
     $.ajax({
-        url: "api/current_values?to=" + to,
+        url: "api/next_value?to=" + to,
         type: "get",
         success: (result, status, xhr) => {
             callback(new CSV(result));
