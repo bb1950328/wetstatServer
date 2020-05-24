@@ -8,6 +8,8 @@ from typing import Dict
 from typing import List
 from urllib import parse
 
+MIME_CSV = "text/csv"
+
 di = os.path.abspath(os.path.dirname(__file__))
 di2 = os.path.join(di, "venv", "lib")
 di2 = os.path.join(di2, os.listdir(di2)[0], "site-packages")  # result of listdir is for example ["python3.8"]
@@ -61,7 +63,7 @@ def get_current_values(params: dict):
         values.update(db_model.get_value_sums(sum_sensors, end=now, duration=datetime.timedelta(days=1)))
     heads = list(values.keys())
     row1 = [values[sn] for sn in heads]
-    return to_bytes_csv([heads, row1]), "text/csv"
+    return to_bytes_csv([heads, row1]), MIME_CSV
 
 
 def get_values(params: dict):
@@ -73,11 +75,12 @@ def get_values(params: dict):
     to = datetime.datetime.fromtimestamp(int(params["to"]))
     data = db_model.load_data_for_date_range(from_, to)
     rows = list(data.array)
-    result = to_bytes_csv([data.columns, *rows]), "text/csv"
+    result = to_bytes_csv([data.columns, *rows]), MIME_CSV
 
     stop = time.perf_counter()
     used = (stop - start)
-    print("Used", used, "s for ", len(rows), "rows, that's", used / len(rows), "s/row", file=sys.stderr)
+    if rows:
+        print("Used", used, "s for ", len(rows), "rows, that's", used / len(rows), "s/row", file=sys.stderr)
     return result
 
 
@@ -92,7 +95,7 @@ def next_value(params: dict):
         values.update(db_model.get_value_sums(sum_sensors, end=to, duration=sum_span))
     heads = list(values.keys())
     row1 = [values[sn] for sn in heads]
-    return to_bytes_csv([heads, row1]), "text/csv"
+    return to_bytes_csv([heads, row1]), MIME_CSV
 
 
 def to_serializable_dict(inp: dict) -> dict:
@@ -150,7 +153,7 @@ def application(environ: Dict[str, object], start_response: callable) -> list:
         else:
             status = "404 Not Found"
             output = b"The requestet URL " + uri.encode() + b" was not found."
-    except Exception as e:
+    except Exception:
         logger.log.exception("Exception in wsgi_v2")
         status = "500 Server Error"
         output = traceback.format_exc().encode()

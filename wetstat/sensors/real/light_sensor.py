@@ -1,6 +1,7 @@
 # coding=utf-8
 from wetstat.sensors.abstract.base_sensor import BaseSensor
-from wetstat.sensors.abstract.bh1750fvi import BH1750FVI, Const
+from wetstat.sensors.abstract.bh1750fvi import BH1750FVI
+from wetstat.sensors.abstract.bh1750fvi import Const
 
 DARK_THRESHOLD = 100
 LIGHT_THRESHOLD = 40_000
@@ -25,7 +26,7 @@ class LightSensor(BaseSensor):
         return "Light"
 
     def get_display_color(self) -> str:
-        return "#228b22"
+        return "#ff8000"
 
     def get_unit(self) -> str:
         return "Lux"

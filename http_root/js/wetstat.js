@@ -5,18 +5,24 @@ class CSV {
     constructor(string_data = null) {
         if (string_data != null) {
             let first = true;
-            string_data.split("\n").forEach(line => {
+            for (const line of string_data.split("\n")) {
                 let line_obj = [];
-                line.split(";").forEach(cell => {
-                    line_obj.push(cell.replace("\r", "").replace("\n", ""));
-                });
+                for (let i = 0; i < line.split(";").length; i++) {
+                    let cell = line.split(";")[i];
+                    cell = cell.replace("\r", "").replace("\n", "");
+                    let asFloat = Number.parseFloat(cell);
+                    if (!isNaN(asFloat)) {
+                        cell = asFloat;
+                    }
+                    line_obj.push(cell);
+                }
                 if (first) {
                     first = false;
                     this.heads = line_obj;
                 } else {
                     this.data.push(line_obj);
                 }
-            });
+            }
         }
     }
 
@@ -48,12 +54,18 @@ class CSV {
     }
 }
 
+/**
+ * @returns {number} unix timestamp in seconds
+ */
+function unix_now() {
+    return Math.floor(Date.now() / 1000)
+}
+
 function update_last_refresh() {
     let last_refreshed = document.getElementById("last-refreshed");
     if (last_refreshed !== null) {
         let today = new Date();
-        // todo check if it's really locale format
-        last_refreshed.innerText = today.toLocaleDateString() + " " + today.toLocaleTimeString();
+        last_refreshed.innerText = today.toLocaleString();
     }
 }
 
@@ -68,7 +80,7 @@ function get_sensors(callback) {
             type: "get",
             success: (result, status, xhr) => {
                 _get_sensors_result = result;
-                callback(result)
+                callback(result);
             },
         });
     }
@@ -97,6 +109,28 @@ function get_current_values(callback) {
 function get_next_value(to, callback) {
     $.ajax({
         url: "api/next_value?to=" + to,
+        type: "get",
+        success: (result, status, xhr) => {
+            callback(new CSV(result));
+        },
+    });
+}
+
+function get_values(from = -1, to = -1, callback) {
+    if (from instanceof Function) {
+        callback = from;
+        from = -1;
+    }
+    if (to === -1) {
+        to = unix_now();
+    }
+    if (from === -1) {
+        from = to - 24 * 60 * 60;
+    }
+    let url = "api/values?to=" + to + "&from=" + from;
+    console.log(url);
+    $.ajax({
+        url: url,
         type: "get",
         success: (result, status, xhr) => {
             callback(new CSV(result));

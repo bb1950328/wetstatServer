@@ -11,7 +11,7 @@ class PressureSensor(BME280Base):
         return "Pressure"
 
     def get_display_color(self) -> str:
-        return "#f3ff2b"
+        return "#cc1166"
 
     def get_unit(self) -> str:
         return "hPa"

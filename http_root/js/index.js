@@ -15,13 +15,6 @@ function create_sensor_divs() {
     });
 }
 
-/**
- * @returns {number} unix timestamp in seconds
- */
-function unix_now() {
-    return Math.floor(Date.now() / 1000)
-}
-
 function fill_current_values() {
     get_current_values((csv) => {
         csv.heads.forEach(short_name => {
