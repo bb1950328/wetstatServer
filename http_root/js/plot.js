@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 wp.lineConfig(short_name, "auto_min_max", true);
             }
             wp.initialize();
+            wp.scrollTo(Infinity);
         });
     });
 });
