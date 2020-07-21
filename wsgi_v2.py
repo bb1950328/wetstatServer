@@ -1,3 +1,4 @@
+import collections
 import datetime
 import json
 import os
@@ -25,6 +26,14 @@ from wetstat.model.db import db_model
 from wetstat.sensors import sensor_master
 
 wsgi_environ = {}
+
+INTERVALS = collections.defaultdict(lambda x: datetime.timedelta(minutes=10), {
+    "10min": datetime.timedelta(minutes=10),
+    "hour": datetime.timedelta(hours=1),
+    "day": datetime.timedelta(days=1),
+    "week": datetime.timedelta(weeks=1),
+    "year": datetime.timedelta(days=365),
+})
 
 
 def to_bytes_csv(rows: List[List[object]]) -> bytes:
@@ -73,7 +82,10 @@ def get_values(params: dict):
     params.setdefault("from", int(time.time() - 60 * 60 * 24 * 365))
     from_ = datetime.datetime.fromtimestamp(int(params["from"]))
     to = datetime.datetime.fromtimestamp(int(params["to"]))
-    data = db_model.load_data_for_date_range(from_, to)
+
+    data = (db_model.load_data_with_interval(INTERVALS.get(params["interval"]), start=from_, end=to)
+            if "interval" in params
+            else db_model.load_data_for_date_range(from_, to))
     rows = list(data.array)
     result = to_bytes_csv([data.columns, *rows]), MIME_CSV
 
