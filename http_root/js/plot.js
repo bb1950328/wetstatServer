@@ -1,5 +1,5 @@
 let wp;
-let debug = true;
+let debug = false;
 document.addEventListener("DOMContentLoaded", function (event) {
     let now = unix_now();
     if (debug) {
