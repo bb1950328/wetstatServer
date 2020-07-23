@@ -26,6 +26,7 @@ from wetstat.sensors import sensor_master
 from wetstat.sensors.abstract.base_sensor import CompressionFunction
 
 SPECIAL_INTERVALS_GROUP_BY = {
+    datetime.timedelta(hours=1): "HOUR(Time), DATE(Time)",
     datetime.timedelta(days=1): "DATE(Time)",
     datetime.timedelta(weeks=1): "YEARWEEK(Time, 1)",
     datetime.timedelta(days=30): "MONTH(Time), YEAR(Time)",
