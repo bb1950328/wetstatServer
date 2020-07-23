@@ -5,7 +5,8 @@ document.addEventListener("DOMContentLoaded", function (event) {
     if (debug) {
         now -= 60 * 60 * 24 * 30;
     }
-    let start = now - 60 * 60 * 24 * 2;
+    let initial_length_seconds = 60 * 60 * 24 * 7;
+    let start = now - initial_length_seconds;
     get_values(start, now, csv => {
         let data = new WetplotData(csv.heads, csv.data);
         wp = new Wetplot();
@@ -15,6 +16,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
         wp.config("background_color", "#ffffff");
         wp.config("hover_box_background_color", "#bbbbbb");
         wp.config("time_offset", start);
+        wp.config("time_length", initial_length_seconds)
 
         get_sensors(sensors => {
             for (const sens_info of sensors) {
