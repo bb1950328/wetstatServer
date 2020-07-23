@@ -1,6 +1,7 @@
 # coding=utf-8
 import collections
 import datetime
+import sys
 import time
 from concurrent import futures
 from dataclasses import dataclass
@@ -22,6 +23,16 @@ from wetstat.model import util
 from wetstat.model.db import connection_pool
 from wetstat.model.db import db_const
 from wetstat.sensors import sensor_master
+from wetstat.sensors.abstract.base_sensor import CompressionFunction
+
+SPECIAL_INTERVALS_GROUP_BY = {
+    datetime.timedelta(days=1): "DATE(Time)",
+    datetime.timedelta(weeks=1): "YEARWEEK(Time, 1)",
+    datetime.timedelta(days=30): "MONTH(Time), YEAR(Time)",
+    datetime.timedelta(days=31): "MONTH(Time), YEAR(Time)",
+    datetime.timedelta(days=365): "YEAR(Time)",
+    datetime.timedelta(days=366): "YEAR(Time)",
+}
 
 
 @dataclass
@@ -224,11 +235,50 @@ def load_data_for_date_range(start: datetime.datetime, end: datetime.datetime,
         connection_pool.release_conn(conn)
 
 
+def load_data_with_group_by(group_by: str,
+                            start: Optional[datetime.datetime] = None,
+                            end: Optional[datetime.datetime] = None,
+                            duration: Optional[datetime.timedelta] = None) -> DbData:
+    start, end, duration = util.calculate_missing_start_end_duration(start, end, duration)
+    columns = [f"FROM_UNIXTIME(AVG(UNIX_TIMESTAMP({db_const.COL_NAME_TIME})))"]
+    for sens in sensor_master.ALL_SENSORS:
+        short_name = sens.get_short_name()
+        if sens.get_compression_function() == CompressionFunction.MINMAXAVG:
+            columns.append(f"AVG({short_name}) AS '{short_name}'")
+            columns.append(f"MIN({short_name}) AS '{short_name}_MIN'")
+            columns.append(f"MAX({short_name}) AS '{short_name}_MAX'")
+        else:
+            func = {
+                CompressionFunction.MIN: "MIN",
+                CompressionFunction.MAX: "MAX",
+                CompressionFunction.SUM: "SUM"
+            }[sens.get_compression_function()]
+            columns.append(f"{func}({short_name}) AS '{short_name}'")
+    command = f"SELECT {', '.join(columns)} FROM data WHERE {db_const.COL_NAME_TIME} " \
+              f"BETWEEN {start.strftime(db_const.DATETIME_FORMAT)} AND {end.strftime(db_const.DATETIME_FORMAT)} " \
+              f"GROUP BY {group_by};"
+    print(command, file=sys.stderr)
+    cur = None
+    conn = None
+    try:
+        conn = connection_pool.find_conn()
+        cur = conn.cursor()
+        cur.execute(command)
+        db_data = fetch_to_db_data(cur)
+    finally:
+        if cur:
+            cur.close()
+        connection_pool.release_conn(conn)
+    return db_data
+
+
 def load_data_with_interval(interval: datetime.timedelta, *,
                             start: datetime.datetime = None,
                             end: datetime.datetime = None,
                             duration: datetime.timedelta = None) -> DbData:
     start, end, duration = util.calculate_missing_start_end_duration(start, end, duration)
+    if interval in SPECIAL_INTERVALS_GROUP_BY.keys():
+        return load_data_with_group_by(SPECIAL_INTERVALS_GROUP_BY[interval], start, end)
     raw = load_data_for_date_range(start, end)
     result = []
     time_idx = raw.columns.index("Time")
