@@ -302,7 +302,7 @@ class Wetplot {
         for (let secs = Math.round(seconds_start / seconds_step) * seconds_step; secs < seconds_start + this._config["time_length"]; secs += seconds_step) {
             let date = new Date(secs * 1000);
             let x = Math.round(this._seconds_to_x_coords(secs));
-            let dateForHuman = date.toLocaleDateString() + " " + date.toLocaleTimeString();
+            let dateForHuman = date.toLocaleString();
             dateForHuman = dateForHuman.substring(0, dateForHuman.lastIndexOf(":")); // cut off seconds
             let txt = createSvgElement("text");
             txt.innerHTML = dateForHuman;
