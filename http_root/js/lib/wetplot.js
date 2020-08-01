@@ -67,6 +67,18 @@ const COLOR_PALETTES = [
     ],
 ];
 
+const TIMEDELTA_UNITS = [
+    ["a", 52],
+    ["w", 7],
+    ["d", 24],
+    ["h", 60],
+    ["m", 60],
+    ["s", 1],
+];
+for (let i = TIMEDELTA_UNITS.length - 2; i >= 0; i--) {
+    TIMEDELTA_UNITS[i][1] *= TIMEDELTA_UNITS[i + 1][1];
+}
+
 const TEXTS = {
     "TIME": {
         "en": "Time",
@@ -78,6 +90,11 @@ const TEXTS = {
         "de": "Sichtbare Linien",
         "fr": "Lignes visibles",
     },
+    "YBAR_WIDTH": {
+        "en": "Vertical Bar Width",
+        "de": "Säulenbreite",
+        //todo french
+    }
 }
 
 function getText(key) {
@@ -119,6 +136,21 @@ function _split_to_digits(value) {
     return digits;
 }
 
+function timedeltaSecondsToHumanReadable(seconds = 0) {
+    if (seconds < 0) {
+        throw Error("Negative delta not supported yet");//todo
+    }
+    let result = [];
+    for (const tdunit of TIMEDELTA_UNITS) {
+        let [symbol, factor] = tdunit;
+        if (seconds >= factor) {
+            result.push(Math.floor(seconds / factor) + symbol);
+            seconds %= factor;
+        }
+    }
+    return result.join(" ");
+}
+
 class Wetplot {
 
     constructor() {
@@ -148,6 +180,7 @@ class Wetplot {
             font_size_px: 16,
             show_line_visibility_button: true,
             show_zoom_buttons: true,
+            ybar_width_seconds: 60 * 60,
         }
         this._line_config = {
             "###default###": {
@@ -504,7 +537,7 @@ class Wetplot {
     }
 
     changingPropertyForYBarLines(timestampSec) {
-        return Math.floor(timestampSec / this._config["seconds_per_grid_line"]); // todo make customizeable
+        return Math.floor(timestampSec / this._config["ybar_width_seconds"]);
     }
 
     _create_y_axis() {
@@ -694,6 +727,28 @@ class Wetplot {
             }
         });
 
+        const ybarLines = this.getVisibleLineCodes().filter(code => this._line_config[code]["type"] === "ybar");
+        let ybarWidthTxt = document.getElementById("ybar-width-label");
+        if (ybarWidthTxt === null && ybarLines.length > 0) {
+            ybarWidthTxt = createSvgElement("text");
+            ybarWidthTxt.style.fontSize = this._config["font_size_px"] + "px";
+            ybarWidthTxt.style.fill = "#333333";//todo make it cursive too
+            ybarWidthTxt.setAttribute("id", "ybar-width-label");
+            valuesPopupG.appendChild(ybarWidthTxt);
+        }
+        if (ybarWidthTxt !== null) {
+            if (ybarLines.length > 0) {
+                ybarWidthTxt.innerHTML =
+                    getText("YBAR_WIDTH")
+                    + ": "
+                    + timedeltaSecondsToHumanReadable(this._config["ybar_width_seconds"]);
+                ybarWidthTxt.style.display = "inline";
+            } else {
+                ybarWidthTxt.style.display = "none";
+                ybarWidthTxt.innerHTML = "";
+            }
+        }
+
         let texts_x1 = scale(0.25);
         let texts_y = scale(1);
 
@@ -702,51 +757,66 @@ class Wetplot {
         localeDateStr = localeDateStr.substring(0, localeDateStr.lastIndexOf(":"));
         timeText.innerHTML = getText("TIME") + ": " + localeDateStr;
         timeText.setAttribute("y", texts_y);
-        let maxTxtLength = timeText.innerHTML.length;
+        let maxTxtWidth = Math.max(
+            timeText.getBoundingClientRect().width,
+            ybarWidthTxt === null ? 0 : ybarWidthTxt.getBoundingClientRect().width
+        );
 
         let values = this._seconds_to_values(cursorTimestampSeconds, true);
         let valueElements = valuesPopupG.getElementsByClassName("valueText");
         for (let i = 0; i < valueElements.length; i++) {
             let txt = valueElements.item(i);
             let lineCode = txt.id.substring("valuesPopup".length);
-            let text = this._line_config[lineCode]["name"] + ": "
-                + (Math.round(values[lineCode] * 100) / 100) + " "
-                + this._line_config[lineCode]["unit"];
-            txt.innerHTML = text;
-            maxTxtLength = Math.max(maxTxtLength, text.length);
-            txt.style.fill = this._line_config[lineCode]["color"];
+            if (this._line_config[lineCode]["visible"]) {
+                txt.innerHTML = this._line_config[lineCode]["name"] + ": "
+                    + (Math.round(values[lineCode] * 100) / 100) + " "
+                    + this._line_config[lineCode]["unit"];
+                maxTxtWidth = Math.max(maxTxtWidth, txt.getBoundingClientRect().width);
+                txt.style.fill = this._line_config[lineCode]["color"];
 
-            texts_y += scale(1);
-            txt.setAttribute("y", texts_y);
+                texts_y += scale(1);
+                txt.setAttribute("y", texts_y);
+                txt.style.display = "inline";
+            } else {
+                txt.style.display = "none";
+            }
         }
-        let bgWidth = Math.ceil(maxTxtLength / 4.5) * 2;
+
+        if (ybarWidthTxt !== null && ybarWidthTxt.style.display !== "none") {
+            texts_y += scale(1);
+            ybarWidthTxt.setAttribute("y", texts_y);
+        }
+
+        let bgWidthPx = Math.ceil(maxTxtWidth + scale(1));
         let bgHeight = texts_y + scale(0.25);
 
-        let estimatedBgHeight = scale(this.getVisibleLineCodes().length + 1.25);
-        let abs_y1 = (this._config["height"] + estimatedBgHeight) / 2;
+        let abs_y1 = (this._config["height"] + bgHeight) / 2;
 
         if (x_viewbox / this._config["width"] > 0.5) {
-            valuesPopupG.setAttribute("transform", "translate(" + (x_svg - scale(bgWidth + 1)) + ", " + abs_y1 + ")");
+            valuesPopupG.setAttribute("transform", "translate(" + (x_svg - (bgWidthPx + scale(1))) + ", " + abs_y1 + ")");
             bgPath.setAttribute("transform", "");
         } else {
             valuesPopupG.setAttribute("transform", "translate(" + x_svg + ", " + abs_y1 + ")");
-            bgPath.setAttribute("transform", "rotate(180) translate(" + scale(-(bgWidth + 1)) + " " + (-1 * estimatedBgHeight) + ")");
+            bgPath.setAttribute("transform", "rotate(180) translate(" + (bgWidthPx + scale(1)) * -1 + " " + (-1 * bgHeight) + ")");
             texts_x1 += scale(1);
         }
 
         timeText.setAttribute("x", texts_x1);
+        if (ybarWidthTxt !== null) {
+            ybarWidthTxt.setAttribute("x", texts_x1);
+        }
         for (let i = 0; i < valueElements.length; i++) {
             let txt = valueElements.item(i);
             txt.setAttribute("x", texts_x1);
         }
 
         bgPath.setAttribute("d", "M " + 0 + " 0" +
-            " H " + scale(bgWidth) + // 1                               +-----1-----+
-            " V " + bgHeight * 0.4 + // 2                               |           | 2
-            " L " + scale(bgWidth + 1) + " " + 0.5 * bgHeight + // 3 |            \ 3
-            " L " + scale(bgWidth) + " " + 0.6 * bgHeight + // 4        7            / 4
-            " V " + bgHeight + // 5                                     |           | 5
-            " H 0" +// 6                                                +-----6-----+
+            " H " + bgWidthPx + // 1                                        +-----1-----+
+            " V " + bgHeight * 0.4 + // 2                                   |           | 2
+            " L " + (bgWidthPx + scale(1)) + " " + 0.5 * bgHeight + // 3 |            \ 3
+            " L " + bgWidthPx + " " + 0.6 * bgHeight + // 4                 7            / 4
+            " V " + bgHeight + // 5                                         |           | 5
+            " H 0" +// 6                                                    +-----6-----+
             " V 0" // 7
         );
     }
@@ -942,6 +1012,7 @@ class Wetplot {
     }
 
     _seconds_to_values(timestamp, visible_only = false) {
+        const ybar_width_seconds = this._config["ybar_width_seconds"];
         let [a, b] = this._nearestTwoDataRows(timestamp);
         let result = {};
         if (a !== null || b !== null) {
@@ -954,14 +1025,25 @@ class Wetplot {
             let aTs = a[time_idx];
             let bTs = b[time_idx];
             let exactPos = (timestamp - aTs) / (bTs - aTs);
+            let sumBeginTs = aTs - (aTs % ybar_width_seconds);
+            let sumBeginIndex = this._data.findNextBiggerValue(sumBeginTs);
+            let sumEndIndex = this._data.findNextBiggerValue(sumBeginTs + ybar_width_seconds);
             (visible_only
                     ? this.getVisibleLineCodes()
                     : this.getAllLineCodes()
             ).forEach(lineCode => {
-                let idx = this._data.heads.indexOf(lineCode);
-                let aVal = a[idx];
-                let bVal = b[idx];
-                result[lineCode] = (aVal) + (bVal - aVal) * exactPos;
+                let colIdx = this._data.heads.indexOf(lineCode);
+                if (this._line_config[lineCode]["type"] === "ybar") {
+                    let sum = 0;
+                    for (let i = sumBeginIndex; i < sumEndIndex; i++) {
+                        sum += this._data.values[i][colIdx];
+                    }
+                    result[lineCode] = sum;
+                } else {
+                    let aVal = a[colIdx];
+                    let bVal = b[colIdx];
+                    result[lineCode] = (aVal) + (bVal - aVal) * exactPos;
+                }
             });
         }
         return result;
@@ -1223,5 +1305,26 @@ class WetplotData {
             result[i] = [a + leave_gap * max_gap_seconds, b - leave_gap * max_gap_seconds];
         }
         return result
+    }
+
+    /**
+     * perform a binary search on a column. the column should be sorted ascending
+     * @param timestamp search value in seconds
+     * O(n) = log2(n) while n = number of records
+     * @param column the column name to perform the search on, default is "Time"
+     */
+    findNextBiggerValue(timestamp, column = "Time") {
+        let lower = 0;
+        let upper = this.values.length;
+        const timeCol = this.getColumnIndex(column);
+        do {
+            let i = Math.floor((lower + upper) / 2);
+            if (this.values[i][timeCol] > timestamp) {
+                upper = i;
+            } else {
+                lower = i;
+            }
+        } while ((upper - lower) > 1);
+        return upper;
     }
 }
