@@ -31,6 +31,9 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 wp.lineConfig(short_name, "unit", sens_info["unit"]);
                 wp.lineConfig(short_name, "color", sens_info["color"]);
                 wp.lineConfig(short_name, "auto_min_max", true);
+                if (sens_info["type"] === "sum") {
+                    wp.lineConfig(short_name, "type", "ybar");
+                }
             }
             wp.initialize();
             wp.scrollTo(10000000000000000000000000);

@@ -7,22 +7,30 @@ Configure your webserver to redirect calls from /api to this script
 ### api/sensors
 
 Gives a list of all sensors as json. example:
-```
+```json
 [
     {
         "name": "Temperatur 1",
         "short_name": "Temp1",
         "unit": "°C",
-        "color": "#ff00ff"
+        "color": "#ff00ff",
+        "type": "minmaxavg"
     },
     {
         "name": "Pressure",
         "short_name": "Pressure",
         "unit": "hPa",
-        "color": "#aadd00"
+        "color": "#aadd00",
+        "type": "avg"
     }
 ]
 ```
+Possible values for `type` are:
+- `minmaxavg`
+- `min`
+- `max`
+- `avg`
+- `sum`
 
 ### api/current_values
 
@@ -46,7 +54,7 @@ Returns a CSV with the requested values. Following GET or POST parameters needed
     - `year`
 
 Example response:
-```
+```csv
 Time;Temp1;Pressure
 1523432423;23.1;924
 1532543233;22.7;925
