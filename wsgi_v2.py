@@ -70,7 +70,9 @@ def get_current_values(params: dict):
         values = db_model.find_nearest_record(now)
     sum_sensors = [sens.get_short_name() for sens in sensor_master.SUM_SENSORS]
     if sum_sensors:
-        values.update(db_model.get_value_sums(sum_sensors, end=now, duration=datetime.timedelta(days=1)))
+        sums = db_model.get_value_sums(sum_sensors, end=now, start=now-datetime.timedelta(days=1))
+        print("sums=", json.dumps(sums), file=sys.stderr)
+        values.update(sums)
     heads = list(values.keys())
     row1 = [values[sn] for sn in heads]
     return to_bytes_csv([heads, row1]), MIME_CSV

@@ -113,7 +113,7 @@ def validate_start_end(start: datetime.datetime, end: datetime.datetime) -> None
     if isinstance(end, datetime.date):
         end = date_to_datetime(end)
     if start > end:
-        raise ValueError("end must be after start!!!")
+        raise ValueError(f"end (={end}) must be after start (={start})!!!")
 
 
 def date_to_datetime(date: datetime.date, take_max_time=False) -> datetime.datetime:

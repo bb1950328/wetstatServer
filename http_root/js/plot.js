@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
                 let short_name = sens_info["short_name"];
                 console.debug(short_name);
                 let col_index = csv.heads.indexOf(short_name);
-                if (col_index === -1 || !csv.data[0][col_index]) {
+                if (col_index === -1 || csv.data[0][col_index] === undefined || csv.data[0][col_index] === null || csv.data[0][col_index] === "") {
                     continue;
                 }
                 wp.addLine(short_name);

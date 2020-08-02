@@ -3,6 +3,7 @@ import collections
 import datetime
 import sys
 import time
+import json
 from concurrent import futures
 from dataclasses import dataclass
 from typing import Collection
@@ -328,9 +329,10 @@ def execute_select_range(start, end, cursor, columns=None) -> None:
     else:
         column_list = ", ".join(columns)
     util.validate_start_end(start, end)
-    params = start.strftime(db_const.DATETIME_FORMAT), end.strftime(db_const.DATETIME_FORMAT)
-    cursor.execute(f"SELECT {column_list} FROM {db_const.DATA_DB_NAME} WHERE"
-                   f" {db_const.COL_NAME_TIME} BETWEEN %s AND %s", params)
+    start_str, end_str = start.strftime(db_const.DATETIME_FORMAT), end.strftime(db_const.DATETIME_FORMAT)
+    command=f"SELECT {column_list} FROM {db_const.DATA_DB_NAME} WHERE {db_const.COL_NAME_TIME} BETWEEN '{start_str}' AND '{end_str}'"
+    print(command, file=sys.stderr)
+    cursor.execute(command)
 
 
 def insert_record(timestamp: datetime.datetime, update_if_exists=False, **values):
@@ -464,7 +466,8 @@ def get_value_sums(columns,
                    start: datetime.datetime = None,
                    end: datetime.datetime = None,
                    duration: datetime.timedelta = None) -> Dict[str, float]:
-    start, end, duration = util.calculate_missing_start_end_duration(end, start, duration)
+    print(f"start={start}, end={end}", file=sys.stderr)
+    start, end, duration = util.calculate_missing_start_end_duration(start, end, duration)
     if not all(map(util.is_valid_sql_name, columns)):
         raise ValueError("At least one of the given column names is invalid!!!")
     col_list = (f"SUM({sn}) AS {sn}" for sn in columns)
@@ -474,7 +477,9 @@ def get_value_sums(columns,
         con = connection_pool.find_conn()
         cur = con.cursor()
         execute_select_range(start, end, cur, col_list)
-        return record_to_dict(cur.fetchone(), cur.column_names, none_value=0)
+        result = record_to_dict(cur.fetchone(), cur.column_names, none_value=0)
+        print(f"start={start}, result={json.dumps(result)}", file=sys.stderr)
+        return result
     finally:
         if cur:
             cur.close()
@@ -482,6 +487,7 @@ def get_value_sums(columns,
 
 
 def record_to_dict(record: Iterable, columns: Iterable[str], none_value=None):
+    #print(record, columns, none_value, file=sys.stderr)
     return {col: value if value is not None else none_value
             for col, value in zip(columns, record)}
 
