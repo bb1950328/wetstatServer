@@ -58,7 +58,7 @@ def get_sensors(params: dict):
             "short_name": sens.get_short_name(),
             "color": sens.get_display_color(),
             "unit": sens.get_unit(),
-            "type": sens.get_compression_function().lower(),
+            "type": sens.get_compression_function().value.lower(),
         })
     return json.dumps(data).encode(), "application/json"
 
