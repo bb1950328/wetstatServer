@@ -116,18 +116,18 @@ function get_next_value(to, callback) {
     });
 }
 
-function get_values(from = -1, to = -1, callback) {
-    if (from instanceof Function) {
-        callback = from;
-        from = -1;
-    }
+function get_values_url(from, to, interval) {
     if (to === -1) {
         to = unix_now();
     }
     if (from === -1) {
         from = to - 24 * 60 * 60;
     }
-    let url = "api/values?to=" + to + "&from=" + from;
+    return "api/values?to=" + to + "&from=" + from + "&interval=" + interval;
+}
+
+function get_values(from = -1, to = -1, interval, callback) {
+    const url = get_values_url(from, callback, to);
     console.log(url);
     $.ajax({
         url: url,

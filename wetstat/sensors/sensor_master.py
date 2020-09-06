@@ -31,6 +31,8 @@ OLD_SENSORS: List[BaseSensor] = [
     OldLightSensor(),
     FakeSensor(1),
     FakeSensor(2),
+    TempSensor(1),
+    TempSensor(2),
 ]
 
 USED_SENSORS: List[BaseSensor] = [
@@ -39,8 +41,6 @@ USED_SENSORS: List[BaseSensor] = [
     PressureSensor(),
     HumiditySensor(),
     RainSensor(),
-    TempSensor(1),
-    TempSensor(2),
 ]
 
 ALL_SENSORS: List[BaseSensor] = [*USED_SENSORS, *OLD_SENSORS]

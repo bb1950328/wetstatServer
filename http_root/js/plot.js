@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function (event) {
     }
     let initial_length_seconds = 60 * 60 * 24 * 7;
     let start = now - initial_length_seconds;
-    get_values(start, now, csv => {
+    get_values(start, now, "10min", csv => {
         let data = new WetplotData(csv.heads, csv.data);
         wp = new Wetplot();
         //wp._addDataToDb("10min", data);

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Wetstat Export</title>
+    <meta name="description" content="Wetstat Export">
+    <meta name="author" content="bb1950328">
+
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/lib/jquery-3.5.1.min.js"></script>
+    <script src="js/wetstat.js"></script>
+    <script src="js/export.js"></script>
+</head>
+<body>
+<header></header>
+<main>
+    <h1>Daten-Export</h1>
+    <form id="export_form">
+        <table>
+            <tbody>
+            <tr>
+                <td><label for="input_start_date">Startdatum</label></td>
+                <td><input type="date" id="input_start_date"></td>
+            </tr>
+            <tr>
+                <td><label for="input_end_date">Enddatum</label></td>
+                <td><input type="date" id="input_end_date"></td>
+            </tr>
+            <tr>
+                <td><label for="input_interval">Intervall</label></td>
+                <td>
+                    <select id="input_interval">
+                        <option value="10min">10 Minuten</option>
+                        <option value="hour">Stunde</option>
+                        <option value="day">Tag</option>
+                        <option value="week">Woche</option>
+                        <option value="year">Jahr</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <button type="button" onclick="start_export()">Start</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+</main>
+<footer></footer>
+</body>
+</html>
